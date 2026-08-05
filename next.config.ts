@@ -20,35 +20,51 @@ function networkDevOrigins(): string[] {
   return origins;
 }
 
+/** Comma-separated extra hosts: TUNNEL_ORIGIN=foo.dev,bar.ngrok.io */
+function envTunnelOrigins(): string[] {
+  const raw = process.env.TUNNEL_ORIGIN ?? process.env.TUNNEL_ORIGINS ?? '';
+  return raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
 const nextConfig: NextConfig = {
   /**
-   * Next.js 16 blocks /_next/* dev assets from unknown origins (port-forward tunnels).
-   * Without a match, client JS never loads → stations.js never runs → no 3D + hidden chapters.
-   * Production (`npm run tunnel`) has no such restriction.
+   * Next.js 16 blocks /_next/* from unknown origins in dev.
+   * Animation scripts live in /public and load via boot-stations.js (no React needed).
+   * These origins still matter for dev HMR / client hydration on shared URLs.
    */
   allowedDevOrigins: [
     '127.0.0.1',
     '127.0.0.1:3000',
     'localhost',
     'localhost:3000',
+    '[::1]',
+    '[::1]:3000',
     '0.0.0.0',
     '0.0.0.0:3000',
     // Cursor / VS Code / GitHub / common tunnels
     '*.cursor.sh',
     '*.cursor.app',
     '*.cursor.com',
+    '*.anysphere.dev',
     '*.vscode.dev',
     '*.github.dev',
     '*.app.github.dev',
     '*.preview.app.github.dev',
+    '*.codespaces.dev',
     '*.ngrok-free.app',
     '*.ngrok.io',
+    '*.ngrok.app',
     '*.trycloudflare.com',
     '*.loca.lt',
     '*.replit.dev',
     '*.exe.xyz',
+    '*.serveo.net',
+    '*.tunnelmole.net',
     ...networkDevOrigins(),
-    ...(process.env.TUNNEL_ORIGIN ? [process.env.TUNNEL_ORIGIN] : []),
+    ...envTunnelOrigins(),
   ],
 };
 

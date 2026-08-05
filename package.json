@@ -2,8 +2,12 @@
   "name": "bb-web-strcuture2",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
+    "dev:share": "next build && next start -H 0.0.0.0",
     "build": "next build",
     "start": "next start -H 0.0.0.0",
     "tunnel": "next build && next start -H 0.0.0.0",

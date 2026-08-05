@@ -1,6 +1,5 @@
 'use client';
 
-import WorldLayer from './WorldLayer';
 import NavBar from './NavBar';
 import HeroChapter from './HeroChapter';
 import TrustChapter from './TrustChapter';
@@ -16,7 +15,6 @@ import SvgSprite from './SvgSprite';
 export default function HomePage() {
   return (
     <>
-      <WorldLayer />
       <NavBar />
       <HeroChapter />
       <TrustChapter />

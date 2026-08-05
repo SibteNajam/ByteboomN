@@ -1,11 +1,17 @@
-import StationsInit from '@/components/home/StationsInit';
+import Script from 'next/script';
+import WorldLayerShell from '@/components/home/WorldLayerShell';
 import '../styles/stations.css';
 
+/**
+ * boot-stations.js loads Three + stations.js from /public (never blocked by Next dev guards).
+ * WorldLayerShell is server HTML — canvas injection won't break React hydration.
+ */
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <StationsInit />
+      <WorldLayerShell />
       {children}
+      <Script id="byteboom-boot-js" src="/boot-stations.js" strategy="lazyOnload" />
     </>
   );
 }
