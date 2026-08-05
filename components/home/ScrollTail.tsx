@@ -96,9 +96,7 @@ export default function ScrollTail() {
       <div className="wrap footer__inner">
         <div className="footer__top">
           <div className="footer__brand">
-            <a className="footer__logo-link" href="#top">
-              <img className="footer__logo" src="/images/mainlogo.png" alt="ByteBoom" width="280" height="86" decoding="async" />
-            </a>
+            <p className="footer__eyebrow">ByteBoom</p>
             <p className="footer__headline">Disciplined automation on your Binance account.</p>
             <p className="footer__sub">Non-custodial trading with a trade-only API. Your funds never leave your exchange.</p>
             <div className="footer__meta">
@@ -144,7 +142,12 @@ export default function ScrollTail() {
         </div>
 
         <div className="footer__bottom">
-          <p className="footer__copy">&copy; 2026 ByteBoom AI. All rights reserved.</p>
+          <div className="footer__legal">
+            <a className="footer__logo-link" href="#top">
+              <img className="footer__logo" src="/images/mainlogo.png" alt="ByteBoom" width="280" height="86" decoding="async" />
+            </a>
+            <p className="footer__copy">&copy; 2026 ByteBoom AI. All rights reserved.</p>
+          </div>
           <p className="footer__disclaimer">Trading involves risk. Past performance does not guarantee future results.</p>
         </div>
       </div>

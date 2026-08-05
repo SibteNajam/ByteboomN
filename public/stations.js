@@ -445,6 +445,55 @@
   }
   const journeyProgress = initInlineJourney($('#bbj-inline'));
 
+  /* ---------- inline pricing (chapter 4) — scroll through plans one at a time on mobile ---- */
+  function initInlinePricing(rootEl) {
+    if (!rootEl) return () => { };
+    const cards = [...rootEl.querySelectorAll('.pcard')];
+    if (!cards.length) return () => { };
+
+    const PLAN_COUNT = cards.length;
+    const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+    let activeIdx = 0;
+
+    const setActive = idx => {
+      activeIdx = clamp(idx, 0, PLAN_COUNT - 1);
+      cards.forEach((card, i) => card.classList.toggle('is-active', i === activeIdx));
+    };
+
+    setActive(0);
+
+    return function setPricingProgress(tNow) {
+      const pLocal = clamp(tNow, 0, 1);
+      const idx = clamp(Math.floor(pLocal * PLAN_COUNT), 0, PLAN_COUNT - 1);
+      if (idx !== activeIdx) setActive(idx);
+    };
+  }
+  const pricingProgress = initInlinePricing($('#pricing-inline'));
+
+  function initInlineSecurity(rootEl) {
+    if (!rootEl) return () => { };
+    const items = [...rootEl.querySelectorAll('.sec-item')];
+    if (!items.length) return () => { };
+
+    const ITEM_COUNT = items.length;
+    const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+    let activeIdx = 0;
+
+    const setActive = idx => {
+      activeIdx = clamp(idx, 0, ITEM_COUNT - 1);
+      items.forEach((item, i) => item.classList.toggle('is-active', i === activeIdx));
+    };
+
+    setActive(0);
+
+    return function setSecurityProgress(tNow) {
+      const pLocal = clamp(tNow, 0, 1);
+      const idx = clamp(Math.floor(pLocal * ITEM_COUNT), 0, ITEM_COUNT - 1);
+      if (idx !== activeIdx) setActive(idx);
+    };
+  }
+  const securityProgress = initInlineSecurity($('#security-inline'));
+
   /* ---------- scroll ---------- */
   let target = 0, p = 0;
   const readScroll = () => {
@@ -495,6 +544,8 @@
     addEventListener('scroll', () => { readScroll(); if (depthBar) depthBar.style.width = (target * 100) + '%'; }, { passive: true });
     updateChapters(0);
     journeyProgress(1);
+    pricingProgress(1);
+    securityProgress(1);
     return;
   }
 
@@ -701,6 +752,18 @@
       // Use the full chapter window so the path completes all the way to step 7.
       const journeyT = Math.max(0, Math.min(1, (rawJourney - 0.02) / 0.96));
       journeyProgress(journeyT);
+    }
+
+    const pricingChapter = chapters.find(c => c.el.id === 'pricingnode');
+    if (pricingChapter) {
+      const rawPricing = Math.max(0, Math.min(1, (p - pricingChapter.a) / Math.max(pricingChapter.b - pricingChapter.a, 1e-6)));
+      pricingProgress(rawPricing);
+    }
+
+    const securityChapter = chapters.find(c => c.el.id === 'securitynode');
+    if (securityChapter) {
+      const rawSecurity = Math.max(0, Math.min(1, (p - securityChapter.a) / Math.max(securityChapter.b - securityChapter.a, 1e-6)));
+      securityProgress(rawSecurity);
     }
     renderer.render(scene, cam);
   }
