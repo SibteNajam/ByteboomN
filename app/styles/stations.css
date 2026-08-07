@@ -3107,7 +3107,11 @@ html.cine .pricing-grid .pcard.is-active {
 #securitynode.chapter--security {
   justify-content: flex-start;
   align-items: center;
-  padding: clamp(148px, 16vh, 172px) 6vw clamp(52px, 8vh, 72px);
+  padding:
+    clamp(148px, 16vh, 172px)
+    clamp(5vw, 6vw, 7vw)
+    clamp(52px, 8vh, 72px)
+    clamp(7vw, 8vw, 9vw);
 }
 
 .chapter--security {
@@ -3118,6 +3122,7 @@ html.cine .pricing-grid .pcard.is-active {
 .chapter[data-side="center"] .panel--security {
   width: min(1200px, 94vw);
   max-width: 1200px;
+  margin-inline: auto;
   padding: clamp(8px, 1.5vh, 16px) 0 0;
   background: none;
   border: none;
@@ -3126,13 +3131,34 @@ html.cine .pricing-grid .pcard.is-active {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  align-items: center;
   gap: clamp(14px, 2vh, 24px);
   max-height: none;
 }
 
 #securitynode .sec-header {
+  width: 100%;
   margin-top: 0;
   padding-top: clamp(12px, 2vh, 20px);
+  text-align: center;
+}
+
+#securitynode .security-stage {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#securitynode .sec-stack {
+  width: min(936px, 100%);
+  margin-inline: auto;
+  justify-items: center;
+}
+
+@media (min-width: 901px) {
+  html.cine #securitynode .panel--security {
+    transform: translateX(clamp(16px, 2vw, 32px));
+  }
 }
 
 .panel--security::before {
@@ -3281,6 +3307,7 @@ html.cine .pricing-grid .pcard.is-active {
 
 .sec-stack .sec-item--featured p {
   max-width: 58ch;
+  margin-inline: auto;
   font-size: 13px;
   line-height: 1.55;
 }
@@ -3300,6 +3327,7 @@ html.cine .pricing-grid .pcard.is-active {
   font-size: 13px;
   line-height: 1.55;
   max-width: 48ch;
+  margin-inline: auto;
 }
 
 html.cine .sec-stack .sec-item.is-active .sec-item__visual img {
@@ -4303,8 +4331,15 @@ html.flat .jbar {
   #securitynode.chapter--security {
     align-items: center;
     justify-content: flex-start;
-    padding-top: clamp(112px, 18vw, 132px);
-    padding-bottom: clamp(44px, 9vh, 64px);
+    padding:
+      clamp(112px, 18vw, 132px)
+      5vw
+      clamp(44px, 9vh, 64px)
+      5vw;
+  }
+
+  html.cine #securitynode .panel--security {
+    transform: none;
   }
 
   html.cine #securitynode .sec-header {
