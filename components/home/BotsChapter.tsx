@@ -240,8 +240,7 @@ export default function BotsChapter() {
             Pick the automation style that fits <span className="bots-head__pill">your risk</span>
           </h2>
           <p className="bots-head__lead">
-            Aggressive, balanced, or conservative — each mode runs with the same disciplined, trade-only execution on
-            Binance.
+            Aggressive, balanced, or conservative — the same rule-based engine on Binance; only the risk profile changes.
           </p>
         </header>
 

@@ -8,8 +8,7 @@ export default function AboutChapter() {
 
       <div className="sec-header">
         <h2>Discipline, <span className="grad">engineered</span> — not adrenaline, promised.</h2>
-        <p className="sec-lead">Autonomous execution on <b className="hl hl--cyan">your own Binance account</b> — your funds
-          <b className="hl hl--green">never leave your control</b>.</p>
+        <p className="sec-lead">Rules-based execution that runs while you sleep — no impulse trades, no chart-watching marathons.</p>
       </div>
 
       <div className="about-steps">
@@ -32,7 +31,7 @@ export default function AboutChapter() {
               <use href="#i-shield" />
             </svg><span className="about-step__num">03</span></div>
           <h3>The product</h3>
-          <p>Runs on your Binance account via a <b className="hl hl--green">restricted, trade-only API key</b>.</p>
+          <p>Connects through Binance&apos;s API — scoped to trade, pause, and stop on your terms.</p>
         </div>
       </div>
 

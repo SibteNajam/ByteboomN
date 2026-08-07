@@ -308,6 +308,7 @@
     const kickerEl = q('.jp-kicker');
     const titleEl = q('.jp-title');
     const bodyEl = q('.jp-body');
+    const speechEl = q('.jp-speech');
     const numEl = q('.jp-stop-num');
     let activeGroupId = -1, shownKey = '', frontIsA = true, sliding = false;
     const SLIDE_MS = 520;
@@ -325,10 +326,19 @@
       const g = JOURNEY_GROUPS.find(x => x.groupId === groupId);
       if (!g) return;
       activeGroupId = groupId;
+      if (speechEl) {
+        speechEl.classList.add('is-updating');
+        speechEl.classList.add('is-open');
+      }
       kickerEl.textContent = g.kicker;
       titleEl.textContent = g.title;
       bodyEl.textContent = g.body;
       popup.classList.add('is-open');
+      if (speechEl) {
+        requestAnimationFrame(() => {
+          setTimeout(() => speechEl.classList.remove('is-updating'), 380);
+        });
+      }
     };
     const syncCopy = stop => syncLegendGroup(stop.groupId);
     const showImmediate = (el, src, alt) => {
@@ -484,9 +494,17 @@
         completed = false;
         if (!armed) goToStep(0, false);
       },
-      handleWheel(deltaY) {
-        if (!armed || wheelLocked || pathAnimating || sliding) return { consumed: false };
+      handleWheel(deltaY, opts = {}) {
+        const fastRewind = !!(opts && opts.fastRewind);
+        if (!armed) return { consumed: false };
+        if (!fastRewind && (wheelLocked || pathAnimating || sliding)) return { consumed: false };
+        if (fastRewind && (pathAnimating || sliding)) {
+          pathAnimating = false;
+          sliding = false;
+          wheelLocked = false;
+        }
         if (deltaY > 0) {
+          if (wheelLocked) return { consumed: false };
           if (currentStep >= STOP_COUNT - 1) return { consumed: false, atEnd: true };
           wheelLocked = true;
           setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
@@ -494,6 +512,15 @@
           return { consumed: true };
         }
         if (deltaY < 0) {
+          if (fastRewind) {
+            if (currentStep > 0) {
+              wheelLocked = false;
+              goToStep(0, false);
+              return { consumed: true };
+            }
+            return { consumed: false, atStart: true };
+          }
+          if (wheelLocked) return { consumed: false };
           if (currentStep <= 0) return { consumed: false, atStart: true };
           wheelLocked = true;
           setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
@@ -570,6 +597,7 @@
   let journeyLastScrollY = 0;
   let lastReadScrollY = 0;
   let scrollDirectionUp = false;
+  let journeyBypass = false;
 
   const clearJourneyRelease = () => {
     journeyReleased = false;
@@ -604,6 +632,19 @@
     if (!journeyReleased && journeyCh && scrollDirectionUp && next < journeyCh.a - 0.008) {
       clearJourneyRelease();
       journeyHoldP = null;
+      journeyBypass = false;
+    }
+    if (journeyCh) {
+      const inJourney = next >= journeyCh.a - 0.004 && next <= journeyCh.b + 0.02;
+      if (scrollDirectionUp && inJourney) {
+        if (journeyCtrl.isCompleted() || journeyReleased || next > journeyCh.a + (journeyCh.b - journeyCh.a) * 0.28) {
+          journeyBypass = true;
+        }
+      } else if (!scrollDirectionUp && inJourney && next <= journeyCh.a + (journeyCh.b - journeyCh.a) * 0.12) {
+        journeyBypass = false;
+      } else if (!inJourney) {
+        journeyBypass = false;
+      }
     }
     target = next;
     lastReadScrollY = scrollY;
@@ -679,6 +720,7 @@
   };
 
   const shouldHoldJourneyScroll = () => {
+    if (journeyBypass) return false;
     if (!journeyChapter || !journeyCtrl.isArmed()) return false;
     if (journeyReleased) return false;
     const visP = journeyVisibleP();
@@ -719,8 +761,54 @@
     target = exitP;
   };
 
+  const skipJourneyForward = () => {
+    if (!journeyChapter) return;
+    journeyBypass = false;
+    journeyCtrl.releaseAtEnd();
+    if (!journeyReleased && !journeyExiting) {
+      releaseJourneyForward();
+      return;
+    }
+    const exitP = journeyExitTarget != null ? journeyExitTarget : journeyExitP();
+    clearJourneyRelease();
+    journeyReleased = true;
+    journeyExitTarget = exitP;
+    journeyHoldP = null;
+    target = exitP;
+    p = exitP;
+    const top = exitP * cineScrollMax();
+    scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+    journeyLastScrollY = top;
+    lastReadScrollY = top;
+  };
+
+  const skipJourneyBack = () => {
+    if (!journeyChapter) return;
+    journeyBypass = false;
+    journeyCtrl.setArmed(false);
+    journeyCtrl.resetToStart();
+    clearJourneyRelease();
+    journeyHoldP = null;
+    const bots = chapters.find(c => c.el.id === 'productnode');
+    if (bots) {
+      const at = Math.max(0, bots.b - 0.01);
+      const top = at * cineScrollMax();
+      scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+      target = at;
+      p = at;
+      journeyLastScrollY = top;
+      lastReadScrollY = top;
+    }
+  };
+
+  const skipBackBtn = $('#journeySkipBack');
+  const skipFwdBtn = $('#journeySkipForward');
+  if (skipBackBtn) skipBackBtn.addEventListener('click', skipJourneyBack);
+  if (skipFwdBtn) skipFwdBtn.addEventListener('click', skipJourneyForward);
+
   addEventListener('wheel', e => {
     if (!journeyChapter || reduced) return;
+    if (journeyBypass) return;
     if (journeyExiting) {
       e.preventDefault();
       return;
@@ -732,11 +820,12 @@
     if (!journeyCtrl.isArmed() && !journeyReleased) {
       journeyCtrl.setArmed(true);
       journeyHoldP = journeyVisibleP();
-      snapJourneyScroll(journeyHoldP);
+      if (!scrollDirectionUp) snapJourneyScroll(journeyHoldP);
     }
 
     const holdActive = shouldHoldJourneyScroll();
-    const result = journeyCtrl.handleWheel(e.deltaY);
+    const fastRewind = scrollDirectionUp && e.deltaY < 0;
+    const result = journeyCtrl.handleWheel(e.deltaY, { fastRewind });
     if (result.consumed) {
       e.preventDefault();
       if (journeyHoldP != null) snapJourneyScroll(journeyHoldP);
@@ -762,6 +851,10 @@
 
   addEventListener('scroll', () => {
     if (!journeyChapter || reduced) return;
+    if (journeyBypass) {
+      journeyLastScrollY = scrollY;
+      return;
+    }
     if (journeyExiting || journeyReleased) return;
     const inRange = p >= journeyChapter.a && p <= journeyChapter.b;
     if (inRange && journeyFullyVisible() && journeyCtrl.isArmed() && shouldHoldJourneyScroll()) {
@@ -1006,7 +1099,7 @@
         target = visP;
       }
 
-      if (inRange && fullyVisible && !journeyReleased && !journeyExiting) {
+      if (inRange && fullyVisible && !journeyReleased && !journeyExiting && !journeyBypass) {
         if (!journeyCtrl.isArmed()) {
           journeyCtrl.setArmed(true);
           journeyHoldP = visP;
@@ -1017,6 +1110,9 @@
           snapJourneyScroll(journeyHoldP);
           target = journeyHoldP;
         }
+      } else if (journeyBypass && inRange) {
+        journeyCtrl.setArmed(false);
+        journeyHoldP = null;
       } else if (p < journeyChapterTick.a - 0.008) {
         journeyCtrl.setArmed(false);
         journeyCtrl.resetToStart();

@@ -29,7 +29,7 @@ body {
 }
 
 .arrival-section {
-  padding: clamp(72px, 8vw, 108px) 0 clamp(40px, 5vw, 64px);
+  padding: clamp(72px, 8vw, 108px) 0 clamp(28px, 4vw, 40px);
   background: transparent;
 }
 
@@ -42,6 +42,13 @@ body {
   border: none;
   box-shadow: none;
   backdrop-filter: none;
+}
+
+.arrival-cta {
+  width: min(1320px, calc(100vw - clamp(32px, 4vw, 56px)));
+  max-width: 100%;
+  margin: clamp(28px, 4vw, 40px) auto 0;
+  padding: 0;
 }
 
 .scroll-tail-hint {
@@ -2094,19 +2101,141 @@ html.flat .panel {
 
 .bbj--inline .jp-popup {
   position: absolute;
-  /* pulled in from the panel's far edge so it sits closer to the route
-     path instead of stranded out on the right with dead space between */
-  right: 6%;
+  right: 4%;
   top: 50%;
   transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
+  width: min(212px, 34vw, calc(62vh * 0.469));
   opacity: 1;
-  pointer-events: auto;
-  max-width: 280px;
+  pointer-events: none;
   z-index: 4;
+}
+
+.bbj--inline .jp-popup > * {
+  pointer-events: auto;
+}
+
+/* Cinematic cloud bubble — top-left of phone mockup */
+.bbj--inline .jp-speech {
+  position: absolute;
+  right: calc(100% - 18px);
+  top: -28px;
+  width: min(348px, 38vw);
+  min-height: 168px;
+  margin: 0;
+  padding: 34px 38px 30px 34px;
+  z-index: 6;
+  background: transparent;
+  animation: jpSpeechFloat 6s ease-in-out infinite;
+}
+
+.bbj--inline .jp-speech__cloud {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, .42));
+}
+
+.bbj--inline .jp-speech__inner {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  text-align: left;
+  overflow: visible;
+  transition: opacity .32s ease, transform .32s cubic-bezier(.2, .8, .2, 1), filter .32s ease;
+}
+
+.bbj--inline .jp-speech__scan {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 2;
+  opacity: .28;
+  border-radius: 0;
+}
+
+.bbj--inline .jp-speech__inner::before {
+  display: none;
+}
+
+.bbj--inline .jp-speech__scan::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40%;
+  top: -45%;
+  background: linear-gradient(180deg, transparent, rgba(23, 214, 238, .12), transparent);
+  animation: jpSpeechScan 4.5s ease-in-out infinite;
+}
+
+.bbj--inline .jp-speech.is-updating .jp-speech__inner {
+  opacity: .72;
+  transform: scale(.985) translateY(2px);
+  filter: blur(1px);
+}
+
+.bbj--inline .jp-speech__tail {
+  position: absolute;
+  right: 8%;
+  bottom: -6px;
+  top: auto;
+  transform: translate(72%, 58%);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 4px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.bbj--inline .jp-speech__tail span {
+  display: block;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(16, 26, 42, .98), rgba(8, 12, 22, .94));
+  border: 1px solid rgba(130, 170, 215, .2);
+  box-shadow: 0 0 12px rgba(53, 226, 198, .08);
+}
+
+.bbj--inline .jp-speech__tail span:nth-child(1) {
+  width: 13px;
+  height: 13px;
+}
+
+.bbj--inline .jp-speech__tail span:nth-child(2) {
+  width: 9px;
+  height: 9px;
+  margin-bottom: -5px;
+  opacity: .9;
+}
+
+.bbj--inline .jp-speech__tail span:nth-child(3) {
+  width: 5px;
+  height: 5px;
+  margin-bottom: -11px;
+  opacity: .7;
+}
+
+@keyframes jpSpeechFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes jpSpeechScan {
+  0%, 100% { top: -45%; opacity: 0; }
+  15% { opacity: 1; }
+  55% { top: 105%; opacity: .6; }
 }
 
 .bbj--inline .journey-divider {
@@ -2115,12 +2244,15 @@ html.flat .panel {
 
 .bbj--inline .phone-frame {
   justify-self: center;
+  flex: none;
+  position: relative;
+  z-index: 4;
+  width: 100%;
 }
 
 .bbj--inline .phone-rim {
   position: relative;
-  /* 0.469 = 9/19.2, the frame's aspect — so the vh term caps its height */
-  width: min(212px, 34vw, calc(62vh * 0.469));
+  width: 100%;
   aspect-ratio: 9 / 19.2;
   border-radius: 24px;
   padding: 2px;
@@ -2236,39 +2368,49 @@ html.flat .panel {
   margin: 0;
 }
 
-.bbj--inline .jp-copy {
-  text-align: center;
+.bbj--inline .jp-speech .jp-kicker,
+.bbj--inline .jp-speech .jp-title,
+.bbj--inline .jp-speech .jp-body,
+.bbj--inline .jp-speech .jp-dots {
+  position: relative;
+  z-index: 4;
 }
 
-.bbj--inline .jp-copy .jp-kicker {
+.bbj--inline .jp-speech .jp-kicker {
   font-family: var(--bbj-mono);
-  font-size: 11px;
-  letter-spacing: .18em;
+  font-size: 10.5px;
+  letter-spacing: .14em;
   text-transform: uppercase;
   color: var(--bbj-gold);
-  margin: 0 0 4px;
+  margin: 0 0 7px;
 }
 
-.bbj--inline .jp-copy h3 {
+.bbj--inline .jp-speech .jp-title {
   font-family: var(--bbj-disp);
-  font-size: clamp(16px, 1.3vw, 20px);
-  font-weight: 650;
-  margin: 0 0 4px;
+  font-size: clamp(17px, 1.4vw, 20px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.22;
+  color: #f4f8fc;
+  margin: 0 0 7px;
 }
 
-.bbj--inline .jp-copy p {
-  font-size: clamp(12px, .85vw, 13.5px);
+.bbj--inline .jp-speech .jp-body {
+  font-family: var(--bbj-body);
+  font-size: clamp(12px, .85vw, 13px);
   color: var(--bbj-muted);
-  line-height: 1.44;
-  max-width: 24ch;
-  margin: 0 auto;
+  line-height: 1.5;
+  margin: 0;
+  max-width: none;
 }
 
 .bbj--inline .jp-dots {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
-  margin-top: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(130, 170, 215, .1);
 }
 
 .bbj--inline .jp-dots i {
@@ -2324,6 +2466,52 @@ html.flat .panel {
 
 .bbj--inline .jp-legend li.is-active b {
   color: var(--bbj-teal);
+}
+
+/* Journey skip — escape hatch without stepping every screenshot */
+.journey-skip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(130, 170, 215, .08);
+}
+
+.journey-skip__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35em;
+  padding: 0.55em 1.15em;
+  border-radius: 999px;
+  border: 1px solid rgba(130, 170, 215, .22);
+  background: rgba(255, 255, 255, .03);
+  color: #c8d4e0;
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.journey-skip__btn:hover {
+  color: #fff;
+  border-color: rgba(23, 214, 238, .35);
+  background: rgba(23, 214, 238, .06);
+}
+
+.journey-skip__btn--fwd {
+  border-color: rgba(23, 214, 238, .28);
+  color: #eef8fc;
+}
+
+.journey-skip__btn--fwd:hover {
+  background: rgba(23, 214, 238, .1);
+  border-color: rgba(23, 214, 238, .45);
 }
 
 /* decision flow compact */
@@ -2449,6 +2637,24 @@ html.flat .panel {
 
 .panel--faq .sec-header {
   margin-bottom: 34px;
+  text-align: center;
+}
+
+.panel--faq .sec-header h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  color: #f2f7fc;
+}
+
+.panel--faq .sec-lead {
+  font-family: var(--font);
+  font-size: clamp(0.98rem, 1.2vw, 1.0625rem);
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 0.85rem;
 }
 
 /* FAQ / arrival — flat neon cyan only (no cyan→violet mix) */
@@ -2465,17 +2671,20 @@ html.flat .panel {
   background: rgba(23, 214, 238, .1);
 }
 
-.panel--faq .faq-final .btn--primary {
+.faq-final .btn--primary {
   background: var(--cyan);
-  box-shadow: none;
-  border: 1px solid rgba(255, 255, 255, .12);
+  box-shadow: 0 0 28px rgba(23, 214, 238, .28);
+  border: 1px solid rgba(255, 255, 255, .14);
+  color: #04121a;
+  font-weight: 700;
+  min-width: 148px;
 }
 
-.panel--faq .faq-final .btn--primary:hover {
-  box-shadow: none;
+.faq-final .btn--primary:hover {
+  box-shadow: 0 0 36px rgba(23, 214, 238, .38);
   transform: none;
   background: #2de4f7;
-  border-color: rgba(255, 255, 255, .2);
+  border-color: rgba(255, 255, 255, .22);
   filter: none;
 }
 
@@ -2508,10 +2717,10 @@ html.flat .panel {
   justify-content: space-between;
   gap: 1rem;
   list-style: none;
-  font-family: var(--font-display);
-  font-size: 1rem;
+  font-family: var(--font);
+  font-size: 0.9375rem;
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.01em;
   color: #eef4fa;
 }
 
@@ -2546,47 +2755,76 @@ html.flat .panel {
 .faq-item p {
   padding: 0 1.2em 1.15em;
   color: #9eb2c9;
+  font-family: var(--font);
   font-size: 0.9375rem;
+  font-weight: 400;
   line-height: 1.65;
 }
 
-/* Closing CTA — set apart as its own quiet card so it reads as the
-   section's destination rather than another list item */
+/* Closing CTA — full-width card, neon glow, real bot mark */
 .faq-final {
-  margin-top: 34px;
-  padding: 34px 30px;
-  border-radius: 20px;
-  border: 1px solid var(--line);
-  background: linear-gradient(165deg, rgba(20, 30, 48, .55), rgba(8, 12, 20, .55));
+  position: relative;
+  width: 100%;
+  margin: 0;
+  padding: clamp(52px, 6.5vw, 72px) clamp(32px, 5vw, 56px);
+  border-radius: clamp(22px, 2.5vw, 32px);
+  border: 1px solid rgba(130, 170, 215, .12);
+  background:
+    linear-gradient(180deg, rgba(10, 16, 28, .98) 0%, rgba(5, 8, 14, .98) 100%);
   text-align: center;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(23, 214, 238, .04) inset,
+    0 24px 80px -32px rgba(0, 0, 0, .65);
+}
+
+.faq-final__glow {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 72% 55% at 50% -8%, rgba(23, 214, 238, .22), transparent 58%),
+    radial-gradient(ellipse 48% 40% at 50% 0%, rgba(125, 92, 255, .14), transparent 62%),
+    radial-gradient(ellipse 90% 50% at 50% 100%, rgba(23, 214, 238, .04), transparent 70%);
+  pointer-events: none;
+}
+
+.faq-final__title {
+  position: relative;
+  margin: 0 auto 1.75rem;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  line-height: 1.12;
+  color: #f8fbff;
 }
 
 .faq-final .btnrow {
+  position: relative;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-.risk2 {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 8px;
-  max-width: 52ch;
-  margin: 20px auto 0;
-  font: 10.5px var(--mono);
-  color: var(--muted-2);
-  line-height: 1.7;
-  text-align: left;
+.faq-final .btn--ghost {
+  border-color: rgba(130, 170, 215, .32);
+  color: #eef4fa;
+  background: rgba(255, 255, 255, .02);
+  min-width: 168px;
 }
 
-.risk2 .i {
-  width: 14px;
-  height: 14px;
-  margin-top: 2px;
-  flex: none;
+.faq-final__note {
+  position: relative;
+  max-width: 52ch;
+  margin: 1.5rem auto 0;
+  font-family: var(--font);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.65;
   color: var(--muted-2);
+  text-align: center;
 }
 
 /* permission chips */
@@ -4056,8 +4294,17 @@ html.flat .jbar {
     grid-template-columns: 1fr;
   }
 
+  .arrival-cta {
+    width: calc(100vw - clamp(24px, 6vw, 40px));
+  }
+
   .faq-final {
-    padding: 28px 22px;
+    padding: 44px 24px;
+    border-radius: 22px;
+  }
+
+  .faq-final__title {
+    max-width: none;
   }
 
   .trust-viz__img {
@@ -4116,10 +4363,23 @@ html.flat .jbar {
     right: auto;
     top: auto;
     transform: none;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-    max-width: none;
+    width: min(150px, 36vw);
+    margin: 0 auto;
+  }
+
+  .bbj--inline .jp-speech {
+    right: calc(100% - 12px);
+    top: -12px;
+    width: min(288px, 82vw);
+    min-height: 148px;
+    padding: 28px 30px 24px 26px;
+    animation: none;
+  }
+
+  .bbj--inline .jp-speech__tail {
+    right: 6%;
+    bottom: -4px;
+    transform: translate(68%, 52%);
   }
 
   .bbj--inline .journey-divider {
@@ -4127,20 +4387,15 @@ html.flat .jbar {
   }
 
   .bbj--inline .phone-rim {
-    width: min(150px, 36vw);
+    width: 100%;
   }
 
-  .bbj--inline .jp-copy {
-    text-align: left;
-  }
-
-  .bbj--inline .jp-copy h3 {
+  .bbj--inline .jp-speech .jp-title {
     font-size: 18px;
   }
 
-  .bbj--inline .jp-copy p {
+  .bbj--inline .jp-speech .jp-body {
     font-size: 13.5px;
-    max-width: none;
   }
 
   .bbj--inline .jp-dots {
@@ -4458,13 +4713,15 @@ html.flat .jbar {
   .trust-viz__img,
   .trust-viz::before,
   .trust-orbit,
-  .bcard {
+  .bcard,
+  .bbj--inline .jp-speech,
+  .bbj--inline .jp-speech__scan::after {
     animation: none;
     transition: none;
   }
 }
 
-/* ===== SITE FOOTER (inside scroll tail — plain bg only here) ===== */
+/* ===== SITE FOOTER (inside scroll tail — compact, elegant) ===== */
 html.cine .scroll-tail .site-footer {
   position: relative;
   z-index: 23;
@@ -4472,6 +4729,7 @@ html.cine .scroll-tail .site-footer {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  padding-top: clamp(28px, 3.5vw, 36px);
   background:
     linear-gradient(180deg, #0b1220 0%, #070c14 55%, #060a12 100%);
   border-top: none;

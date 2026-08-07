@@ -13,7 +13,7 @@ export default function TrustChapter() {
       </div>
       <div className="trust-viz">
         <img className="trust-viz__img" src="/images/trustblue2.png"
-          alt="ByteBoom — non-custodial trading on your Binance account" width="1509" height="941" decoding="async" />
+          alt="ByteBoom — connected to your exchange, never in control of it" width="1509" height="941" decoding="async" />
         <span className="trust-orbit trust-orbit--nw">Non-custodial</span>
         <span className="trust-orbit trust-orbit--w">Your funds</span>
         <span className="trust-orbit trust-orbit--sw">Trade only</span>
