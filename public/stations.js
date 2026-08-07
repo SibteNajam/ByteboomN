@@ -568,9 +568,19 @@
   let journeyExitTarget = null;
   let journeyHoldP = null;
   let journeyLastScrollY = 0;
+  let lastReadScrollY = 0;
+  let scrollDirectionUp = false;
+
+  const clearJourneyRelease = () => {
+    journeyReleased = false;
+    journeyExitTarget = null;
+    journeyExiting = false;
+  };
+
   const readScroll = () => {
     if (journeyExiting) return;
     const max = cineScrollMax();
+    scrollDirectionUp = scrollY < lastReadScrollY - 1;
     let next;
     if (scrollY <= max) {
       next = Math.max(0, Math.min(1, scrollY / Math.max(max, 1)));
@@ -579,14 +589,24 @@
       next = 1;
       root.classList.add('tail-mode');
     }
+    const journeyCh = chapters.find(c => c.el.id === 'journeynode');
     if (journeyReleased && journeyExitTarget != null) {
-      next = Math.max(journeyExitTarget, next);
-      const minScroll = journeyExitTarget * max;
-      if (scrollY < minScroll - 2) {
-        scrollTo({ top: minScroll, behavior: 'auto' });
+      const exitScroll = journeyExitTarget * max;
+      if (scrollDirectionUp && (next < journeyExitTarget || scrollY < exitScroll - 1)) {
+        clearJourneyRelease();
+      } else if (!scrollDirectionUp) {
+        next = Math.max(journeyExitTarget, next);
+        if (scrollY < exitScroll - 2) {
+          scrollTo({ top: exitScroll, behavior: 'auto' });
+        }
       }
     }
+    if (!journeyReleased && journeyCh && scrollDirectionUp && next < journeyCh.a - 0.008) {
+      clearJourneyRelease();
+      journeyHoldP = null;
+    }
     target = next;
+    lastReadScrollY = scrollY;
   };
   addEventListener('scroll', readScroll, { passive: true }); readScroll();
 
@@ -661,6 +681,8 @@
   const shouldHoldJourneyScroll = () => {
     if (!journeyChapter || !journeyCtrl.isArmed()) return false;
     if (journeyReleased) return false;
+    const visP = journeyVisibleP();
+    if (scrollDirectionUp && p > visP + 0.012) return false;
     return true;
   };
 
@@ -728,9 +750,7 @@
     if (result.atStart && e.deltaY < 0) {
       journeyCtrl.setArmed(false);
       journeyCtrl.resetToStart();
-      journeyReleased = false;
-      journeyExiting = false;
-      journeyExitTarget = null;
+      clearJourneyRelease();
       journeyHoldP = null;
       return;
     }
@@ -990,7 +1010,9 @@
         if (!journeyCtrl.isArmed()) {
           journeyCtrl.setArmed(true);
           journeyHoldP = visP;
-          snapJourneyScroll(journeyHoldP);
+          if (!scrollDirectionUp || p <= visP + 0.015) {
+            snapJourneyScroll(journeyHoldP);
+          }
         } else if (shouldHoldJourneyScroll() && journeyHoldP != null) {
           snapJourneyScroll(journeyHoldP);
           target = journeyHoldP;
@@ -999,9 +1021,7 @@
         journeyCtrl.setArmed(false);
         journeyCtrl.resetToStart();
         journeyHoldP = null;
-        journeyReleased = false;
-        journeyExiting = false;
-        journeyExitTarget = null;
+        clearJourneyRelease();
       } else if (p > journeyChapterTick.b + 0.008) {
         journeyHoldP = null;
         if (journeyReleased || journeyCtrl.isCompleted()) {
