@@ -15,7 +15,6 @@ export default function ScrollTail() {
         <div className="panel panel--faq">
 
       <div className="sec-header">
-        <span className="sec-tag">Arrival</span>
         <h2>Ready to put ByteBoom to work <span className="grad">on your Binance account?</span></h2>
         <p className="sec-lead">A few straight answers, then you're in control.</p>
       </div>

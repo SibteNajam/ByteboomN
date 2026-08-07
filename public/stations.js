@@ -442,7 +442,7 @@
           pathProgress = pathTo;
           paintStep(currentStep, pathProgress);
         }
-      } else if (armed || completed) {
+      } else if (armed || completed || currentStep > 0) {
         paintStep(currentStep, pathProgress);
       } else {
         paintStep(0, STOPS[0].at);
@@ -465,11 +465,14 @@
         armed = on;
         wheelLocked = false;
         if (on) {
-          completed = false;
-          goToStep(0, false);
+          if (completed) completed = false;
         } else if (!completed) {
           goToStep(0, false);
         }
+      },
+      resetToStart() {
+        completed = false;
+        goToStep(0, false);
       },
       releaseAtEnd() {
         armed = false;
@@ -560,7 +563,9 @@
 
   /* ---------- scroll ---------- */
   let target = 0, p = 0;
+  let journeyExiting = false;
   const readScroll = () => {
+    if (journeyExiting) return;
     const max = cineScrollMax();
     if (scrollY <= max) {
       target = Math.max(0, Math.min(1, scrollY / Math.max(max, 1)));
@@ -645,7 +650,7 @@
   const shouldHoldJourneyScroll = () => {
     if (!journeyChapter || !journeyCtrl.isArmed()) return false;
     if (journeyReleased) return false;
-    return journeyCtrl.getStep() < journeyCtrl.STOP_COUNT - 1 || journeyCtrl.isAnimating();
+    return true;
   };
 
   const journeyExitP = () => {
@@ -658,17 +663,34 @@
     return journeyChapter.b + 0.02;
   };
 
-  const advancePastJourney = () => {
+  const releaseJourneyForward = () => {
+    if (journeyReleased || journeyExiting) return;
+    journeyReleased = true;
+    journeyHoldP = null;
+    journeyCtrl.releaseAtEnd();
+    beginJourneyExit();
+  };
+
+  const beginJourneyExit = () => {
     const exitP = journeyExitP();
-    const exitScroll = exitP * cineScrollMax();
-    scrollTo({ top: exitScroll, behavior: 'auto' });
+    if (reduced) {
+      target = exitP;
+      p = exitP;
+      const exitScroll = exitP * cineScrollMax();
+      scrollTo({ top: exitScroll, behavior: 'auto' });
+      journeyLastScrollY = exitScroll;
+      return;
+    }
+    journeyExiting = true;
     target = exitP;
-    p = exitP;
-    journeyLastScrollY = exitScroll;
   };
 
   addEventListener('wheel', e => {
     if (!journeyChapter || reduced) return;
+    if (journeyExiting) {
+      e.preventDefault();
+      return;
+    }
     if (journeyReleased) return;
     const inRange = p >= journeyChapter.a && p <= journeyChapter.b;
     if (!inRange || !journeyFullyVisible()) return;
@@ -687,15 +709,13 @@
       return;
     }
     if (result.atEnd && e.deltaY > 0) {
-      journeyReleased = true;
-      journeyHoldP = null;
-      journeyCtrl.releaseAtEnd();
-      advancePastJourney();
+      e.preventDefault();
+      releaseJourneyForward();
       return;
     }
     if (result.atStart && e.deltaY < 0) {
       journeyCtrl.setArmed(false);
-      journeyCtrl.resetCompleted();
+      journeyCtrl.resetToStart();
       journeyReleased = false;
       journeyHoldP = null;
       return;
@@ -715,10 +735,7 @@
       if (Math.abs(delta) > 12 && !journeyCtrl.isLocked() && !journeyCtrl.isAnimating()) {
         const result = journeyCtrl.handleWheel(delta);
         if (result.atEnd && delta > 0) {
-          journeyReleased = true;
-          journeyHoldP = null;
-          journeyCtrl.releaseAtEnd();
-          advancePastJourney();
+          releaseJourneyForward();
         }
       }
     }
@@ -886,7 +903,22 @@
     requestAnimationFrame(tick);
     if (!stage || !stage.isConnected) return;
     const t = clock.getElapsedTime();
-    p += (target - p) * 0.1; if (Math.abs(target - p) < 0.0004) p = target;   // a touch snappier
+    p += (target - p) * 0.1; if (Math.abs(target - p) < 0.0004) p = target;
+
+    if (journeyExiting) {
+      const syncScroll = p * cineScrollMax();
+      if (Math.abs(scrollY - syncScroll) > 2) {
+        scrollTo({ top: syncScroll, behavior: 'auto' });
+      }
+      journeyLastScrollY = syncScroll;
+      if (Math.abs(p - target) < 0.0006) {
+        journeyExiting = false;
+        const finalScroll = target * cineScrollMax();
+        scrollTo({ top: finalScroll, behavior: 'auto' });
+        journeyLastScrollY = finalScroll;
+      }
+    }
+
     const u = routeU(p);
 
     getPt(u, cam.position); cam.position.y += Math.sin(t * .8) * .05;
@@ -948,13 +980,15 @@
         }
       } else if (p < journeyChapterTick.a - 0.008) {
         journeyCtrl.setArmed(false);
-        journeyCtrl.resetCompleted();
+        journeyCtrl.resetToStart();
         journeyHoldP = null;
         journeyReleased = false;
+        journeyExiting = false;
       } else if (p > journeyChapterTick.b + 0.008) {
-        journeyCtrl.setArmed(false);
         journeyHoldP = null;
-        journeyReleased = false;
+        if (journeyReleased || journeyCtrl.isCompleted()) {
+          journeyCtrl.setArmed(false);
+        }
       }
 
       journeyCtrl.tick();

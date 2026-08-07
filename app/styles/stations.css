@@ -2663,7 +2663,7 @@ html.flat .panel {
   font-size: clamp(28px, 3vw, 42px);
   font-weight: 700;
   letter-spacing: -0.02em;
-  margin-top: 10px;
+  margin-top: 0;
 }
 
 .pricing-head .kicker {
@@ -3104,20 +3104,35 @@ html.cine .pricing-grid .pcard.is-active {
 }
 
 /* ---- Financial Security Section ---- */
+#securitynode.chapter--security {
+  justify-content: flex-start;
+  align-items: center;
+  padding: clamp(148px, 16vh, 172px) 6vw clamp(52px, 8vh, 72px);
+}
+
 .chapter--security {
-  justify-content: center;
-  align-items: flex-start;
-  padding: 72px 6vw 80px;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .chapter[data-side="center"] .panel--security {
   width: min(1200px, 94vw);
   max-width: 1200px;
-  padding: 0;
+  padding: clamp(8px, 1.5vh, 16px) 0 0;
   background: none;
   border: none;
   box-shadow: none;
   backdrop-filter: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: clamp(14px, 2vh, 24px);
+  max-height: none;
+}
+
+#securitynode .sec-header {
+  margin-top: 0;
+  padding-top: clamp(12px, 2vh, 20px);
 }
 
 .panel--security::before {
@@ -3126,7 +3141,8 @@ html.cine .pricing-grid .pcard.is-active {
 
 /* Header */
 .sec-header {
-  margin-bottom: 14px;
+  margin-bottom: clamp(16px, 2.2vh, 24px);
+  padding-top: clamp(4px, 1vh, 12px);
   text-align: center;
 }
 
@@ -3243,7 +3259,7 @@ html.cine .pricing-grid .pcard.is-active {
   gap: 20px 56px;
   justify-content: center;
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: clamp(12px, 2vh, 20px);
 }
 
 .sec-stack .sec-item--featured {
@@ -3896,9 +3912,14 @@ html.flat .jbar {
   }
 
   #trustnode.chapter--trust,
-  #productnode.chapter--bots {
+  #productnode.chapter--bots,
+  #securitynode.chapter--security {
     align-items: center;
     padding-bottom: 6vh;
+  }
+
+  #securitynode.chapter--security {
+    padding-top: clamp(104px, 12vh, 124px);
   }
 
   #trustnode .panel--trust,
@@ -4281,9 +4302,9 @@ html.flat .jbar {
 
   #securitynode.chapter--security {
     align-items: center;
-    justify-content: center;
-    padding-top: 52px;
-    padding-bottom: 5vh;
+    justify-content: flex-start;
+    padding-top: clamp(112px, 18vw, 132px);
+    padding-bottom: clamp(44px, 9vh, 64px);
   }
 
   html.cine #securitynode .sec-header {

@@ -12,7 +12,6 @@ export default function PricingChapter() {
     >
       <div className="panel panel--pricing">
         <div className="pricing-head">
-          <span className="kicker">Node 04 · Pricing</span>
           <h2>
             Choose your <span className="grad">trading plan</span>
           </h2>

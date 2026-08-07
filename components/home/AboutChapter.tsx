@@ -8,7 +8,7 @@ export default function AboutChapter() {
 
       <div className="sec-header">
         <h2>Discipline, <span className="grad">engineered</span> — not adrenaline, promised.</h2>
-        <p className="sec-lead">Rules-based execution on <b className="hl hl--cyan">your own Binance account</b> — your funds
+        <p className="sec-lead">Autonomous execution on <b className="hl hl--cyan">your own Binance account</b> — your funds
           <b className="hl hl--green">never leave your control</b>.</p>
       </div>
 
@@ -25,7 +25,7 @@ export default function AboutChapter() {
               <use href="#i-bolt" />
             </svg><span className="about-step__num">02</span></div>
           <h3>The idea</h3>
-          <p>Replace reaction with rules — act <b className="hl hl--cyan">only when criteria are met</b>.</p>
+          <p>Replace reaction with AI — act <b className="hl hl--cyan">only when signals align</b>.</p>
         </div>
         <div className="about-step">
           <div className="about-step__icon about-step__icon--green"><svg className="i">

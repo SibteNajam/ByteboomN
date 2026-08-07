@@ -7,7 +7,6 @@ export default function TrustChapter() {
     data-dir="right" data-exit="into">
     <div className="panel panel--trust">
       <div className="sec-header trust-head">
-        <span className="sec-tag">Non-custodial by design</span>
         <h2>Connected to your exchange. Never in control of it.</h2>
         <p className="sec-lead">One restricted API key with trade permission only. ByteBoom opens and closes positions —
           it can never withdraw, transfer, or move your coins. Pause or unlink in a single click.</p>
