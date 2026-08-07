@@ -564,16 +564,29 @@
   /* ---------- scroll ---------- */
   let target = 0, p = 0;
   let journeyExiting = false;
+  let journeyReleased = false;
+  let journeyExitTarget = null;
+  let journeyHoldP = null;
+  let journeyLastScrollY = 0;
   const readScroll = () => {
     if (journeyExiting) return;
     const max = cineScrollMax();
+    let next;
     if (scrollY <= max) {
-      target = Math.max(0, Math.min(1, scrollY / Math.max(max, 1)));
+      next = Math.max(0, Math.min(1, scrollY / Math.max(max, 1)));
       root.classList.remove('tail-mode');
     } else {
-      target = 1;
+      next = 1;
       root.classList.add('tail-mode');
     }
+    if (journeyReleased && journeyExitTarget != null) {
+      next = Math.max(journeyExitTarget, next);
+      const minScroll = journeyExitTarget * max;
+      if (scrollY < minScroll - 2) {
+        scrollTo({ top: minScroll, behavior: 'auto' });
+      }
+    }
+    target = next;
   };
   addEventListener('scroll', readScroll, { passive: true }); readScroll();
 
@@ -622,9 +635,6 @@
      Hold page scroll while the section is active; wheel nominates the next
      beat. Animation waits until the panel is fully opaque (not mid-fade). */
   const journeyChapter = chapters.find(c => c.el.id === 'journeynode');
-  let journeyHoldP = null;
-  let journeyReleased = false;
-  let journeyLastScrollY = 0;
 
   const journeyVisibleP = () => {
     if (!journeyChapter) return 1;
@@ -638,6 +648,7 @@
   };
 
   const snapJourneyScroll = holdP => {
+    if (journeyExiting || journeyReleased) return;
     const holdScroll = holdP * cineScrollMax();
     if (Math.abs(scrollY - holdScroll) > 3) {
       scrollTo({ top: holdScroll, behavior: 'auto' });
@@ -667,12 +678,13 @@
     if (journeyReleased || journeyExiting) return;
     journeyReleased = true;
     journeyHoldP = null;
+    journeyExitTarget = journeyExitP();
     journeyCtrl.releaseAtEnd();
     beginJourneyExit();
   };
 
   const beginJourneyExit = () => {
-    const exitP = journeyExitP();
+    const exitP = journeyExitTarget != null ? journeyExitTarget : journeyExitP();
     if (reduced) {
       target = exitP;
       p = exitP;
@@ -717,6 +729,8 @@
       journeyCtrl.setArmed(false);
       journeyCtrl.resetToStart();
       journeyReleased = false;
+      journeyExiting = false;
+      journeyExitTarget = null;
       journeyHoldP = null;
       return;
     }
@@ -728,7 +742,7 @@
 
   addEventListener('scroll', () => {
     if (!journeyChapter || reduced) return;
-    if (journeyReleased) return;
+    if (journeyExiting || journeyReleased) return;
     const inRange = p >= journeyChapter.a && p <= journeyChapter.b;
     if (inRange && journeyFullyVisible() && journeyCtrl.isArmed() && shouldHoldJourneyScroll()) {
       const delta = scrollY - journeyLastScrollY;
@@ -912,8 +926,11 @@
       }
       journeyLastScrollY = syncScroll;
       if (Math.abs(p - target) < 0.0006) {
+        const exitP = journeyExitTarget != null ? journeyExitTarget : target;
         journeyExiting = false;
-        const finalScroll = target * cineScrollMax();
+        p = exitP;
+        target = exitP;
+        const finalScroll = exitP * cineScrollMax();
         scrollTo({ top: finalScroll, behavior: 'auto' });
         journeyLastScrollY = finalScroll;
       }
@@ -964,13 +981,13 @@
       const fullyVisible = fadeWindow(p, journeyChapterTick.a, journeyChapterTick.b) >= 0.98;
       const visP = journeyVisibleP();
 
-      if (p >= journeyChapterTick.a && !fullyVisible && !journeyReleased && p > visP + 0.004) {
+      if (!journeyReleased && !journeyExiting && p >= journeyChapterTick.a && !fullyVisible && p > visP + 0.004) {
         snapJourneyScroll(visP);
         target = visP;
       }
 
-      if (inRange && fullyVisible) {
-        if (!journeyCtrl.isArmed() && !journeyReleased) {
+      if (inRange && fullyVisible && !journeyReleased && !journeyExiting) {
+        if (!journeyCtrl.isArmed()) {
           journeyCtrl.setArmed(true);
           journeyHoldP = visP;
           snapJourneyScroll(journeyHoldP);
@@ -984,6 +1001,7 @@
         journeyHoldP = null;
         journeyReleased = false;
         journeyExiting = false;
+        journeyExitTarget = null;
       } else if (p > journeyChapterTick.b + 0.008) {
         journeyHoldP = null;
         if (journeyReleased || journeyCtrl.isCompleted()) {
