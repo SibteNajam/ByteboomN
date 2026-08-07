@@ -331,12 +331,6 @@
       popup.classList.add('is-open');
     };
     const syncCopy = stop => syncLegendGroup(stop.groupId);
-    const legendGroupFor = (pLocal, stop) => {
-      if (stop.groupId !== 5 || pLocal < 0.88) return stop.groupId;
-      if (pLocal >= 0.96) return 7;
-      if (pLocal >= 0.92) return 6;
-      return 5;
-    };
     const showImmediate = (el, src, alt) => {
       if (!el) return;
       el.classList.remove('is-enter', 'is-exit', 'is-show');
@@ -389,23 +383,20 @@
     };
 
     const BEATS = STOPS.map((stop, idx) => ({ stop, idx }));
-    const targetGi = pNow => clamp(Math.floor(pNow * STOP_COUNT), 0, STOP_COUNT - 1);
-
-    const resolvePath = pNow => {
-      const f = pNow * (STOP_COUNT - 1);
-      const idx = clamp(Math.floor(f), 0, STOP_COUNT - 2);
-      const local = f - idx;
-      const a = STOPS[idx].at;
-      const b = STOPS[idx + 1].at;
-      const stopIdx = clamp(Math.round(f), 0, STOP_COUNT - 1);
-      return { stop: STOPS[stopIdx], path: a + local * (b - a) };
-    };
 
     STOPS.forEach(s => { if (s.mock) { const im = new Image(); im.src = mockSrc(s.mock); } });
 
-    const MIN_DWELL_MS = reduced ? 0 : 750;
-    let shownGI = 0;
-    let dwellUntil = 0;
+    const STEP_MS = reduced ? 0 : 620;
+    const WHEEL_LOCK_MS = reduced ? 0 : 1100;
+    let currentStep = 0;
+    let pathProgress = STOPS[0].at;
+    let pathFrom = pathProgress;
+    let pathTo = pathProgress;
+    let pathT0 = 0;
+    let pathAnimating = false;
+    let armed = false;
+    let wheelLocked = false;
+    let completed = false;
 
     const paintPath = path => {
       lit.style.strokeDashoffset = String(len * (1 - path));
@@ -413,37 +404,110 @@
       bot.setAttribute('transform', `translate(${pt.x},${pt.y})`);
     };
 
-    const showScreenshot = gi => {
-      const beat = BEATS[gi];
-      syncCopy(beat.stop);
-      applyFrame(beat.stop, !reduced);
+    const paintStep = (idx, path) => {
+      paintPath(path);
+      const beat = BEATS[idx];
+      syncMarkers(beat.stop, beat.stop.groupId);
     };
 
-    showScreenshot(0);
-    dwellUntil = performance.now() + MIN_DWELL_MS;
+    const goToStep = (idx, animate) => {
+      idx = clamp(idx, 0, STOP_COUNT - 1);
+      const beat = BEATS[idx];
+      const targetPath = beat.stop.at;
+      currentStep = idx;
+      if (animate && !reduced) {
+        pathFrom = pathProgress;
+        pathTo = targetPath;
+        pathT0 = performance.now();
+        pathAnimating = true;
+      } else {
+        pathProgress = targetPath;
+        pathAnimating = false;
+        paintStep(idx, pathProgress);
+      }
+      syncCopy(beat.stop);
+      applyFrame(beat.stop, animate && !reduced);
+      if (!pathAnimating) paintStep(idx, pathProgress);
+    };
+
+    const tick = () => {
+      if (pathAnimating) {
+        const now = performance.now();
+        const t = clamp((now - pathT0) / STEP_MS, 0, 1);
+        const eased = t * t * (3 - 2 * t);
+        pathProgress = pathFrom + (pathTo - pathFrom) * eased;
+        paintStep(currentStep, pathProgress);
+        if (t >= 1) {
+          pathAnimating = false;
+          pathProgress = pathTo;
+          paintStep(currentStep, pathProgress);
+        }
+      } else if (armed || completed) {
+        paintStep(currentStep, pathProgress);
+      } else {
+        paintStep(0, STOPS[0].at);
+      }
+    };
+
+    goToStep(0, false);
     popup.classList.add('is-open');
 
-    return function setJourneyProgress(tNow) {
-      const pLocal = clamp(tNow, 0, 1);
-      const { stop, path } = resolvePath(pLocal);
-      const want = targetGi(pLocal);
-      const now = performance.now();
-
-      // thread + legend track scroll smoothly
-      paintPath(path);
-      const lg = legendGroupFor(pLocal, stop);
-      syncMarkers(stop, lg);
-      syncLegendGroup(lg);
-
-      if (want === shownGI || sliding || now < dwellUntil) return;
-
-      shownGI += want > shownGI ? 1 : -1;
-      dwellUntil = now + MIN_DWELL_MS;
-      syncCopy(BEATS[shownGI].stop);
-      applyFrame(BEATS[shownGI].stop, !reduced);
+    return {
+      STOP_COUNT,
+      tick,
+      isArmed: () => armed,
+      isCompleted: () => completed,
+      isAnimating: () => pathAnimating || sliding,
+      isLocked: () => wheelLocked,
+      getStep: () => currentStep,
+      setArmed(on) {
+        if (on === armed) return;
+        armed = on;
+        wheelLocked = false;
+        if (on) {
+          completed = false;
+          goToStep(0, false);
+        } else if (!completed) {
+          goToStep(0, false);
+        }
+      },
+      releaseAtEnd() {
+        armed = false;
+        wheelLocked = false;
+        completed = true;
+        goToStep(STOP_COUNT - 1, false);
+      },
+      resetCompleted() {
+        completed = false;
+        if (!armed) goToStep(0, false);
+      },
+      handleWheel(deltaY) {
+        if (!armed || wheelLocked || pathAnimating || sliding) return { consumed: false };
+        if (deltaY > 0) {
+          if (currentStep >= STOP_COUNT - 1) return { consumed: false, atEnd: true };
+          wheelLocked = true;
+          setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
+          goToStep(currentStep + 1, true);
+          return { consumed: true };
+        }
+        if (deltaY < 0) {
+          if (currentStep <= 0) return { consumed: false, atStart: true };
+          wheelLocked = true;
+          setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
+          goToStep(currentStep - 1, true);
+          return { consumed: true };
+        }
+        return { consumed: false };
+      },
+      setProgress(tNow) {
+        if (armed) return;
+        const idx = clamp(Math.floor(clamp(tNow, 0, 1) * STOP_COUNT), 0, STOP_COUNT - 1);
+        if (idx !== currentStep) goToStep(idx, false);
+        else paintStep(currentStep, STOPS[currentStep].at);
+      },
     };
   }
-  const journeyProgress = initInlineJourney($('#bbj-inline'));
+  const journeyCtrl = initInlineJourney($('#bbj-inline'));
 
   /* ---------- inline pricing (chapter 4) — scroll through plans one at a time on mobile ---- */
   function initInlinePricing(rootEl) {
@@ -543,11 +607,127 @@
     chapters.forEach(c => { c.el.style.opacity = 1; c.el.classList.add('live'); if (c.panel) c.panel.style.transform = 'none'; });
     addEventListener('scroll', () => { readScroll(); if (depthBar) depthBar.style.width = (target * 100) + '%'; }, { passive: true });
     updateChapters(0);
-    journeyProgress(1);
+    journeyCtrl.setProgress(1);
     pricingProgress(1);
     securityProgress(1);
     return;
   }
+
+  /* ---------- journey: one scroll impulse = one step ----------
+     Hold page scroll while the section is active; wheel nominates the next
+     beat. Animation waits until the panel is fully opaque (not mid-fade). */
+  const journeyChapter = chapters.find(c => c.el.id === 'journeynode');
+  let journeyHoldP = null;
+  let journeyReleased = false;
+  let journeyLastScrollY = 0;
+
+  const journeyVisibleP = () => {
+    if (!journeyChapter) return 1;
+    const fadeIn = Math.min((journeyChapter.b - journeyChapter.a) * 0.32, 0.03);
+    return journeyChapter.a + fadeIn;
+  };
+
+  const journeyFullyVisible = () => {
+    if (!journeyChapter) return false;
+    return fadeWindow(p, journeyChapter.a, journeyChapter.b) >= 0.98;
+  };
+
+  const snapJourneyScroll = holdP => {
+    const holdScroll = holdP * cineScrollMax();
+    if (Math.abs(scrollY - holdScroll) > 3) {
+      scrollTo({ top: holdScroll, behavior: 'auto' });
+      target = holdP;
+      p = holdP;
+      journeyLastScrollY = holdScroll;
+    }
+  };
+
+  const shouldHoldJourneyScroll = () => {
+    if (!journeyChapter || !journeyCtrl.isArmed()) return false;
+    if (journeyReleased) return false;
+    return journeyCtrl.getStep() < journeyCtrl.STOP_COUNT - 1 || journeyCtrl.isAnimating();
+  };
+
+  const journeyExitP = () => {
+    if (!journeyChapter) return 1;
+    const pricingChapter = chapters.find(c => c.el.id === 'pricingnode');
+    if (pricingChapter) {
+      const fadeIn = Math.min((pricingChapter.b - pricingChapter.a) * 0.32, 0.03);
+      return Math.max(journeyChapter.b + 0.012, pricingChapter.a + fadeIn + 0.004);
+    }
+    return journeyChapter.b + 0.02;
+  };
+
+  const advancePastJourney = () => {
+    const exitP = journeyExitP();
+    const exitScroll = exitP * cineScrollMax();
+    scrollTo({ top: exitScroll, behavior: 'auto' });
+    target = exitP;
+    p = exitP;
+    journeyLastScrollY = exitScroll;
+  };
+
+  addEventListener('wheel', e => {
+    if (!journeyChapter || reduced) return;
+    if (journeyReleased) return;
+    const inRange = p >= journeyChapter.a && p <= journeyChapter.b;
+    if (!inRange || !journeyFullyVisible()) return;
+
+    if (!journeyCtrl.isArmed() && !journeyReleased) {
+      journeyCtrl.setArmed(true);
+      journeyHoldP = journeyVisibleP();
+      snapJourneyScroll(journeyHoldP);
+    }
+
+    const holdActive = shouldHoldJourneyScroll();
+    const result = journeyCtrl.handleWheel(e.deltaY);
+    if (result.consumed) {
+      e.preventDefault();
+      if (journeyHoldP != null) snapJourneyScroll(journeyHoldP);
+      return;
+    }
+    if (result.atEnd && e.deltaY > 0) {
+      journeyReleased = true;
+      journeyHoldP = null;
+      journeyCtrl.releaseAtEnd();
+      advancePastJourney();
+      return;
+    }
+    if (result.atStart && e.deltaY < 0) {
+      journeyCtrl.setArmed(false);
+      journeyCtrl.resetCompleted();
+      journeyReleased = false;
+      journeyHoldP = null;
+      return;
+    }
+    if (holdActive || journeyCtrl.isLocked() || journeyCtrl.isAnimating()) {
+      e.preventDefault();
+      if (journeyHoldP != null) snapJourneyScroll(journeyHoldP);
+    }
+  }, { passive: false });
+
+  addEventListener('scroll', () => {
+    if (!journeyChapter || reduced) return;
+    if (journeyReleased) return;
+    const inRange = p >= journeyChapter.a && p <= journeyChapter.b;
+    if (inRange && journeyFullyVisible() && journeyCtrl.isArmed() && shouldHoldJourneyScroll()) {
+      const delta = scrollY - journeyLastScrollY;
+      if (Math.abs(delta) > 12 && !journeyCtrl.isLocked() && !journeyCtrl.isAnimating()) {
+        const result = journeyCtrl.handleWheel(delta);
+        if (result.atEnd && delta > 0) {
+          journeyReleased = true;
+          journeyHoldP = null;
+          journeyCtrl.releaseAtEnd();
+          advancePastJourney();
+        }
+      }
+    }
+    if (journeyHoldP != null && shouldHoldJourneyScroll()) {
+      target = journeyHoldP;
+      snapJourneyScroll(journeyHoldP);
+    }
+    journeyLastScrollY = scrollY;
+  }, { passive: true });
 
   /* =================================================================
      WORLD
@@ -746,12 +926,38 @@
       updateEdgeZoom(Math.max(0, Math.min(1, (p - edgeChapter.a) / Math.max(edgeChapter.b - edgeChapter.a, 1e-6))));
     }
 
-    const journeyChapter = chapters.find(c => c.el.id === 'journeynode');
-    if (journeyChapter) {
-      const rawJourney = Math.max(0, Math.min(1, (p - journeyChapter.a) / Math.max(journeyChapter.b - journeyChapter.a, 1e-6)));
-      // Use the full chapter window so the path completes all the way to step 7.
-      const journeyT = Math.max(0, Math.min(1, (rawJourney - 0.02) / 0.96));
-      journeyProgress(journeyT);
+    const journeyChapterTick = chapters.find(c => c.el.id === 'journeynode');
+    if (journeyChapterTick) {
+      const inRange = p >= journeyChapterTick.a && p <= journeyChapterTick.b;
+      const fullyVisible = fadeWindow(p, journeyChapterTick.a, journeyChapterTick.b) >= 0.98;
+      const visP = journeyVisibleP();
+
+      if (p >= journeyChapterTick.a && !fullyVisible && !journeyReleased && p > visP + 0.004) {
+        snapJourneyScroll(visP);
+        target = visP;
+      }
+
+      if (inRange && fullyVisible) {
+        if (!journeyCtrl.isArmed() && !journeyReleased) {
+          journeyCtrl.setArmed(true);
+          journeyHoldP = visP;
+          snapJourneyScroll(journeyHoldP);
+        } else if (shouldHoldJourneyScroll() && journeyHoldP != null) {
+          snapJourneyScroll(journeyHoldP);
+          target = journeyHoldP;
+        }
+      } else if (p < journeyChapterTick.a - 0.008) {
+        journeyCtrl.setArmed(false);
+        journeyCtrl.resetCompleted();
+        journeyHoldP = null;
+        journeyReleased = false;
+      } else if (p > journeyChapterTick.b + 0.008) {
+        journeyCtrl.setArmed(false);
+        journeyHoldP = null;
+        journeyReleased = false;
+      }
+
+      journeyCtrl.tick();
     }
 
     const pricingChapter = chapters.find(c => c.el.id === 'pricingnode');
