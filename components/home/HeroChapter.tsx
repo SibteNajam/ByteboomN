@@ -1,5 +1,139 @@
 'use client';
 
+/** Hero — brand statement left, isometric system visual right.
+    The visual is pure SVG (transparent, glowing) so it reads as part of
+    the 3D world behind it rather than an image pasted on top. */
+
+function IsoSystem() {
+  return (
+    <svg
+      className="hero-iso"
+      viewBox="0 0 560 470"
+      fill="none"
+      aria-hidden="true"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <defs>
+        <linearGradient id="isoTop" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#8ceffb" />
+          <stop offset="1" stopColor="#17d6ee" />
+        </linearGradient>
+        <linearGradient id="isoRight" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#0e5a78" />
+          <stop offset="1" stopColor="#0a2c46" />
+        </linearGradient>
+        <linearGradient id="isoLeft" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#14405f" />
+          <stop offset="1" stopColor="#081e32" />
+        </linearGradient>
+        <linearGradient id="isoTopV" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#c9bcff" />
+          <stop offset="1" stopColor="#7d5cff" />
+        </linearGradient>
+        <linearGradient id="isoRightV" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#3d2f80" />
+          <stop offset="1" stopColor="#1c1440" />
+        </linearGradient>
+        <linearGradient id="isoLeftV" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2a2160" />
+          <stop offset="1" stopColor="#130e30" />
+        </linearGradient>
+        <radialGradient id="isoGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="rgba(23,214,238,0.28)" />
+          <stop offset="1" stopColor="rgba(23,214,238,0)" />
+        </radialGradient>
+        <radialGradient id="isoGlowV" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stopColor="rgba(125,92,255,0.24)" />
+          <stop offset="1" stopColor="rgba(125,92,255,0)" />
+        </radialGradient>
+      </defs>
+
+      {/* platform glow pool */}
+      <ellipse cx="280" cy="330" rx="230" ry="90" fill="url(#isoGlow)" />
+
+      {/* base platform — diamond grid */}
+      <g className="hero-iso__grid" stroke="rgba(90,150,200,0.18)" strokeWidth="1">
+        <path d="M280 250 L440 330 L280 410 L120 330 Z" />
+        <path d="M280 282 L376 330 L280 378 L184 330 Z" />
+        <path d="M200 290 L360 370 M360 290 L200 370" opacity="0.5" />
+      </g>
+
+      {/* circuit traces up from cubes */}
+      <g className="hero-iso__wires" stroke="rgba(23,214,238,0.45)" strokeWidth="1.4" fill="none">
+        <path d="M170 205 V150 H230 V96" />
+        <path d="M280 150 V72" />
+        <path d="M395 185 V120 H340 V84" />
+        <path d="M120 300 H70 V240" />
+        <path d="M440 310 H500 V250" />
+      </g>
+      <g className="hero-iso__nodes" fill="#9ff0fb">
+        <circle cx="230" cy="96" r="3.2" />
+        <circle cx="280" cy="72" r="4" />
+        <circle cx="340" cy="84" r="3.2" />
+        <circle cx="70" cy="240" r="3" />
+        <circle cx="500" cy="250" r="3" />
+      </g>
+
+      {/* cube: left (violet, small) */}
+      <g className="hero-iso__cube hero-iso__cube--a">
+        <ellipse cx="170" cy="292" rx="72" ry="30" fill="url(#isoGlowV)" />
+        <path d="M170 205 L214 227 L170 249 L126 227 Z" fill="url(#isoTopV)" />
+        <path d="M214 227 L170 249 L170 301 L214 279 Z" fill="url(#isoRightV)" />
+        <path d="M126 227 L170 249 L170 301 L126 279 Z" fill="url(#isoLeftV)" />
+        <path
+          d="M170 205 L214 227 L170 249 L126 227 Z M214 227 L214 279 L170 301 L126 279 L126 227"
+          stroke="rgba(160,130,255,0.55)"
+          strokeWidth="1"
+          fill="none"
+        />
+      </g>
+
+      {/* cube: center (cyan, large) */}
+      <g className="hero-iso__cube hero-iso__cube--b">
+        <ellipse cx="280" cy="288" rx="96" ry="38" fill="url(#isoGlow)" />
+        <path d="M280 150 L340 180 L280 210 L220 180 Z" fill="url(#isoTop)" />
+        <path d="M340 180 L280 210 L280 282 L340 252 Z" fill="url(#isoRight)" />
+        <path d="M220 180 L280 210 L280 282 L220 252 Z" fill="url(#isoLeft)" />
+        <path
+          d="M280 150 L340 180 L280 210 L220 180 Z M340 180 L340 252 L280 282 L220 252 L220 180"
+          stroke="rgba(120,230,250,0.6)"
+          strokeWidth="1.1"
+          fill="none"
+        />
+        {/* face detail — signal bars */}
+        <path
+          d="M296 226 L318 215 M296 240 L318 229 M296 254 L310 247"
+          stroke="rgba(140,240,255,0.75)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </g>
+
+      {/* cube: right (cyan-blue, medium) */}
+      <g className="hero-iso__cube hero-iso__cube--c">
+        <ellipse cx="395" cy="272" rx="80" ry="32" fill="url(#isoGlow)" />
+        <path d="M395 185 L443 209 L395 233 L347 209 Z" fill="url(#isoTop)" />
+        <path d="M443 209 L395 233 L395 289 L443 265 Z" fill="url(#isoRight)" />
+        <path d="M347 209 L395 233 L395 289 L347 265 Z" fill="url(#isoLeft)" />
+        <path
+          d="M395 185 L443 209 L395 233 L347 209 Z M443 209 L443 265 L395 289 L347 265 L347 209"
+          stroke="rgba(120,230,250,0.55)"
+          strokeWidth="1"
+          fill="none"
+        />
+      </g>
+
+      {/* small floating pads */}
+      <g className="hero-iso__pad hero-iso__pad--a">
+        <path d="M132 352 L164 368 L132 384 L100 368 Z" fill="rgba(23,214,238,0.16)" stroke="rgba(23,214,238,0.45)" strokeWidth="1" />
+      </g>
+      <g className="hero-iso__pad hero-iso__pad--b">
+        <path d="M420 344 L456 362 L420 380 L384 362 Z" fill="rgba(125,92,255,0.14)" stroke="rgba(150,120,255,0.4)" strokeWidth="1" />
+      </g>
+    </svg>
+  );
+}
+
 export default function HeroChapter() {
   return (
     <section
@@ -11,69 +145,55 @@ export default function HeroChapter() {
       data-dir="center"
     >
       <div className="panel panel--hero">
-        <div className="hero-atmosphere" aria-hidden="true">
-          <div className="hero-atmosphere__glow hero-atmosphere__glow--a" />
-          <div className="hero-atmosphere__glow hero-atmosphere__glow--b" />
-          <svg className="hero-atmosphere__field" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <linearGradient id="heroRouteGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stopColor="#14e0d0" stopOpacity="0" />
-                <stop offset="0.35" stopColor="#17d6ee" stopOpacity="0.85" />
-                <stop offset="0.7" stopColor="#22a8ff" stopOpacity="0.7" />
-                <stop offset="1" stopColor="#7d5cff" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="heroHorizonGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="#17d6ee" stopOpacity="0.35" />
-                <stop offset="1" stopColor="#17d6ee" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <g className="hero-atmosphere__grid" stroke="rgba(130,170,215,0.09)" strokeWidth="1" fill="none">
-              <path d="M0 180 H1440 M0 300 H1440 M0 420 H1440 M0 540 H1440 M0 660 H1440" />
-              <path d="M180 0 V900 M360 0 V900 M540 0 V900 M720 0 V900 M900 0 V900 M1080 0 V900 M1260 0 V900" />
-            </g>
-            <ellipse className="hero-atmosphere__horizon" cx="720" cy="620" rx="520" ry="28" fill="url(#heroHorizonGrad)" />
-            <path
-              className="hero-atmosphere__route"
-              fill="none"
-              stroke="url(#heroRouteGrad)"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              d="M120 640 C 280 610, 340 500, 420 430 C 520 340, 610 310, 720 360 C 860 430, 920 520, 1040 500 C 1160 480, 1240 400, 1340 320"
-            />
-            <g className="hero-atmosphere__nodes" fill="#17d6ee">
-              <circle cx="420" cy="430" r="3.5" />
-              <circle cx="720" cy="360" r="4.5" />
-              <circle cx="1040" cy="500" r="3.5" />
-            </g>
-          </svg>
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <p className="kicker kicker--live">
+              <span className="kicker__dot" aria-hidden="true" />
+              AI trading system · live
+            </p>
+            <h1 className="hero-title">
+              AI spot trading <span className="hero-title__grad">on your own Binance account</span>
+            </h1>
+            <p className="hero-lead">
+              Disciplined automation through a restricted, trade-only API key — your funds stay on
+              your exchange, always.
+            </p>
+            <div className="hero-actions">
+              <a href="#productnode" className="btn btn--primary btn--lg" data-magnetic>
+                Explore bots
+                <svg className="i" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M5 12h14M13 6l6 6-6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </a>
+              <a href="#trustnode" className="btn btn--ghost btn--lg">
+                See how it works
+              </a>
+            </div>
+            <ul className="hero-assure" aria-label="Core guarantees">
+              <li>Non-custodial</li>
+              <li>Trade-only API</li>
+              <li>Exit anytime</li>
+            </ul>
+          </div>
+
+          <div className="hero-visual" aria-hidden="true">
+            <IsoSystem />
+          </div>
         </div>
 
-        <div className="hero-core">
-          <p className="hero-brand">ByteBoom</p>
-          <h1 className="hero-title">AI spot trading on your own Binance account</h1>
-          <p className="hero-lead">
-            Disciplined automation through a restricted, trade-only API key — your funds stay on your exchange,
-            always.
-          </p>
-          <div className="hero__actions">
-            <a href="#productnode" className="btn btn--primary btn--lg btn--hero" data-magnetic>
-              Explore bots
-              <svg className="i" viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M5 12h14M13 6l6 6-6 6"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </a>
-            <a href="#trustnode" className="btn btn--ghost btn--lg btn--hero">
-              See how it works
-            </a>
-          </div>
-          <p className="hero-assurance">Non-custodial · Trade-only API · Exit anytime</p>
+        <div className="hero-strip" aria-hidden="true">
+          <span className="hero-strip__label">Enter the system</span>
+          <span className="hero-strip__rail">
+            <span className="hero-strip__rider" />
+          </span>
+          <span className="hero-strip__meta">08 nodes · scroll to travel</span>
         </div>
       </div>
     </section>

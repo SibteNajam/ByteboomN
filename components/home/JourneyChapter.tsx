@@ -43,8 +43,8 @@ export default function JourneyChapter() {
                   <svg className="jp-speech__cloud" viewBox="0 0 300 142" preserveAspectRatio="none" aria-hidden="true">
                     <defs>
                       <linearGradient id="jpCloudGrad" x1="8%" y1="6%" x2="92%" y2="94%">
-                        <stop offset="0%" stopColor="rgba(18, 30, 48, 0.98)" />
-                        <stop offset="100%" stopColor="rgba(8, 12, 22, 0.96)" />
+                        <stop offset="0%" stopColor="rgba(18, 30, 48, 0.72)" />
+                        <stop offset="100%" stopColor="rgba(8, 12, 22, 0.68)" />
                       </linearGradient>
                       <linearGradient id="jpCloudStroke" x1="0%" y1="0%" x2="100%" y2="100%">
                         <stop offset="0%" stopColor="rgba(53, 226, 198, 0.5)" />

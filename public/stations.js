@@ -57,26 +57,27 @@
       c.el.classList.toggle('live', opacity > 0.01);
       c.el.style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
       if (!flat && c.panel) {
-        if (c.el.id === 'journeynode' || c.el.id === 'edgenode') {
-          c.panel.style.transform = 'translate(0px,0px) scale(1)';
+        const s = 1 - opacity;
+        const scale = (0.92 + 0.08 * opacity).toFixed(3);
+        if (c.el.id === 'edgenode') {
+          c.panel.style.transform = 'translate3d(0,0,0) scale(1)';
+          c.panel.style.filter = 'none';
           return;
         }
-        const s = 1 - opacity;
         if (c.exit === 'into') {
-          // The camera flies through this panel rather than shoving it aside:
-          // approaching from depth on the way in, rushing past the viewer and
-          // blurring out of focus on the way out.
+          // Fly-through: depth on the way in, rush past + blur on the way out.
           const out = p > (c.a + c.b) / 2;
-          c.panel.style.transform = `translate(0px,0px) scale(${(out ? 1 + s * 0.5 : 1 - s * 0.12).toFixed(3)})`;
+          const z = out ? s * 90 : -s * 42;
+          c.panel.style.transform = `translate3d(0,0,${z.toFixed(1)}px) scale(${(out ? 1 + s * 0.5 : 1 - s * 0.12).toFixed(3)})`;
           c.panel.style.filter = out && s > 0.002 ? `blur(${(s * 12).toFixed(1)}px)` : 'none';
           return;
         }
-        let tx = 0, ty = 0;
-        if (c.dir === 'left') tx = -s * 120;
-        else if (c.dir === 'right') tx = s * 120;
-        else if (c.dir === 'center') ty = s * 60;
-        else ty = s * 40;
-        c.panel.style.transform = `translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${(0.94 + 0.06 * opacity).toFixed(3)})`;
+        let tx = 0, ty = 0, ry = 0, rx = 0, tz = -s * 76;
+        if (c.dir === 'left') { tx = -s * 110; ry = s * 7; }
+        else if (c.dir === 'right') { tx = s * 110; ry = -s * 7; }
+        else { ty = s * 46; rx = s * 4.5; }
+        c.panel.style.transform = `translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,${tz.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) scale(${scale})`;
+        c.panel.style.filter = s > 0.38 ? `blur(${(s * 2.8).toFixed(1)}px)` : 'none';
       }
     });
     if (depthBar) depthBar.style.width = (p * 100) + '%';
@@ -311,7 +312,7 @@
     const speechEl = q('.jp-speech');
     const numEl = q('.jp-stop-num');
     let activeGroupId = -1, shownKey = '', frontIsA = true, sliding = false;
-    const SLIDE_MS = 520;
+    const SLIDE_MS = 320;
     const frontEl = () => frontIsA ? slideA : slideB;
     const backEl = () => frontIsA ? slideB : slideA;
 
@@ -396,8 +397,8 @@
 
     STOPS.forEach(s => { if (s.mock) { const im = new Image(); im.src = mockSrc(s.mock); } });
 
-    const STEP_MS = reduced ? 0 : 620;
-    const WHEEL_LOCK_MS = reduced ? 0 : 1100;
+    const STEP_MS = reduced ? 0 : 380;
+    const WHEEL_LOCK_MS = reduced ? 0 : 520;
     let currentStep = 0;
     let pathProgress = STOPS[0].at;
     let pathFrom = pathProgress;
@@ -873,6 +874,59 @@
     journeyLastScrollY = scrollY;
   }, { passive: true });
 
+  /* ---- auto-glide: never park the user between chapters ----
+     If scrolling stops while a transition is mid-flight (panel fading or
+     blurred), glide automatically to the next chapter anchor — forward or
+     back depending on the last scroll direction. Feels automated: any
+     nudge past a section completes the whole move. */
+  const GLIDE_IDLE_MS = 320;
+  let lastUserInputAt = performance.now();
+  let autoGliding = false;
+  let glideTop = 0;
+  const noteUserInput = () => { lastUserInputAt = performance.now(); autoGliding = false; };
+  addEventListener('wheel', noteUserInput, { passive: true });
+  addEventListener('touchmove', noteUserInput, { passive: true });
+  addEventListener('pointerdown', noteUserInput, { passive: true });
+  addEventListener('keydown', noteUserInput);
+
+  // matches updateChapters: edge holds solid longer, others fade over f
+  const glideFadeSpan = c => c.el.id === 'edgenode' ? 0.01 : Math.min((c.b - c.a) * 0.32, 0.03);
+  const glideVis = c => {
+    if (c.el.id === 'edgenode') {
+      if (p < c.a || p > c.b) return 0;
+      if (p < c.a + 0.01) return (p - c.a) / 0.01;
+      if (p > c.b - 0.01) return (c.b - p) / 0.01;
+      return 1;
+    }
+    return fadeWindow(p, c.a, c.b);
+  };
+  const glideArrival = c => c.a <= 0 ? 0 : Math.min(c.a + glideFadeSpan(c) + 0.006, c.b);
+  const glideHold = c => c.b >= 1 ? 1 : Math.max(c.b - glideFadeSpan(c) - 0.006, c.a);
+
+  function maybeAutoGlide() {
+    if (autoGliding || root.classList.contains('tail-mode')) return;
+    if (performance.now() - lastUserInputAt < GLIDE_IDLE_MS) return;
+    if (journeyExiting || journeyReleased || journeyCtrl.isArmed()) return;
+    if (Math.abs(target - p) > 0.003) return;              // camera still flying
+    let vis = 0;
+    for (const c of chapters) { const v = glideVis(c); if (v > vis) vis = v; }
+    if (vis >= 0.95) return;                                // a chapter owns the screen
+    let at = null;
+    if (scrollDirectionUp) {
+      for (let i = chapters.length - 1; i >= 0; i--) {
+        if (glideHold(chapters[i]) < p - 0.001) { at = glideHold(chapters[i]); break; }
+      }
+    } else {
+      for (const c of chapters) {
+        if (glideArrival(c) > p + 0.001) { at = glideArrival(c); break; }
+      }
+    }
+    if (at == null) return;
+    autoGliding = true;
+    glideTop = at * cineScrollMax();
+    scrollTo({ top: glideTop, behavior: 'smooth' });
+  }
+
   /* =================================================================
      WORLD
   ================================================================= */
@@ -1002,6 +1056,79 @@
   function motes(count, color, size, op) { const geo = new THREE.BufferGeometry(); const a = new Float32Array(count * 3); for (let i = 0; i < count; i++) { a[i * 3] = (Math.random() - .5) * 160; a[i * 3 + 1] = Math.random() * 26 - 6; a[i * 3 + 2] = 12 - Math.random() * 240; } geo.setAttribute('position', new THREE.BufferAttribute(a, 3)); const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(pts); return pts; }
   const m1 = motes(1400, 0x9fd8ff, .13, .5), m2 = motes(650, VIOLET, .17, .26);
 
+  /* ---- world-coupled parallax ----
+     The same smoothed mouse numbers steer the camera AND translate the DOM
+     chapters in screen space, so content moves WITH the world every frame
+     instead of sitting frozen on top of it. */
+  let mx = 0, my = 0, smx = 0, smy = 0;
+  if (matchMedia('(pointer:fine)').matches) {
+    addEventListener('pointermove', e => {
+      mx = (e.clientX / innerWidth - 0.5) * 2;
+      my = (e.clientY / innerHeight - 0.5) * 2;
+    }, { passive: true });
+  }
+  const rightDir = new THREE.Vector3();
+
+  /* ---- foreground dust ----
+     A sparse bokeh layer that drifts IN FRONT of the content with stronger
+     parallax. Occlusion is the cue that made the canvas structures feel
+     embedded — now the panels get the same treatment. */
+  const dust = document.createElement('canvas');
+  dust.id = 'fgdust';
+  document.body.appendChild(dust);
+  const dctx = dust.getContext('2d');
+  let DW = 0, DH = 0;
+  const sizeDust = () => { DW = dust.width = innerWidth; DH = dust.height = innerHeight; };
+  sizeDust(); addEventListener('resize', sizeDust);
+  const dustSprite = rgb => {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+    const g = cv.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, `rgba(${rgb},.9)`); gr.addColorStop(.4, `rgba(${rgb},.28)`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    return cv;
+  };
+  const DSPR = [dustSprite('165,225,255'), dustSprite('150,125,255'), dustSprite('220,245,255')];
+  const DUST = [];
+  const dustCount = innerWidth < 720 ? 12 : 26;
+  for (let i = 0; i < dustCount; i++) {
+    DUST.push({
+      x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+      zf: 1.25 + Math.random() * 1.15,          // deeper than content -> moves more
+      r: 1.6 + Math.random() * 3.6,
+      vx: (Math.random() - .5) * .12, vy: -.05 - Math.random() * .14,
+      ph: Math.random() * Math.PI * 2,
+      sp: DSPR[i % 3],
+    });
+  }
+  let lastWX = 0, lastWY = 0, lastPd = 0;
+
+  /* ---- adaptive quality: keep the flight smooth on slower machines ----
+     If the average frame time stays above ~24ms (≈42fps) for 2s, step the
+     render resolution and particle load down. Two tiers; never steps back
+     up mid-session so quality doesn't visibly pump. */
+  let qTier = 2, qAcc = 0, qN = 0, qLastCheck = performance.now(), qPrevT = 0;
+  function adaptQuality(now, t) {
+    const dt = Math.min((t - qPrevT) * 1000, 100);
+    qPrevT = t;
+    if (dt > 0) { qAcc += dt; qN++; }
+    if (now - qLastCheck < 2000) return;
+    const avg = qAcc / Math.max(qN, 1);
+    qAcc = 0; qN = 0; qLastCheck = now;
+    if (avg > 24 && qTier > 0) {
+      qTier--;
+      if (qTier === 1) {
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
+        DUST.length = Math.min(DUST.length, 14);
+      } else {
+        renderer.setPixelRatio(1);
+        m2.visible = false;
+        DUST.length = Math.min(DUST.length, 8);
+      }
+      renderer.setSize(innerWidth, innerHeight);
+    }
+  }
+
   /* ---- camera drive ---- */
   let roll = 0; const clock = new THREE.Clock();
   const look = new THREE.Vector3(), tan = new THREE.Vector3();
@@ -1030,6 +1157,7 @@
     requestAnimationFrame(tick);
     if (!stage || !stage.isConnected) return;
     const t = clock.getElapsedTime();
+    adaptQuality(performance.now(), t);
     p += (target - p) * 0.1; if (Math.abs(target - p) < 0.0004) p = target;
 
     if (journeyExiting) {
@@ -1053,10 +1181,17 @@
 
     getPt(u, cam.position); cam.position.y += Math.sin(t * .8) * .05;
     getTan(u, tan); tan.normalize();
+    // Mouse sway: a small positional + rotational drift. The DOM chapters get
+    // the matching screen-space shift below, so world and content stay fused.
+    smx += (mx - smx) * 0.045; smy += (my - smy) * 0.045;
+    rightDir.set(-tan.z, 0, tan.x).normalize();
+    cam.position.addScaledVector(rightDir, smx * 0.16);
+    cam.position.y -= smy * 0.09;
     // Look along the path tangent (never sample a clamped point that collapses onto the camera —
     // that made lookAt aim nearly straight up near path end and flip the view).
     look.copy(cam.position).addScaledVector(tan, 10);
-    look.y += 0.28;
+    look.addScaledVector(rightDir, smx * 0.26);
+    look.y += 0.28 - smy * 0.14;
     cam.up.copy(worldUp);
     cam.lookAt(look);
     // Soft bank in corners only — keep upright; never enough roll to invert
@@ -1075,10 +1210,46 @@
 
     updateChapters(p);
 
+    /* Content moves with the world: the camera's idle bob and mouse sway,
+       converted to the screen-space shift they cause at node depth. */
+    const bobPx = Math.sin(t * .8) * .05 * 105;
+    const wx = -smx * 40;
+    const wy = smy * 22 + bobPx;
+    chapters.forEach(c => {
+      if (c.el.classList.contains('live')) {
+        c.el.style.transform = `translate3d(${wx.toFixed(1)}px,${wy.toFixed(1)}px,0)`;
+      } else if (c.el.style.transform) {
+        c.el.style.transform = '';
+      }
+    });
+
+    /* Foreground dust: parallax deltas amplified per-particle, plus a gentle
+       outward rush while the camera is flying between nodes. */
+    dctx.clearRect(0, 0, DW, DH);
+    const dwx = wx - lastWX, dwy = wy - lastWY;
+    const fly = Math.min(28, Math.abs(p - lastPd) * 5200);
+    lastWX = wx; lastWY = wy; lastPd = p;
+    const dcx = DW / 2, dcy = DH / 2;
+    for (const b of DUST) {
+      b.x += b.vx + dwx * b.zf + (b.x - dcx) / Math.max(dcx, 1) * fly * 0.06 * b.zf;
+      b.y += b.vy + dwy * b.zf + (b.y - dcy) / Math.max(dcy, 1) * fly * 0.06 * b.zf;
+      if (b.x < -30) b.x += DW + 60; else if (b.x > DW + 30) b.x -= DW + 60;
+      if (b.y < -30) b.y += DH + 60; else if (b.y > DH + 30) b.y -= DH + 60;
+      const a = 0.10 + 0.10 * Math.sin(t * 0.9 + b.ph);
+      const s = b.r * (2.6 + 0.5 * Math.sin(t * 0.7 + b.ph));
+      dctx.globalAlpha = Math.max(0.03, a);
+      dctx.drawImage(b.sp, b.x - s, b.y - s, s * 2, s * 2);
+    }
+    dctx.globalAlpha = 1;
+
+    /* auto-glide bookkeeping: release when the glide lands, then re-check */
+    if (autoGliding && Math.abs(scrollY - glideTop) < 4) autoGliding = false;
+    maybeAutoGlide();
+
     const clean = cleanWindows.some(w => p >= w.a && p <= w.b);
     nodeDecor.forEach(d => {
       const show = !d.hideAlways && !clean;
-      d.g.visible = show;
+      d.g.visible = false;   // gate ring retired — only the crystal reads as the node marker
       d.core.visible = show;
       d.pl.visible = show;
     });
