@@ -1,5 +1,7 @@
 'use client';
 
+import TrustViz from './TrustViz';
+
 export default function TrustChapter() {
   return (
     <>
@@ -12,8 +14,13 @@ export default function TrustChapter() {
           it can never withdraw, transfer, or move your coins. Pause or unlink in a single click.</p>
       </div>
       <div className="trust-viz">
+        {/* Replaced by <TrustViz /> — the code rebuild of this artwork.
+            The PNG was AI-generated, so all of its in-screen copy was garbled.
+            Keeping the original here for reference / quick rollback:
         <img className="trust-viz__img" src="/images/trustblue2.png"
           alt="ByteBoom — connected to your exchange, never in control of it" width="1509" height="941" decoding="async" />
+        */}
+        <TrustViz />
         <span className="trust-orbit trust-orbit--nw">Non-custodial</span>
         <span className="trust-orbit trust-orbit--w">Your funds</span>
         <span className="trust-orbit trust-orbit--sw">Trade only</span>

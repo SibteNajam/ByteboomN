@@ -1210,22 +1210,19 @@
 
     updateChapters(p);
 
-    /* Content moves with the world: the camera's idle bob and mouse sway,
-       converted to the screen-space shift they cause at node depth. */
+    /* Chapters stay planted. Mouse/bob used to shift every live chapter in
+       screen space, which read as a floating overlay on the world rather
+       than content living in the corridor (the crystal/ring does not get
+       that extra DOM sway — only camera motion). */
+    chapters.forEach(c => {
+      if (c.el.style.transform) c.el.style.transform = '';
+    });
+
+    /* Foreground dust still tracks camera sway so occlusion cues remain. */
+    dctx.clearRect(0, 0, DW, DH);
     const bobPx = Math.sin(t * .8) * .05 * 105;
     const wx = -smx * 40;
     const wy = smy * 22 + bobPx;
-    chapters.forEach(c => {
-      if (c.el.classList.contains('live')) {
-        c.el.style.transform = `translate3d(${wx.toFixed(1)}px,${wy.toFixed(1)}px,0)`;
-      } else if (c.el.style.transform) {
-        c.el.style.transform = '';
-      }
-    });
-
-    /* Foreground dust: parallax deltas amplified per-particle, plus a gentle
-       outward rush while the camera is flying between nodes. */
-    dctx.clearRect(0, 0, DW, DH);
     const dwx = wx - lastWX, dwy = wy - lastWY;
     const fly = Math.min(28, Math.abs(p - lastPd) * 5200);
     lastWX = wx; lastWY = wy; lastPd = p;

@@ -434,12 +434,15 @@ html.cine .chapter .panel {
 
 /* journeynode is excluded: its speech cloud floats above the panel box and
    a mask would erase whatever overflows it */
-html.cine #trustnode .panel--trust,
+html.cine #trustnode .panel--trust {
+  /* stronger dissolve into the corridor so the mockup doesn't read as a card */
+  -webkit-mask-image: radial-gradient(ellipse 120% 110% at 50% 52%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 120% 110% at 50% 52%, #000 55%, transparent 100%);
+}
+
 html.cine #productnode .panel--bots,
 html.cine #pricingnode .panel--pricing,
 html.cine #securitynode .panel--security {
-  /* falloff starts past the content edge so chips/borders never get eaten;
-     only the outermost fringe blends into the world */
   -webkit-mask-image: radial-gradient(ellipse 108% 98% at 50% 46%, #000 74%, transparent 100%);
   mask-image: radial-gradient(ellipse 108% 98% at 50% 46%, #000 74%, transparent 100%);
 }
@@ -965,8 +968,8 @@ html.flat .panel {
 }
 
 #trustnode .panel--trust {
-  width: min(920px, 96vw);
-  max-width: 920px;
+  width: min(980px, 96vw);
+  max-width: 980px;
   /* the fly-through exit grows from the artwork, not the whole panel's centre */
   transform-origin: 50% 62%;
   padding: 0;
@@ -986,82 +989,53 @@ html.flat .panel {
   position: relative;
   display: grid;
   place-items: center;
-  /* shrink to the artwork so the orbit chips anchor to the image itself,
-     not the wider panel — keeps them glued to the arcs at every size */
   width: fit-content;
   margin-inline: auto;
 }
 
+/* Sit in the corridor plane — no glow halo, no floating shadow plate */
 html.cine .trust-viz {
   transform-style: preserve-3d;
-  transform: rotateY(-5deg) rotateX(4deg) translateZ(24px);
-}
-
-.trust-viz::before {
-  content: "";
-  position: absolute;
-  width: min(68%, 400px);
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(34, 168, 255, .22) 0%, rgba(23, 214, 238, .07) 42%, transparent 70%);
-  filter: blur(28px);
-  z-index: 0;
-  pointer-events: none;
-  animation: trustPulse 5.5s ease-in-out infinite;
-}
-
-html.cine .trust-viz::before {
-  opacity: 0.55;
-  transform: translateZ(-18px);
+  transform: rotateX(4deg);
+  filter: none;
 }
 
 .trust-viz__img {
   position: relative;
   z-index: 1;
-  /* 1.6 = the art's aspect, so the vh term caps its rendered height and the
-     tagline above it always fits without scrolling the chapter */
   width: min(100%, 720px, calc(50vh * 1.6));
   height: auto;
   display: block;
   mix-blend-mode: screen;
-  filter: drop-shadow(0 28px 60px rgba(0, 40, 80, .45));
-  animation: trustFloat 6.5s ease-in-out infinite;
+  filter: none;
   -webkit-user-drag: none;
   user-select: none;
   pointer-events: none;
 }
 
 html.cine .trust-viz__img {
-  opacity: 0.93;
-  filter:
-    drop-shadow(0 28px 60px rgba(0, 40, 80, .38))
-    drop-shadow(0 0 48px rgba(23, 214, 238, .1));
+  opacity: 0.92;
+  filter: none;
 }
 
-/* trust callouts — quiet glass chips anchored to the arc icons of the art.
-   Sentence case, soft border, tiny status dot: annotation, not sticker. */
+/* Quiet chips — no glow dots, no backdrop plate that reads as overlay */
 .trust-orbit {
   position: absolute;
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 7px 13px;
+  padding: 6px 11px;
   border-radius: 999px;
   font: 600 clamp(10.5px, 1.05vw, 12.5px)/1 var(--font-display);
   letter-spacing: .035em;
-  color: #d9e9fb;
+  color: rgba(210, 228, 248, .88);
   white-space: nowrap;
-  background: linear-gradient(160deg, rgba(13, 22, 38, .58), rgba(7, 13, 24, .42));
-  border: 1px solid rgba(130, 180, 235, .22);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, .7), inset 0 1px 0 rgba(255, 255, 255, .05);
+  background: rgba(5, 10, 18, .28);
+  border: 1px solid rgba(120, 170, 220, .12);
+  backdrop-filter: blur(6px);
+  box-shadow: none;
   pointer-events: none;
-  animation: trustChip 6.5s ease-in-out infinite;
-}
-
-html.cine .trust-orbit {
-  transform: translateZ(22px);
 }
 
 .trust-orbit::before {
@@ -1071,7 +1045,8 @@ html.cine .trust-orbit {
   height: 5px;
   border-radius: 50%;
   background: var(--cyan);
-  box-shadow: 0 0 8px var(--cyan);
+  box-shadow: none;
+  opacity: .85;
 }
 
 /* status-toned dots: green = safety facts, violet = your controls */
@@ -1079,64 +1054,57 @@ html.cine .trust-orbit {
 .trust-orbit--ne::before,
 .trust-orbit--se::before {
   background: var(--green);
-  box-shadow: 0 0 8px var(--green);
+  box-shadow: none;
 }
 
 .trust-orbit--s::before,
 .trust-orbit--e::before {
   background: var(--violet-2);
-  box-shadow: 0 0 8px var(--violet-2);
+  box-shadow: none;
 }
 
-/* positions tuned to trustblue2.png (funnel left-mid, bars upper-right,
-   coin right-mid, phones centre) */
+/* positions tuned to TrustViz (funnel left-mid, bars upper-right,
+   target lower-right, twin phones centre) */
 .trust-orbit--n {
-  top: 2.5%;
-  left: 24%;
-  animation-delay: 0s;
+  top: 1.5%;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .trust-orbit--ne {
-  top: 30%;
-  right: 1%;
-  animation-delay: .4s;
+  top: 18%;
+  right: 2%;
 }
 
 .trust-orbit--e {
-  top: 48.5%;
-  right: 0.5%;
-  animation-delay: .8s;
+  top: 42%;
+  right: -1%;
 }
 
 .trust-orbit--se {
-  bottom: 27%;
-  right: 2.5%;
-  animation-delay: 1.1s;
+  bottom: 18%;
+  right: 1%;
 }
 
 .trust-orbit--s {
-  bottom: 0;
+  bottom: -2%;
   left: 50%;
   transform: translateX(-50%);
-  animation-delay: 1.4s;
 }
 
 .trust-orbit--sw {
-  bottom: 15%;
-  left: 7%;
-  animation-delay: .6s;
+  bottom: 12%;
+  left: 2%;
 }
 
 .trust-orbit--w {
-  top: 62%;
-  left: 0.5%;
-  animation-delay: .2s;
+  top: 48%;
+  left: -1%;
 }
 
 .trust-orbit--nw {
-  top: 11%;
-  left: 4%;
-  animation-delay: 1s;
+  top: 14%;
+  left: 1%;
 }
 
 /* chips drift gently with the artwork instead of blinking */
@@ -4710,3 +4678,4 @@ html.flat .scroll-tail .site-footer {
   position: relative;
   z-index: 12;
 }
+

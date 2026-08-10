@@ -1,0 +1,623 @@
+/* ===================================================================
+   TRUST VIZ — code replica of trustblue2.png (components/home/TrustViz)
+   Design canvas 1520×1013; --tv-scale is set by ResizeObserver in TrustViz.
+=================================================================== */
+.trust-viz:has(.tv-art) {
+  width: min(100%, 860px, calc(58vh * 1.5));
+}
+
+.tv-art {
+  --tv-scale: 0.5;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  aspect-ratio: 1520 / 1013;
+  overflow: hidden;
+  user-select: none;
+  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tv-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1520px;
+  height: 1013px;
+  transform: scale(var(--tv-scale));
+  transform-origin: top left;
+  will-change: transform;
+}
+
+.tv-art .orbits { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.tv-art .badge {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #4EA6FF 0%, #1E7CE8 55%, #1668D6 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 8;
+}
+.tv-art .badge svg { width: 46%; height: 46%; }
+.tv-art .b-funnel { left: 135.1px; top: 492.6px; width: 88px; height: 88px; }
+.tv-art .b-wallet { left: 340.8px; top: 479.0px; width: 88px; height: 88px; }
+.tv-art .b-chart  { left: 1215.8px; top: 302.1px; width: 88px; height: 88px; }
+.tv-art .b-target { left: 1362.8px; top: 578.5px; width: 88px; height: 88px; }
+
+.tv-art .dot {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #5AAEFF, #1E7CE8);
+  z-index: 8;
+}
+
+.tv-art .phone {
+  position: absolute;
+  transform-origin: 0 0;
+}
+.tv-art #phoneA {
+  width: 372px; height: 762px; left: 0; top: 0; z-index: 6;
+  transform: matrix3d(1.080755, 0.108682, 0, 0.000195, 0.141563, 0.923509, 0, -0.000019, 0, 0, 1, 0, 395.336, 206.885, 0, 1);
+}
+.tv-art #phoneB {
+  width: 372px; height: 748px; left: 0; top: 0; z-index: 4;
+  transform: matrix3d(0.785490, -0.071925, 0, -0.000115, -0.129809, 0.925680, 0, -0.000074, 0, 0, 1, 0, 841.814, 76.577, 0, 1);
+}
+
+.tv-art .chassis {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg,
+      #2E3237 0px, #4E545B 1px, #43484E 2.2px, #3B4046 4px,
+      #383D43 9px, #363B41 10.4px, #191C20 11.3px, #4A5057 12.4px,
+      #9AA2AA 13.5px, #787E85 14.5px, #A5ADB5 15.6px, #5E646B 16.6px,
+      #0A0C0F 17.8px, #0E1013 19px,
+      #0E1013 353px, #0A0C0F 354.2px, #5E646B 355.4px, #A5ADB5 356.4px,
+      #787E85 357.5px, #9AA2AA 358.5px, #4A5057 359.6px, #191C20 360.7px,
+      #363B41 361.6px, #383D43 363px, #3B4046 368px, #43484E 369.8px,
+      #4E545B 371px, #2E3237 372px);
+}
+.tv-art #phoneA .chassis {
+  clip-path: polygon(0.000% 7.612%,0.029% 6.535%,0.118% 5.816%,0.265% 5.194%,0.470% 4.633%,0.734% 4.118%,1.056% 3.641%,1.436% 3.197%,1.874% 2.785%,2.369% 2.403%,2.921% 2.049%,3.530% 1.723%,4.197% 1.426%,4.921% 1.156%,5.705% 0.915%,6.549% 0.701%,7.458% 0.516%,8.435% 0.358%,9.491% 0.230%,10.640% 0.129%,11.913% 0.057%,13.386% 0.014%,15.591% 0.000%,84.409% 0.000%,86.614% 0.014%,88.087% 0.057%,89.360% 0.129%,90.509% 0.230%,91.565% 0.358%,92.542% 0.516%,93.451% 0.701%,94.295% 0.915%,95.079% 1.156%,95.803% 1.426%,96.470% 1.723%,97.079% 2.049%,97.631% 2.403%,98.126% 2.785%,98.564% 3.197%,98.944% 3.641%,99.266% 4.118%,99.530% 4.633%,99.735% 5.194%,99.882% 5.816%,99.971% 6.535%,100.000% 7.612%,100.000% 92.388%,99.971% 93.465%,99.882% 94.184%,99.735% 94.806%,99.530% 95.367%,99.266% 95.882%,98.944% 96.359%,98.564% 96.803%,98.126% 97.215%,97.631% 97.597%,97.079% 97.951%,96.470% 98.277%,95.803% 98.574%,95.079% 98.844%,94.295% 99.085%,93.451% 99.299%,92.542% 99.484%,91.565% 99.642%,90.509% 99.770%,89.360% 99.871%,88.087% 99.943%,86.614% 99.986%,84.409% 100.000%,15.591% 100.000%,13.386% 99.986%,11.913% 99.943%,10.640% 99.871%,9.491% 99.770%,8.435% 99.642%,7.458% 99.484%,6.549% 99.299%,5.705% 99.085%,4.921% 98.844%,4.197% 98.574%,3.530% 98.277%,2.921% 97.951%,2.369% 97.597%,1.874% 97.215%,1.436% 96.803%,1.056% 96.359%,0.734% 95.882%,0.470% 95.367%,0.265% 94.806%,0.118% 94.184%,0.029% 93.465%,0.000% 92.388%);
+}
+.tv-art #phoneB .chassis {
+  clip-path: polygon(0.000% 7.754%,0.029% 6.657%,0.118% 5.925%,0.265% 5.292%,0.470% 4.720%,0.734% 4.195%,1.056% 3.709%,1.436% 3.257%,1.874% 2.837%,2.369% 2.448%,2.921% 2.087%,3.530% 1.756%,4.197% 1.453%,4.921% 1.178%,5.705% 0.932%,6.549% 0.714%,7.458% 0.525%,8.435% 0.365%,9.491% 0.234%,10.640% 0.132%,11.913% 0.059%,13.386% 0.015%,15.591% 0.000%,84.409% 0.000%,86.614% 0.015%,88.087% 0.059%,89.360% 0.132%,90.509% 0.234%,91.565% 0.365%,92.542% 0.525%,93.451% 0.714%,94.295% 0.932%,95.079% 1.178%,95.803% 1.453%,96.470% 1.756%,97.079% 2.087%,97.631% 2.448%,98.126% 2.837%,98.564% 3.257%,98.944% 3.709%,99.266% 4.195%,99.530% 4.720%,99.735% 5.292%,99.882% 5.925%,99.971% 6.657%,100.000% 7.754%,100.000% 92.246%,99.971% 93.343%,99.882% 94.075%,99.735% 94.708%,99.530% 95.280%,99.266% 95.805%,98.944% 96.291%,98.564% 96.743%,98.126% 97.163%,97.631% 97.552%,97.079% 97.913%,96.470% 98.244%,95.803% 98.547%,95.079% 98.822%,94.295% 99.068%,93.451% 99.286%,92.542% 99.475%,91.565% 99.635%,90.509% 99.766%,89.360% 99.868%,88.087% 99.941%,86.614% 99.985%,84.409% 100.000%,15.591% 100.000%,13.386% 99.985%,11.913% 99.941%,10.640% 99.868%,9.491% 99.766%,8.435% 99.635%,7.458% 99.475%,6.549% 99.286%,5.705% 99.068%,4.921% 98.822%,4.197% 98.547%,3.530% 98.244%,2.921% 97.913%,2.369% 97.552%,1.874% 97.163%,1.436% 96.743%,1.056% 96.291%,0.734% 95.805%,0.470% 95.280%,0.265% 94.708%,0.118% 94.075%,0.029% 93.343%,0.000% 92.246%);
+}
+
+.tv-art .rail {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(96, 158, 255, .30) 0px, rgba(96, 158, 255, 0) 7px,
+      rgba(96, 158, 255, 0) 365px, rgba(96, 158, 255, .24) 372px),
+    linear-gradient(180deg, transparent 0 15.6%, rgba(203, 211, 219, .16) 15.6% 16.2%,
+      transparent 16.2% 83.0%, rgba(203, 211, 219, .16) 83.0% 83.6%, transparent 83.6%),
+    linear-gradient(180deg,
+      rgba(255, 255, 255, .14) 0%, rgba(255, 255, 255, .04) 5%,
+      rgba(255, 255, 255, 0) 18%, rgba(0, 0, 0, .06) 45%,
+      rgba(0, 0, 0, .16) 78%, rgba(0, 0, 0, .26) 96%, rgba(0, 0, 0, .12) 100%);
+}
+
+.tv-art .front {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: linear-gradient(146deg, #2B2F35 0%, #14171B 22%, #0B0D10 52%, #101317 74%, #262A30 100%);
+}
+.tv-art #phoneA .front {
+  left: 19px; right: 0;
+  clip-path: polygon(0.000% 6.955%,0.028% 5.972%,0.113% 5.314%,0.255% 4.747%,0.453% 4.234%,0.707% 3.763%,1.017% 3.327%,1.383% 2.922%,1.805% 2.545%,2.281% 2.195%,2.813% 1.872%,3.399% 1.575%,4.041% 1.303%,4.739% 1.057%,5.494% 0.836%,6.307% 0.641%,7.182% 0.471%,8.123% 0.328%,9.140% 0.210%,10.246% 0.118%,11.472% 0.053%,12.890% 0.013%,15.014% 0.000%,84.986% 0.000%,87.110% 0.013%,88.528% 0.053%,89.754% 0.118%,90.860% 0.210%,91.877% 0.328%,92.818% 0.471%,93.693% 0.641%,94.506% 0.836%,95.261% 1.057%,95.959% 1.303%,96.601% 1.575%,97.187% 1.872%,97.719% 2.195%,98.195% 2.545%,98.617% 2.922%,98.983% 3.327%,99.293% 3.763%,99.547% 4.234%,99.745% 4.747%,99.887% 5.314%,99.972% 5.972%,100.000% 6.955%,100.000% 93.045%,99.972% 94.028%,99.887% 94.686%,99.745% 95.253%,99.547% 95.766%,99.293% 96.237%,98.983% 96.673%,98.617% 97.078%,98.195% 97.455%,97.719% 97.805%,97.187% 98.128%,96.601% 98.425%,95.959% 98.697%,95.261% 98.943%,94.506% 99.164%,93.693% 99.359%,92.818% 99.529%,91.877% 99.672%,90.860% 99.790%,89.754% 99.882%,88.528% 99.947%,87.110% 99.987%,84.986% 100.000%,15.014% 100.000%,12.890% 99.987%,11.472% 99.947%,10.246% 99.882%,9.140% 99.790%,8.123% 99.672%,7.182% 99.529%,6.307% 99.359%,5.494% 99.164%,4.739% 98.943%,4.041% 98.697%,3.399% 98.425%,2.813% 98.128%,2.281% 97.805%,1.805% 97.455%,1.383% 97.078%,1.017% 96.673%,0.707% 96.237%,0.453% 95.766%,0.255% 95.253%,0.113% 94.686%,0.028% 94.028%,0.000% 93.045%);
+}
+.tv-art #phoneB .front {
+  right: 19px; left: 0;
+  clip-path: polygon(0.000% 7.086%,0.028% 6.083%,0.113% 5.414%,0.255% 4.835%,0.453% 4.313%,0.707% 3.834%,1.017% 3.389%,1.383% 2.976%,1.805% 2.593%,2.281% 2.237%,2.813% 1.907%,3.399% 1.604%,4.041% 1.327%,4.739% 1.076%,5.494% 0.852%,6.307% 0.653%,7.182% 0.480%,8.123% 0.334%,9.140% 0.214%,10.246% 0.120%,11.472% 0.053%,12.890% 0.013%,15.014% 0.000%,84.986% 0.000%,87.110% 0.013%,88.528% 0.053%,89.754% 0.120%,90.860% 0.214%,91.877% 0.334%,92.818% 0.480%,93.693% 0.653%,94.506% 0.852%,95.261% 1.076%,95.959% 1.327%,96.601% 1.604%,97.187% 1.907%,97.719% 2.237%,98.195% 2.593%,98.617% 2.976%,98.983% 3.389%,99.293% 3.834%,99.547% 4.313%,99.745% 4.835%,99.887% 5.414%,99.972% 6.083%,100.000% 7.086%,100.000% 92.914%,99.972% 93.917%,99.887% 94.586%,99.745% 95.165%,99.547% 95.687%,99.293% 96.166%,98.983% 96.611%,98.617% 97.024%,98.195% 97.407%,97.719% 97.763%,97.187% 98.093%,96.601% 98.396%,95.959% 98.673%,95.261% 98.924%,94.506% 99.148%,93.693% 99.347%,92.818% 99.520%,91.877% 99.666%,90.860% 99.786%,89.754% 99.880%,88.528% 99.947%,87.110% 99.987%,84.986% 100.000%,15.014% 100.000%,12.890% 99.987%,11.472% 99.947%,10.246% 99.880%,9.140% 99.786%,8.123% 99.666%,7.182% 99.520%,6.307% 99.347%,5.494% 99.148%,4.739% 98.924%,4.041% 98.673%,3.399% 98.396%,2.813% 98.093%,2.281% 97.763%,1.805% 97.407%,1.383% 97.024%,1.017% 96.611%,0.707% 96.166%,0.453% 95.687%,0.255% 95.165%,0.113% 94.586%,0.028% 93.917%,0.000% 92.914%);
+}
+
+.tv-art .bevel {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, .16),
+    inset 0 1.5px 0 rgba(255, 255, 255, .22),
+    inset 0 -1.5px 0 rgba(255, 255, 255, .10);
+}
+
+.tv-art .glass { position: absolute; inset: 3px; background: #04060A; }
+.tv-art #phoneA .glass {
+  clip-path: polygon(0.000% 6.614%,0.027% 5.678%,0.109% 5.053%,0.245% 4.513%,0.435% 4.026%,0.679% 3.578%,0.976% 3.164%,1.327% 2.778%,1.732% 2.420%,2.189% 2.088%,2.699% 1.780%,3.262% 1.497%,3.879% 1.239%,4.548% 1.005%,5.272% 0.795%,6.053% 0.609%,6.892% 0.448%,7.796% 0.311%,8.771% 0.200%,9.833% 0.112%,11.010% 0.050%,12.371% 0.012%,14.409% 0.000%,85.591% 0.000%,87.629% 0.012%,88.990% 0.050%,90.167% 0.112%,91.229% 0.200%,92.204% 0.311%,93.108% 0.448%,93.947% 0.609%,94.728% 0.795%,95.452% 1.005%,96.121% 1.239%,96.738% 1.497%,97.301% 1.780%,97.811% 2.088%,98.268% 2.420%,98.673% 2.778%,99.024% 3.164%,99.321% 3.578%,99.565% 4.026%,99.755% 4.513%,99.891% 5.053%,99.973% 5.678%,100.000% 6.614%,100.000% 93.386%,99.973% 94.322%,99.891% 94.947%,99.755% 95.487%,99.565% 95.974%,99.321% 96.422%,99.024% 96.836%,98.673% 97.222%,98.268% 97.580%,97.811% 97.912%,97.301% 98.220%,96.738% 98.503%,96.121% 98.761%,95.452% 98.995%,94.728% 99.205%,93.947% 99.391%,93.108% 99.552%,92.204% 99.689%,91.229% 99.800%,90.167% 99.888%,88.990% 99.950%,87.629% 99.988%,85.591% 100.000%,14.409% 100.000%,12.371% 99.988%,11.010% 99.950%,9.833% 99.888%,8.771% 99.800%,7.796% 99.689%,6.892% 99.552%,6.053% 99.391%,5.272% 99.205%,4.548% 98.995%,3.879% 98.761%,3.262% 98.503%,2.699% 98.220%,2.189% 97.912%,1.732% 97.580%,1.327% 97.222%,0.976% 96.836%,0.679% 96.422%,0.435% 95.974%,0.245% 95.487%,0.109% 94.947%,0.027% 94.322%,0.000% 93.386%);
+}
+.tv-art #phoneB .glass {
+  clip-path: polygon(0.000% 6.739%,0.027% 5.785%,0.109% 5.149%,0.245% 4.599%,0.435% 4.102%,0.679% 3.646%,0.976% 3.223%,1.327% 2.831%,1.732% 2.466%,2.189% 2.127%,2.699% 1.814%,3.262% 1.526%,3.879% 1.262%,4.548% 1.024%,5.272% 0.810%,6.053% 0.621%,6.892% 0.457%,7.796% 0.317%,8.771% 0.203%,9.833% 0.114%,11.010% 0.051%,12.371% 0.013%,14.409% 0.000%,85.591% 0.000%,87.629% 0.013%,88.990% 0.051%,90.167% 0.114%,91.229% 0.203%,92.204% 0.317%,93.108% 0.457%,93.947% 0.621%,94.728% 0.810%,95.452% 1.024%,96.121% 1.262%,96.738% 1.526%,97.301% 1.814%,97.811% 2.127%,98.268% 2.466%,98.673% 2.831%,99.024% 3.223%,99.321% 3.646%,99.565% 4.102%,99.755% 4.599%,99.891% 5.149%,99.973% 5.785%,100.000% 6.739%,100.000% 93.261%,99.973% 94.215%,99.891% 94.851%,99.755% 95.401%,99.565% 95.898%,99.321% 96.354%,99.024% 96.777%,98.673% 97.169%,98.268% 97.534%,97.811% 97.873%,97.301% 98.186%,96.738% 98.474%,96.121% 98.738%,95.452% 98.976%,94.728% 99.190%,93.947% 99.379%,93.108% 99.543%,92.204% 99.683%,91.229% 99.797%,90.167% 99.886%,88.990% 99.949%,87.629% 99.987%,85.591% 100.000%,14.409% 100.000%,12.371% 99.987%,11.010% 99.949%,9.833% 99.886%,8.771% 99.797%,7.796% 99.683%,6.892% 99.543%,6.053% 99.379%,5.272% 99.190%,4.548% 98.976%,3.879% 98.738%,3.262% 98.474%,2.699% 98.186%,2.189% 97.873%,1.732% 97.534%,1.327% 97.169%,0.976% 96.777%,0.679% 96.354%,0.435% 95.898%,0.245% 95.401%,0.109% 94.851%,0.027% 94.215%,0.000% 93.261%);
+}
+
+.tv-art .screen {
+  position: absolute;
+  inset: 6px;
+  overflow: hidden;
+  background: radial-gradient(120% 80% at 20% 0%, #0E1B30 0%, #0A1424 42%, #060C16 100%);
+  box-shadow: 0 0 0 1px #000, 0 0 9px 2px rgba(0, 0, 0, .95), 0 0 22px rgba(0, 0, 0, .6);
+}
+.tv-art #phoneA .screen {
+  clip-path: polygon(0.000% 5.780%,0.024% 4.962%,0.097% 4.416%,0.218% 3.944%,0.387% 3.518%,0.605% 3.127%,0.870% 2.765%,1.182% 2.428%,1.543% 2.115%,1.950% 1.824%,2.405% 1.556%,2.906% 1.309%,3.455% 1.083%,4.052% 0.878%,4.697% 0.695%,5.392% 0.532%,6.140% 0.392%,6.945% 0.272%,7.814% 0.174%,8.759% 0.098%,9.808% 0.044%,11.020% 0.011%,12.836% 0.000%,87.164% 0.000%,88.980% 0.011%,90.192% 0.044%,91.241% 0.098%,92.186% 0.174%,93.055% 0.272%,93.860% 0.392%,94.608% 0.532%,95.303% 0.695%,95.948% 0.878%,96.545% 1.083%,97.094% 1.309%,97.595% 1.556%,98.050% 1.824%,98.457% 2.115%,98.818% 2.428%,99.130% 2.765%,99.395% 3.127%,99.613% 3.518%,99.782% 3.944%,99.903% 4.416%,99.976% 4.962%,100.000% 5.780%,100.000% 94.220%,99.976% 95.038%,99.903% 95.584%,99.782% 96.056%,99.613% 96.482%,99.395% 96.873%,99.130% 97.235%,98.818% 97.572%,98.457% 97.885%,98.050% 98.176%,97.595% 98.444%,97.094% 98.691%,96.545% 98.917%,95.948% 99.122%,95.303% 99.305%,94.608% 99.468%,93.860% 99.608%,93.055% 99.728%,92.186% 99.826%,91.241% 99.902%,90.192% 99.956%,88.980% 99.989%,87.164% 100.000%,12.836% 100.000%,11.020% 99.989%,9.808% 99.956%,8.759% 99.902%,7.814% 99.826%,6.945% 99.728%,6.140% 99.608%,5.392% 99.468%,4.697% 99.305%,4.052% 99.122%,3.455% 98.917%,2.906% 98.691%,2.405% 98.444%,1.950% 98.176%,1.543% 97.885%,1.182% 97.572%,0.870% 97.235%,0.605% 96.873%,0.387% 96.482%,0.218% 96.056%,0.097% 95.584%,0.024% 95.038%,0.000% 94.220%);
+}
+.tv-art #phoneB .screen {
+  clip-path: polygon(0.000% 5.890%,0.024% 5.057%,0.097% 4.501%,0.218% 4.020%,0.387% 3.586%,0.605% 3.187%,0.870% 2.818%,1.182% 2.474%,1.543% 2.155%,1.950% 1.859%,2.405% 1.586%,2.906% 1.334%,3.455% 1.104%,4.052% 0.895%,4.697% 0.708%,5.392% 0.543%,6.140% 0.399%,6.945% 0.277%,7.814% 0.178%,8.759% 0.100%,9.808% 0.044%,11.020% 0.011%,12.836% 0.000%,87.164% 0.000%,88.980% 0.011%,90.192% 0.044%,91.241% 0.100%,92.186% 0.178%,93.055% 0.277%,93.860% 0.399%,94.608% 0.543%,95.303% 0.708%,95.948% 0.895%,96.545% 1.104%,97.094% 1.334%,97.595% 1.586%,98.050% 1.859%,98.457% 2.155%,98.818% 2.474%,99.130% 2.818%,99.395% 3.187%,99.613% 3.586%,99.782% 4.020%,99.903% 4.501%,99.976% 5.057%,100.000% 5.890%,100.000% 94.110%,99.976% 94.943%,99.903% 95.499%,99.782% 95.980%,99.613% 96.414%,99.395% 96.813%,99.130% 97.182%,98.818% 97.526%,98.457% 97.845%,98.050% 98.141%,97.595% 98.414%,97.094% 98.666%,96.545% 98.896%,95.948% 99.105%,95.303% 99.292%,94.608% 99.457%,93.860% 99.601%,93.055% 99.723%,92.186% 99.822%,91.241% 99.900%,90.192% 99.956%,88.980% 99.989%,87.164% 100.000%,12.836% 100.000%,11.020% 99.989%,9.808% 99.956%,8.759% 99.900%,7.814% 99.822%,6.945% 99.723%,6.140% 99.601%,5.392% 99.457%,4.697% 99.292%,4.052% 99.105%,3.455% 98.896%,2.906% 98.666%,2.405% 98.414%,1.950% 98.141%,1.543% 97.845%,1.182% 97.526%,0.870% 97.182%,0.605% 96.813%,0.387% 96.414%,0.218% 95.980%,0.097% 95.499%,0.024% 94.943%,0.000% 94.110%);
+}
+
+.tv-art .ao {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  box-shadow: inset 0 0 14px rgba(0, 0, 0, .85), inset 0 0 3px rgba(0, 0, 0, 1);
+}
+
+.tv-art .island {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 13px;
+  width: 98px;
+  height: 29px;
+  border-radius: 15px;
+  background: #000;
+  z-index: 8;
+  box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, .05), 0 1px 2px rgba(0, 0, 0, .9);
+}
+.tv-art .island::after {
+  content: "";
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #25384B 0%, #0D141C 55%, #05080C 100%);
+  box-shadow: inset 0 0 0 .5px rgba(120, 170, 220, .22);
+}
+
+.tv-art .sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  background:
+    linear-gradient(118deg, rgba(255, 255, 255, .13) 0%, rgba(255, 255, 255, .05) 15%,
+      rgba(255, 255, 255, .015) 27%, rgba(255, 255, 255, 0) 40%),
+    radial-gradient(70% 40% at 12% -6%, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(302deg, rgba(86, 150, 255, .13) 0%, rgba(86, 150, 255, .03) 22%,
+      rgba(86, 150, 255, 0) 42%);
+}
+
+.tv-art .btn {
+  position: absolute;
+  border-radius: 2px;
+  z-index: 3;
+  background: linear-gradient(90deg, #5C626A 0%, #464B52 20%, #343941 58%, #20242A 100%);
+  box-shadow: 0 -1px 1px rgba(0, 0, 0, .75), 0 1px 1px rgba(0, 0, 0, .75),
+    inset 0 1px 0 rgba(255, 255, 255, .16);
+}
+.tv-art #phoneB .btn {
+  background: linear-gradient(270deg, #5C626A 0%, #464B52 20%, #343941 58%, #20242A 100%);
+}
+
+.tv-art .shadow {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 1;
+  background: radial-gradient(closest-side, rgba(8, 14, 28, .28), rgba(8, 14, 28, 0) 72%);
+  filter: blur(18px);
+  opacity: .7;
+}
+.tv-art .cast {
+  position: absolute;
+  z-index: 5;
+  border-radius: 60px;
+  filter: blur(18px);
+  background: linear-gradient(90deg, rgba(6, 10, 20, .32), rgba(6, 10, 20, .1) 45%, rgba(6, 10, 20, 0) 100%);
+  opacity: .65;
+}
+
+.tv-art .ui {
+  position: absolute;
+  inset: 0;
+  padding: 52px 14px 0;
+  color: #fff;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  background: #05080f;
+}
+
+.tv-art .hrow { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.tv-art .hrow > div:first-child { min-width: 0; flex: 1; }
+.tv-art .eyebrow {
+  font-size: 7.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #46C8F0;
+  font-weight: 600;
+}
+.tv-art .brand {
+  width: 42px;
+  height: 36px;
+  object-fit: contain;
+  object-position: center center;
+  flex: none;
+  margin-top: 0;
+  mix-blend-mode: screen;
+}
+
+.tv-art .total {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.05;
+  margin-top: 4px;
+}
+.tv-art .delta { font-size: 11px; font-weight: 600; color: #26D07C; margin-top: 3px; }
+.tv-art .subline { font-size: 8.5px; color: #6E8098; margin-top: 5px; letter-spacing: .02em; }
+.tv-art .subline b { color: #9DB0C8; font-weight: 600; }
+
+/* bordered 3-col stats — screenshot PNL card */
+.tv-art .stats-panel {
+  display: flex;
+  margin-top: 12px;
+  padding: 11px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(70, 150, 230, .28);
+  background: rgba(12, 18, 30, .85);
+}
+.tv-art .stats-panel .cell { flex: 1; min-width: 0; text-align: center; }
+.tv-art .stats-panel .cell + .cell {
+  border-left: 1px solid rgba(255, 255, 255, .08);
+}
+.tv-art .stats-panel .lbl {
+  font-size: 6.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #6B8098;
+}
+.tv-art .stats-panel .val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #26D07C;
+  margin-top: 3px;
+}
+.tv-art .stats-panel .val--cyan { color: #4FC3F0; }
+.tv-art .stats-panel .sub { font-size: 6.5px; color: #4E5F76; margin-top: 2px; }
+
+/* signals pair row */
+.tv-art .sigrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+}
+.tv-art .coin {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: linear-gradient(150deg, #F7D06B, #E0A32C);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 800; color: #3A2A05; flex: none;
+}
+.tv-art .pair { font-size: 13px; font-weight: 700; letter-spacing: .01em; }
+.tv-art .side {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  color: #26D07C;
+  background: rgba(38, 208, 124, .16);
+  border: 1px solid rgba(38, 208, 124, .4);
+}
+.tv-art .pct { margin-left: auto; text-align: right; }
+.tv-art .pct b { font-size: 16px; font-weight: 700; color: #26D07C; line-height: 1; }
+.tv-art .pct i {
+  display: block;
+  font-style: normal;
+  font-size: 6px;
+  color: #5C6E86;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* radar | factor bars under large centered price */
+.tv-art .big {
+  font-size: 26px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: -.01em;
+  margin-top: 12px;
+  white-space: nowrap;
+}
+.tv-art .anal {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 12px;
+}
+.tv-art .radar {
+  flex: none;
+  width: 88px;
+  height: 88px;
+  stroke: rgba(70, 160, 120, .35);
+  fill: none;
+  stroke-width: 1.1;
+}
+.tv-art .radar line { stroke: rgba(70, 160, 120, .22); stroke-width: 1; }
+.tv-art .radar__wedge { fill: rgba(38, 208, 124, .42); stroke: none; }
+.tv-art .radar__core { fill: #26D07C; stroke: none; }
+
+.tv-art .factors {
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.tv-art .factors li {
+  display: grid;
+  grid-template-columns: 48px 1fr 20px;
+  align-items: center;
+  gap: 6px;
+}
+.tv-art .factors__n {
+  font-size: 6.5px;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #7B93AD;
+}
+.tv-art .factors__track {
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  overflow: hidden;
+}
+.tv-art .factors__fill { display: block; height: 100%; border-radius: 999px; }
+.tv-art .factors__fill--amber { background: #F0B429; }
+.tv-art .factors__fill--green { background: #26D07C; }
+.tv-art .factors__fill--cyan { background: #3EC6F0; }
+.tv-art .factors__fill--violet { background: #8B6BF0; }
+.tv-art .factors__v {
+  font-size: 7.5px;
+  font-weight: 700;
+  text-align: right;
+}
+.tv-art .factors__v--amber { color: #F0B429; }
+.tv-art .factors__v--green { color: #26D07C; }
+.tv-art .factors__v--cyan { color: #3EC6F0; }
+.tv-art .factors__v--violet { color: #8B6BF0; }
+
+.tv-art .locked {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  margin-top: 12px;
+}
+.tv-art .locked__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 7px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #C9D6E6;
+  font-weight: 600;
+}
+.tv-art .locked__tag::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #26D07C;
+}
+.tv-art .bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 34px;
+}
+.tv-art .bars i {
+  flex: 1;
+  border-radius: 1.5px 1.5px 0 0;
+  background: linear-gradient(180deg, #4AE08A, #1FA85A);
+}
+
+.tv-art .sec {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  margin-top: 12px;
+  letter-spacing: .01em;
+}
+.tv-art .cards2 { display: flex; gap: 8px; margin-top: 8px; }
+.tv-art .card {
+  flex: 1;
+  background: rgba(10, 16, 28, .9);
+  border: 1px solid rgba(70, 150, 230, .22);
+  border-radius: 10px;
+  padding: 11px 10px;
+}
+.tv-art .card b { font-size: 11px; font-weight: 700; display: block; }
+.tv-art .card span { font-size: 7.5px; color: #5C6E86; display: block; margin-top: 3px; }
+
+/* portfolio trade cards — screenshot carousel */
+.tv-art .tradecards {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  overflow: hidden;
+  padding: 4px 2px 6px;
+}
+.tv-art .tc {
+  flex: 0 0 44%;
+  background: rgba(8, 14, 26, .95);
+  border: 1px solid rgba(60, 140, 220, .35);
+  border-radius: 14px;
+  padding: 12px 11px;
+  box-shadow: 0 0 12px rgba(40, 140, 255, .18);
+}
+.tv-art .tc--focus {
+  flex-basis: 48%;
+  border-color: rgba(80, 180, 255, .65);
+  box-shadow: 0 0 16px rgba(50, 160, 255, .35);
+}
+.tv-art .tc__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+.tv-art .ico {
+  width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 800; flex: none;
+}
+.tv-art .ico--a { background: linear-gradient(150deg, #7FA8FF, #2F6BE0); color: #0A1B3A; }
+.tv-art .ico--b { background: linear-gradient(150deg, #F7D06B, #E0A32C); color: #3A2A05; }
+.tv-art .ico--g { background: linear-gradient(150deg, #FFB36B, #E8752C); color: #3A1B05; }
+.tv-art .tc__sym {
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 8px;
+  letter-spacing: .01em;
+}
+.tv-art .pill {
+  flex: none;
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.tv-art .pill--run {
+  color: #26D07C;
+  background: rgba(38, 208, 124, .12);
+  border: 1px solid rgba(38, 208, 124, .3);
+}
+.tv-art .pill--pause {
+  color: #9DB0C8;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+.tv-art .tc__k {
+  font-size: 6.5px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #6B8098;
+  margin-top: 10px;
+}
+.tv-art .tc__pnl {
+  font-size: 20px;
+  font-weight: 700;
+  color: #26D07C;
+  margin-top: 2px;
+  letter-spacing: -.01em;
+}
+.tv-art .tc__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px 8px;
+  margin-top: 12px;
+  font-size: 6px;
+  color: #54657C;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.tv-art .tc__grid b {
+  display: block;
+  font-size: 9px;
+  color: #C9D6E6;
+  font-weight: 600;
+  margin-top: 2px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.tv-art .pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.tv-art .pager--signals { margin-top: 8px; }
+.tv-art .pager__dots { display: flex; align-items: center; gap: 5px; }
+.tv-art .pager__dots i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .18);
+}
+.tv-art .pager__dots i.on {
+  width: 14px;
+  border-radius: 3px;
+  background: #3B9BFF;
+}
+.tv-art .pager--signals .pager__dots i.on { background: #26D07C; }
+.tv-art .pager__arrow {
+  font-size: 15px;
+  line-height: 1;
+  color: rgba(255, 255, 255, .32);
+  font-weight: 300;
+}
+
+.tv-art .slots { display: flex; gap: 8px; margin-top: 8px; }
+.tv-art .slot {
+  flex: 1;
+  background: rgba(10, 16, 28, .9);
+  border: 1px solid rgba(70, 150, 230, .22);
+  border-radius: 11px;
+  padding: 12px;
+}
+.tv-art .slot b { font-size: 22px; font-weight: 700; display: block; }
+.tv-art .slot span { font-size: 8px; color: #5C6E86; display: block; margin-top: 3px; letter-spacing: .04em; }
+
+.tv-art .tabs {
+  margin-top: auto;
+  display: flex;
+  padding: 10px 2px 14px;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+  background: rgba(5, 8, 15, .92);
+}
+.tv-art .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.tv-art .tab svg { width: 16px; height: 16px; }
+.tv-art .tab span { font-size: 6.5px; letter-spacing: .04em; color: #4E5F76; }
+.tv-art .tab.on span { color: #3B9BFF; }
+.tv-art .home {
+  position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%);
+  width: 33%; height: 4px; border-radius: 3px; background: rgba(255, 255, 255, .28); z-index: 8;
+}
+
+html.cine .tv-art {
+  /* same compositing language as the old trust PNG — darks fall into the world */
+  mix-blend-mode: screen;
+  opacity: 1;
+}
+html.cine .tv-stage {
+  filter: none;
+}
+
+@media (max-width: 640px) {
+  .trust-viz:has(.tv-art) {
+    width: min(100%, calc(42vh * 1.5));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tv-art { animation: none; }
+}
