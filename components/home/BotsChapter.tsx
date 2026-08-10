@@ -1,218 +1,232 @@
-'use client';
+"use client";
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from "react";
 
-type BotStat = {
-  label: string;
-  value: string;
-  tone: string;
-};
-
-type BotIcon = 'aggressive' | 'balanced' | 'conservative';
+type BotIcon = "aggressive" | "balanced" | "conservative";
+type SpecTone = "is-med" | "is-high" | "is-info" | "is-low" | "is-risk";
 
 type BotCard = {
   id: string;
-  className: string;
+  variant: string;
   popular?: boolean;
-  badge: string;
-  badgeAccent?: boolean;
-  mode: string;
+  multiplier: string;
+  kicker: string;
   title: string;
-  desc: string;
-  stats: BotStat[];
-  tags: string[];
-  foot: string;
+  descLines: [string, string];
+  specs: { label: string; value: string; tone: SpecTone }[];
+  cta: string;
+  note: string;
   icon: BotIcon;
 };
 
 const BOT_CARDS: BotCard[] = [
   {
-    id: 'aggressive',
-    className: 'bcard bcard--aggressive',
-    badge: 'Max exposure',
-    mode: 'Aggressive',
-    title: 'High risk, high reward',
-    desc: 'Maximum profit potential for traders who can handle volatility.',
-    stats: [
-      { label: 'Risk', value: 'High', tone: 'stat--red' },
-      { label: 'Profit', value: 'Very High', tone: 'stat--green' },
-      { label: 'Frequency', value: 'High', tone: 'stat--violet' },
+    id: "aggressive",
+    variant: "bot-card--aggressive",
+    multiplier: "0.5×",
+    kicker: "% Aggressive",
+    title: "Aggressive Bot",
+    descLines: ["High risk, high reward", "Maximum profit potential"],
+    specs: [
+      { label: "Risk Level", value: "High", tone: "is-risk" },
+      { label: "Profit Potential", value: "Very High", tone: "is-high" },
+      { label: "Trade Frequency", value: "High", tone: "is-info" },
     ],
-    tags: ['Fast entries', 'High vol'],
-    foot: 'Best for experienced traders',
-    icon: 'aggressive',
+    cta: "Start Aggressive Bot",
+    note: "Best for experienced traders",
+    icon: "aggressive",
   },
   {
-    id: 'balanced',
-    className: 'bcard bcard--balanced bcard--rec',
+    id: "balanced",
+    variant: "bot-card--balanced",
     popular: true,
-    badge: 'Steady PnL',
-    badgeAccent: true,
-    mode: 'Balanced',
-    title: 'Balanced risk & reward',
-    desc: 'Consistent growth without pushing exposure to the edge.',
-    stats: [
-      { label: 'Risk', value: 'Medium', tone: 'stat--amber' },
-      { label: 'Profit', value: 'High', tone: 'stat--green' },
-      { label: 'Frequency', value: 'Medium', tone: 'stat--cyan' },
+    multiplier: "0.5×",
+    kicker: "% Balanced",
+    title: "Balanced Bot",
+    descLines: ["Balanced risk & reward", "Consistent PnL growth"],
+    specs: [
+      { label: "Risk Level", value: "Medium", tone: "is-med" },
+      { label: "Profit Potential", value: "High", tone: "is-high" },
+      { label: "Trade Frequency", value: "Medium", tone: "is-info" },
     ],
-    tags: ['Auto-rebalance', 'Smart sizing'],
-    foot: 'Best balance for steady growth',
-    icon: 'balanced',
+    cta: "Start Balanced Bot",
+    note: "Best balance for steady growth",
+    icon: "balanced",
   },
   {
-    id: 'conservative',
-    className: 'bcard bcard--conservative',
-    badge: 'Capital safe',
-    mode: 'Conservative',
-    title: 'Low risk, stable returns',
-    desc: 'Capital preservation first — slower pace, tighter guardrails.',
-    stats: [
-      { label: 'Risk', value: 'Low', tone: 'stat--emerald' },
-      { label: 'Profit', value: 'Moderate', tone: 'stat--amber' },
-      { label: 'Frequency', value: 'Low', tone: 'stat--emerald' },
+    id: "conservative",
+    variant: "bot-card--conservative",
+    multiplier: "0.6×",
+    kicker: "% Conservative",
+    title: "Conservative Bot",
+    descLines: ["Low risk, stable returns", "Capital preservation focused"],
+    specs: [
+      { label: "Risk Level", value: "Low", tone: "is-low" },
+      { label: "Profit Potential", value: "Moderate", tone: "is-med" },
+      { label: "Trade Frequency", value: "Low", tone: "is-info" },
     ],
-    tags: ['Low drawdown', 'Safe pace'],
-    foot: 'Best for long-term safety',
-    icon: 'conservative',
+    cta: "Start Conservative Bot",
+    note: "Best for long-term safety",
+    icon: "conservative",
   },
 ];
 
-function BotIconSvg({ type }: { type: BotIcon }) {
-  if (type === 'aggressive') {
-    return (
-      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="24" cy="24" r="17" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1.2" />
-        <path
-          d="M24 6v4M24 38v4M6 24h4M38 24h4"
-          stroke="currentColor"
-          strokeOpacity="0.35"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M27 11L15 27h7.5l-1.5 10L33 21h-7.5l1.5-10z"
-          fill="currentColor"
-          stroke="currentColor"
-          strokeWidth="0.8"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (type === 'balanced') {
-    return (
-      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle cx="24" cy="24" r="17" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1.2" />
-        <circle cx="24" cy="24" r="10" stroke="currentColor" strokeOpacity="0.45" strokeWidth="1.2" />
-        <circle cx="24" cy="24" r="3" fill="currentColor" />
-        <path
-          d="M24 7v5M24 36v5M7 24h5M36 24h5"
-          stroke="currentColor"
-          strokeOpacity="0.5"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-        />
-        <path
-          d="M12 12l3 3M33 33l3 3M33 12l-3 3M12 33l3-3"
-          stroke="currentColor"
-          strokeOpacity="0.28"
-          strokeWidth="1"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-
+function CircuitWires() {
   return (
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path
-        d="M24 5l15 5.5v11.5c0 9.2-6 16-15 18.5-9-2.5-15-9.3-15-18.5V10.5L24 5z"
+    <svg
+      className="bot-card__wires"
+      viewBox="0 98 480 240"
+      preserveAspectRatio="xMidYMid meet"
+      shapeRendering="geometricPrecision"
+      aria-hidden="true"
+    >
+      <g
+        fill="none"
         stroke="currentColor"
-        strokeWidth="1.3"
-        fill="color-mix(in srgb, currentColor 12%, transparent)"
-      />
-      <path
-        d="M24 5l15 5.5v11.5c0 9.2-6 16-15 18.5"
-        stroke="currentColor"
-        strokeOpacity="0.35"
-        strokeWidth="1"
-      />
-      <path
-        d="M18 24l4 4 8-9"
-        stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.05"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-      <circle cx="24" cy="22" r="11" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1" strokeDasharray="3 4" />
+        className="bot-card__wires-paths"
+      >
+        <path d="M123 218 L123 192 Q123 185 118.05 180.05 L104.95 166.95 Q100 162 100 155 L100 80" />
+        <path d="M123 218 L104.95 199.95 Q100 195 93 195 L59 195 Q52 195 47.05 190.05 L38.95 181.95 Q34 177 27 177 L0 177" />
+        <path d="M123 218 L104.95 236.05 Q100 241 93 241 L59 241 Q52 241 47.05 245.95 L38.95 254.05 Q34 259 27 259 L0 259" />
+        <path d="M123 218 L123 244 Q123 251 118.05 255.95 L104.95 269.05 Q100 274 100 281 L100 356" />
+        <path d="M165 143 L153.95 131.95 Q149 127 149 120 L149 98" />
+        <path d="M165 293 L153.95 304.05 Q149 309 149 316 L149 338" />
+        <path d="M123 218 L162 218" />
+        <path d="M357 218 L357 192 Q357 185 361.95 180.05 L375.05 166.95 Q380 162 380 155 L380 80" />
+        <path d="M357 218 L375.05 199.95 Q380 195 387 195 L421 195 Q428 195 432.95 190.05 L441.05 181.95 Q446 177 453 177 L480 177" />
+        <path d="M357 218 L375.05 236.05 Q380 241 387 241 L421 241 Q428 241 432.95 245.95 L441.05 254.05 Q446 259 453 259 L480 259" />
+        <path d="M357 218 L357 244 Q357 251 361.95 255.95 L375.05 269.05 Q380 274 380 281 L380 356" />
+        <path d="M315 143 L326.05 131.95 Q331 127 331 120 L331 98" />
+        <path d="M315 293 L326.05 304.05 Q331 309 331 316 L331 338" />
+        <path d="M357 218 L318 218" />
+      </g>
+      <g fill="rgba(242,248,255,0.92)" className="bot-card__wires-nodes">
+        <circle cx="123" cy="218" r="7" />
+        <circle cx="357" cy="218" r="7" />
+      </g>
     </svg>
   );
 }
 
-function ChevronIcon({ direction }: { direction: 'left' | 'right' }) {
+function ChipIcon({ type }: { type: BotIcon }) {
+  if (type === "aggressive") {
+    return (
+      <svg viewBox="0 0 96 96" width="72" height="72" fill="none" aria-hidden="true">
+        <path
+          d="M52 10 28 52h16L40 86l28-48H52L56 10z"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+          fill="color-mix(in srgb, currentColor 12%, transparent)"
+        />
+      </svg>
+    );
+  }
+
+  if (type === "conservative") {
+    return (
+      <svg viewBox="0 0 96 96" width="72" height="72" fill="none" aria-hidden="true">
+        <path
+          d="M36 28c0-8 5.5-14 12-14s12 6 12 14c8 2 14 9 14 18 0 11-9 20-26 20S22 57 22 46c0-9 6-16 14-18z"
+          stroke="currentColor"
+          strokeWidth="2.4"
+          strokeLinejoin="round"
+        />
+        <path d="M42 46h12M48 40v12" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="30" cy="68" r="5" stroke="currentColor" strokeWidth="2" />
+        <circle cx="44" cy="72" r="5" stroke="currentColor" strokeWidth="2" />
+        <circle cx="58" cy="68" r="5" stroke="currentColor" strokeWidth="2" />
+        <path d="M66 58c4 2 7 6 7 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
   return (
-    <svg className="bcards__nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        d={direction === 'left' ? 'M14 6l-6 6 6 6' : 'M10 6l6 6-6 6'}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
+    <svg
+      viewBox="0 0 96 96"
+      width="72"
+      height="72"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="48" cy="14" r="4" />
+      <path d="M48 18v58" />
+      <path d="M15 28h66" />
+      <path d="M15 28 4 54h22z" />
+      <path d="M81 28 70 54h22z" />
+      <path d="M4 54a11 11 0 0 0 22 0" />
+      <path d="M70 54a11 11 0 0 0 22 0" />
+      <path d="M34 76h28" />
+      <path d="M26 86h44" />
+      <path d="M34 86l3-10M62 86l-3-10" />
     </svg>
   );
 }
 
 function BotCardView({ card }: { card: BotCard }) {
   return (
-    <article className={card.className}>
-      {card.popular ? <span className="bcard__rec-badge">Popular</span> : null}
-      <div className="bcard__glow" aria-hidden="true" />
-      <div className="bcard__grid" aria-hidden="true" />
-      <header className="bcard__head">
-        <div className="bcard__icon-wrap">
-          <span className="bcard__icon-orbit" aria-hidden="true" />
-          <span className="bcard__icon" aria-hidden="true">
-            <BotIconSvg type={card.icon} />
-          </span>
-        </div>
-        <span className={`bcard__badge${card.badgeAccent ? ' bcard__badge--accent' : ''}`}>{card.badge}</span>
+    <article className={`bot-card ${card.variant}`}>
+      {card.popular ? <span className="bot-card__tag">Recommended</span> : null}
+
+      <header className="bot-card__head">
+        <span className="bot-card__dot" aria-hidden="true">
+          <i />
+          <b />
+        </span>
+        <span className="bot-card__mult">{card.multiplier}</span>
       </header>
-      <div className="bcard__body">
-        <span className="bcard__mode">{card.mode}</span>
-        <h3 className="bcard__title">{card.title}</h3>
-        <p className="bcard__desc">{card.desc}</p>
-        <ul className="bcard__stats" aria-label={`${card.mode} bot metrics`}>
-          {card.stats.map((stat) => (
-            <li key={stat.label}>
-              <span>{stat.label}</span>
-              <strong className={stat.tone}>{stat.value}</strong>
-            </li>
-          ))}
-        </ul>
-        <div className="bcard__tags" aria-hidden="true">
-          {card.tags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
+
+      <div className="bot-card__art">
+        <CircuitWires />
+        <div className="bot-card__chip">
+          <ChipIcon type={card.icon} />
         </div>
       </div>
-      <footer className="bcard__foot">{card.foot}</footer>
+
+      <div className="bot-card__body">
+        <p className="bot-card__kicker">{card.kicker}</p>
+        <h3 className="bot-card__title">{card.title}</h3>
+        <p className="bot-card__desc">
+          {card.descLines[0]}
+          <br />
+          {card.descLines[1]}
+        </p>
+
+        <div className="bot-card__rule" />
+
+        <dl className="bot-card__specs">
+          {card.specs.map((spec) => (
+            <div key={spec.label}>
+              <dt>{spec.label}</dt>
+              <dd className={spec.tone}>{spec.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <a href="#" className="bot-card__cta" onClick={(e) => e.preventDefault()}>
+          {card.cta}
+        </a>
+        <p className="bot-card__note">{card.note}</p>
+      </div>
     </article>
   );
 }
 
 export default function BotsChapter() {
-  const [activeIndex, setActiveIndex] = useState(1);
+  const [active, setActive] = useState(1);
   const total = BOT_CARDS.length;
-  const activeCard = BOT_CARDS[activeIndex];
 
   const goPrev = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      setActiveIndex((index) => (index - 1 + total) % total);
+      setActive((i) => (i - 1 + total) % total);
     },
     [total],
   );
@@ -220,7 +234,7 @@ export default function BotsChapter() {
   const goNext = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation();
-      setActiveIndex((index) => (index + 1) % total);
+      setActive((i) => (i + 1) % total);
     },
     [total],
   );
@@ -240,7 +254,8 @@ export default function BotsChapter() {
             Pick the automation style that fits <span className="bots-head__pill">your risk</span>
           </h2>
           <p className="bots-head__lead">
-            Aggressive, balanced, or conservative — the same rule-based engine on Binance; only the risk profile changes.
+            Aggressive, balanced, or conservative — the same autonomous engine on Binance; only the
+            risk profile changes.
           </p>
         </header>
 
@@ -253,41 +268,46 @@ export default function BotsChapter() {
 
           <div className="bcards__mobile">
             <div className="bcards__shell">
-              <button
-                type="button"
-                className="bcards__nav bcards__nav--prev"
-                onClick={goPrev}
-                aria-label="Previous bot mode"
-              >
-                <ChevronIcon direction="left" />
+              <button type="button" className="bcards__nav" onClick={goPrev} aria-label="Previous bot mode">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M14 6l-6 6 6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
-
-              <div className="bcards__viewport" key={activeCard.id}>
-                <BotCardView card={activeCard} />
+              <div className="bcards__viewport" key={BOT_CARDS[active].id}>
+                <BotCardView card={BOT_CARDS[active]} />
               </div>
-
-              <button
-                type="button"
-                className="bcards__nav bcards__nav--next"
-                onClick={goNext}
-                aria-label="Next bot mode"
-              >
-                <ChevronIcon direction="right" />
+              <button type="button" className="bcards__nav" onClick={goNext} aria-label="Next bot mode">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M10 6l6 6-6 6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </button>
             </div>
-
             <div className="bcards__dots" role="tablist" aria-label="Bot modes">
               {BOT_CARDS.map((card, index) => (
                 <button
                   key={card.id}
                   type="button"
                   role="tab"
-                  aria-selected={index === activeIndex}
+                  aria-selected={index === active}
                   aria-label={card.title}
-                  className={`bcards__dot${index === activeIndex ? ' is-active' : ''}`}
+                  className={`bcards__dot${index === active ? " is-active" : ""}`}
                   onClick={(event) => {
                     event.stopPropagation();
-                    setActiveIndex(index);
+                    setActive(index);
                   }}
                 />
               ))}

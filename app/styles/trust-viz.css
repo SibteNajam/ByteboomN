@@ -35,11 +35,12 @@
   position: absolute;
   border-radius: 50%;
   background: linear-gradient(150deg, #4EA6FF 0%, #1E7CE8 55%, #1668D6 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 8;
+  opacity: .92;
 }
 .tv-art .badge svg { width: 46%; height: 46%; }
 .tv-art .b-funnel { left: 135.1px; top: 492.6px; width: 88px; height: 88px; }
@@ -190,10 +191,10 @@
   z-index: 9;
   pointer-events: none;
   background:
-    linear-gradient(118deg, rgba(255, 255, 255, .13) 0%, rgba(255, 255, 255, .05) 15%,
-      rgba(255, 255, 255, .015) 27%, rgba(255, 255, 255, 0) 40%),
-    radial-gradient(70% 40% at 12% -6%, rgba(255, 255, 255, .10), rgba(255, 255, 255, 0) 70%),
-    linear-gradient(302deg, rgba(86, 150, 255, .13) 0%, rgba(86, 150, 255, .03) 22%,
+    linear-gradient(118deg, rgba(255, 255, 255, .08) 0%, rgba(255, 255, 255, .03) 15%,
+      rgba(255, 255, 255, .01) 27%, rgba(255, 255, 255, 0) 40%),
+    radial-gradient(70% 40% at 12% -6%, rgba(255, 255, 255, .06), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(302deg, rgba(86, 150, 255, .08) 0%, rgba(86, 150, 255, .02) 22%,
       rgba(86, 150, 255, 0) 42%);
 }
 
@@ -223,17 +224,17 @@
   position: absolute;
   border-radius: 50%;
   z-index: 1;
-  background: radial-gradient(closest-side, rgba(8, 14, 28, .28), rgba(8, 14, 28, 0) 72%);
+  background: radial-gradient(closest-side, rgba(8, 14, 28, .2), rgba(8, 14, 28, 0) 72%);
   filter: blur(18px);
-  opacity: .7;
+  opacity: .45;
 }
 .tv-art .cast {
   position: absolute;
   z-index: 5;
   border-radius: 60px;
   filter: blur(18px);
-  background: linear-gradient(90deg, rgba(6, 10, 20, .32), rgba(6, 10, 20, .1) 45%, rgba(6, 10, 20, 0) 100%);
-  opacity: .65;
+  background: linear-gradient(90deg, rgba(6, 10, 20, .22), rgba(6, 10, 20, .08) 45%, rgba(6, 10, 20, 0) 100%);
+  opacity: .4;
 }
 
 .tv-art .ui {
@@ -618,12 +619,17 @@
 }
 
 html.cine .tv-art {
-  /* same compositing language as the old trust PNG — darks fall into the world */
+  /* darks fall into the world — artwork lives in the corridor */
   mix-blend-mode: screen;
-  opacity: 1;
+  opacity: 0.96;
+  transform-style: preserve-3d;
 }
 html.cine .tv-stage {
   filter: none;
+  transform-style: preserve-3d;
+}
+html.cine .tv-art .badge {
+  transform: translateZ(12px);
 }
 
 @media (max-width: 640px) {

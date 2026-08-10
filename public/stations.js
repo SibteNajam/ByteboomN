@@ -59,7 +59,7 @@
       if (!flat && c.panel) {
         const s = 1 - opacity;
         const scale = (0.92 + 0.08 * opacity).toFixed(3);
-        if (c.el.id === 'edgenode') {
+        if (c.el.id === 'edgenode' || c.el.id === 'productnode') {
           c.panel.style.transform = 'translate3d(0,0,0) scale(1)';
           c.panel.style.filter = 'none';
           return;
@@ -244,7 +244,22 @@
 
   /* ---------- inline trading journey (chapter 3) ---------- */
   function initInlineJourney(rootEl) {
-    if (!rootEl) return () => { };
+    const noopCtrl = () => ({
+      STOP_COUNT: 0,
+      tick() { },
+      isArmed: () => false,
+      isCompleted: () => true,
+      isAnimating: () => false,
+      isLocked: () => false,
+      getStep: () => 0,
+      setArmed() { },
+      resetToStart() { },
+      releaseAtEnd() { },
+      resetCompleted() { },
+      handleWheel() { return { consumed: false }; },
+      setProgress() { },
+    });
+    if (!rootEl) return noopCtrl();
     const q = sel => rootEl.querySelector(sel);
     const qa = sel => [...rootEl.querySelectorAll(sel)];
     const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
@@ -252,7 +267,7 @@
     const bot = q('.jp-bot');
     const stopsG = q('.jp-stops');
     const popup = q('.jp-popup');
-    if (!lit || !bot || !stopsG || !popup) return () => { };
+    if (!lit || !bot || !stopsG || !popup) return noopCtrl();
 
     const JOURNEY_GROUPS = [
       { groupId: 1, kicker: '01 · Open', title: 'Login / Signup', body: 'Creates an account or logs in — fast entry into the product.', mocks: ['onboard.jpeg', 'login.jpeg'] },
@@ -312,6 +327,8 @@
     const speechEl = q('.jp-speech');
     const numEl = q('.jp-stop-num');
     let activeGroupId = -1, shownKey = '', frontIsA = true, sliding = false;
+    let pendingFrame = null;
+    let slideSafetyTimer = 0;
     const SLIDE_MS = 320;
     const frontEl = () => frontIsA ? slideA : slideB;
     const backEl = () => frontIsA ? slideB : slideA;
@@ -331,13 +348,13 @@
         speechEl.classList.add('is-updating');
         speechEl.classList.add('is-open');
       }
-      kickerEl.textContent = g.kicker;
-      titleEl.textContent = g.title;
-      bodyEl.textContent = g.body;
+      if (kickerEl) kickerEl.textContent = g.kicker;
+      if (titleEl) titleEl.textContent = g.title;
+      if (bodyEl) bodyEl.textContent = g.body;
       popup.classList.add('is-open');
       if (speechEl) {
         requestAnimationFrame(() => {
-          setTimeout(() => speechEl.classList.remove('is-updating'), 380);
+          setTimeout(() => speechEl.classList.remove('is-updating'), 280);
         });
       }
     };
@@ -347,6 +364,18 @@
       el.classList.remove('is-enter', 'is-exit', 'is-show');
       el.src = src; el.alt = alt; el.classList.add('is-show');
     };
+    const finishSlide = () => {
+      if (slideSafetyTimer) {
+        clearTimeout(slideSafetyTimer);
+        slideSafetyTimer = 0;
+      }
+      sliding = false;
+      if (pendingFrame) {
+        const next = pendingFrame;
+        pendingFrame = null;
+        applyFrame(next.stop, next.animate);
+      }
+    };
     const slideTo = (src, alt, animate) => {
       const front = frontEl(), back = backEl();
       if (!front || !back) return;
@@ -354,14 +383,26 @@
       if (!canAnimate) {
         showImmediate(front, src, alt);
         back.classList.remove('is-show', 'is-enter', 'is-exit');
-        sliding = false;
+        finishSlide();
         return;
       }
-      if (front.getAttribute('src') === src) return;
+      if (front.getAttribute('src') === src) {
+        finishSlide();
+        return;
+      }
       sliding = true;
+      if (slideSafetyTimer) clearTimeout(slideSafetyTimer);
+      slideSafetyTimer = setTimeout(() => {
+        /* Image load / transition never completed — unlock so wheel keeps working */
+        showImmediate(front, src, alt);
+        back.classList.remove('is-show', 'is-enter', 'is-exit');
+        finishSlide();
+      }, SLIDE_MS + 900);
       back.classList.remove('is-show', 'is-enter', 'is-exit');
       back.src = src; back.alt = alt;
       const run = () => {
+        back.onload = null;
+        back.onerror = null;
         back.classList.add('is-enter');
         void back.offsetWidth;
         front.classList.remove('is-show');
@@ -371,16 +412,29 @@
         setTimeout(() => {
           front.classList.remove('is-exit');
           frontIsA = !frontIsA;
-          sliding = false;
+          finishSlide();
         }, SLIDE_MS);
       };
-      if (back.complete) run();
-      else back.onload = () => { back.onload = null; run(); };
+      const fail = () => {
+        back.onload = null;
+        back.onerror = null;
+        showImmediate(front, src, alt);
+        back.classList.remove('is-show', 'is-enter', 'is-exit');
+        finishSlide();
+      };
+      if (back.complete && back.naturalWidth > 0) run();
+      else {
+        back.onload = () => { back.onload = null; back.onerror = null; run(); };
+        back.onerror = fail;
+      }
     };
     const applyFrame = (stop, animate) => {
       const key = String(stop.id);
       if (key === shownKey) return;
-      if (sliding) return;
+      if (sliding) {
+        pendingFrame = { stop, animate };
+        return;
+      }
       shownKey = key;
       if (numEl) numEl.textContent = String(stop.id);
       if (!stop.mock) {
@@ -501,7 +555,12 @@
         if (!fastRewind && (wheelLocked || pathAnimating || sliding)) return { consumed: false };
         if (fastRewind && (pathAnimating || sliding)) {
           pathAnimating = false;
+          if (slideSafetyTimer) {
+            clearTimeout(slideSafetyTimer);
+            slideSafetyTimer = 0;
+          }
           sliding = false;
+          pendingFrame = null;
           wheelLocked = false;
         }
         if (deltaY > 0) {
@@ -1181,9 +1240,13 @@
 
     getPt(u, cam.position); cam.position.y += Math.sin(t * .8) * .05;
     getTan(u, tan); tan.normalize();
-    // Mouse sway: a small positional + rotational drift. The DOM chapters get
-    // the matching screen-space shift below, so world and content stay fused.
-    smx += (mx - smx) * 0.045; smy += (my - smy) * 0.045;
+    // Mouse sway: a small positional + rotational drift. Freeze it while the
+    // bots cards are live so the three-card UI doesn't drift with the cursor.
+    const botsLive = !!chapters.find(ch => ch.el.id === 'productnode' && ch.el.classList.contains('live'));
+    const swayTargetX = botsLive ? 0 : mx;
+    const swayTargetY = botsLive ? 0 : my;
+    smx += (swayTargetX - smx) * (botsLive ? 0.12 : 0.045);
+    smy += (swayTargetY - smy) * (botsLive ? 0.12 : 0.045);
     rightDir.set(-tan.z, 0, tan.x).normalize();
     cam.position.addScaledVector(rightDir, smx * 0.16);
     cam.position.y -= smy * 0.09;
