@@ -506,7 +506,7 @@ export default function TrustViz() {
 
         <PhoneShell
           id="phoneB"
-          buttons={<div className="btn" style={{ right: 1, top: 226, width: 8, height: 80 }} />}
+          buttons={<div className="side-btn" style={{ right: 2, top: 230, height: 72 }} />}
         >
           <ScreenPortfolio />
         </PhoneShell>
@@ -517,9 +517,9 @@ export default function TrustViz() {
           id="phoneA"
           buttons={
             <>
-              <div className="btn" style={{ left: 1, top: 158, width: 8, height: 32 }} />
-              <div className="btn" style={{ left: 1, top: 214, width: 8, height: 58 }} />
-              <div className="btn" style={{ left: 1, top: 286, width: 8, height: 58 }} />
+              <div className="side-btn" style={{ left: 2, top: 162, height: 28 }} />
+              <div className="side-btn" style={{ left: 2, top: 218, height: 50 }} />
+              <div className="side-btn" style={{ left: 2, top: 288, height: 50 }} />
             </>
           }
         >
