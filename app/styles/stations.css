@@ -1426,7 +1426,7 @@ html.cine .trust-phone--front {
 .bcards__desktop--depth .bot-card--depth-left,
 .bcards__desktop--depth .bot-card--depth-right {
   z-index: 1;
-  width: 80%;
+  width: 84%;
   transform: none;
   margin-bottom: 22px;
   border-color: rgba(var(--bc-rgb), 0.28);
@@ -1856,7 +1856,7 @@ html.cine .trust-phone--front {
 
   .bcards__desktop--depth .bot-card--depth-left,
   .bcards__desktop--depth .bot-card--depth-right {
-    width: 82%;
+    width: 86%;
     margin-bottom: 16px;
     transform: none;
   }

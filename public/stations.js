@@ -637,10 +637,12 @@
     const journeyCh = chapters.find(c => c.el.id === 'journeynode');
     if (journeyReleased && journeyExitTarget != null) {
       const exitScroll = journeyExitTarget * max;
-      if (scrollDirectionUp && (next < journeyExitTarget || scrollY < exitScroll - 1)) {
+      /* Only unlock when the user intentionally scrolls back below the
+         pricing entry — not on tiny upward jitter while already in Pricing. */
+      if (scrollDirectionUp && next < journeyExitTarget - 0.01) {
         clearJourneyRelease();
-      } else if (!scrollDirectionUp) {
-        next = Math.max(journeyExitTarget, next);
+      } else if (!scrollDirectionUp && next < journeyExitTarget) {
+        next = journeyExitTarget;
         if (scrollY < exitScroll - 2) {
           scrollTo({ top: exitScroll, behavior: 'auto' });
         }
@@ -946,6 +948,8 @@
     if (autoGliding || root.classList.contains('tail-mode')) return;
     if (performance.now() - lastUserInputAt < GLIDE_IDLE_MS) return;
     if (journeyExiting || journeyReleased || journeyCtrl.isArmed()) return;
+    /* Don't auto-pull back into Journey after the user has left it */
+    if (journeyChapter && journeyCtrl.isCompleted() && p > journeyChapter.b - 0.002) return;
     if (Math.abs(target - p) > 0.003) return;              // camera still flying
     let vis = 0;
     for (const c of chapters) { const v = glideVis(c); if (v > vis) vis = v; }
@@ -1085,11 +1089,7 @@
     if (i === 5) window.__coreFlash = (exec) => { crys.material.emissive.setHex(exec ? CYAN : VIOLET); crys.material.emissiveIntensity = exec ? 2.4 : .85; };
   });
 
-  /* avenues (glowing dashes trace the route along the floor) */
-  const routePts = path.getSpacedPoints(320);
-  const routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(routePts.map(p => new THREE.Vector3(p.x, -4.9, p.z))), new THREE.LineBasicMaterial({ color: CYAN, transparent: true, opacity: .3 }));
-  scene.add(routeLine);
-  for (let i = 6; i < routePts.length; i += 7) { const d = glow(i % 14 ? CYAN : VIOLET, 0.7, .5); d.position.set(routePts[i].x, -4.8, routePts[i].z); scene.add(d); }
+  /* Floor route line + dash dots removed — camera still follows the invisible path. */
 
   /* motes */
   function motes(count, color, size, op) { const geo = new THREE.BufferGeometry(); const a = new Float32Array(count * 3); for (let i = 0; i < count; i++) { a[i * 3] = (Math.random() - .5) * 160; a[i * 3 + 1] = Math.random() * 26 - 6; a[i * 3 + 2] = 12 - Math.random() * 240; } geo.setAttribute('position', new THREE.BufferAttribute(a, 3)); const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(pts); return pts; }
@@ -1304,8 +1304,15 @@
       const inRange = p >= journeyChapterTick.a && p <= journeyChapterTick.b;
       const fullyVisible = fadeWindow(p, journeyChapterTick.a, journeyChapterTick.b) >= 0.98;
       const visP = journeyVisibleP();
+      /* Only snap during approach into Journey — NOT when past it (Pricing+).
+         Old check used !fullyVisible which is also true after leaving, and
+         yanked scroll back to Journey from later sections. */
+      const approaching =
+        p >= journeyChapterTick.a - 0.002 &&
+        p <= visP + 0.045 &&
+        !scrollDirectionUp;
 
-      if (!journeyReleased && !journeyExiting && !journeyBypass && p >= journeyChapterTick.a && !fullyVisible && p > visP + 0.004) {
+      if (!journeyReleased && !journeyExiting && !journeyBypass && approaching && !fullyVisible && p > visP + 0.004) {
         snapJourneyScroll(visP);
         target = visP;
       }
@@ -1333,8 +1340,11 @@
         journeyBypass = false;
       } else if (p > journeyChapterTick.b + 0.008) {
         journeyHoldP = null;
-        if (journeyReleased || journeyCtrl.isCompleted()) {
-          journeyCtrl.setArmed(false);
+        journeyCtrl.setArmed(false);
+        /* Stay released once past Journey so later sections can't re-trap */
+        if (journeyCtrl.isCompleted() && !journeyReleased && !journeyExiting) {
+          journeyReleased = true;
+          journeyExitTarget = journeyExitTarget != null ? journeyExitTarget : journeyExitP();
         }
       }
 
