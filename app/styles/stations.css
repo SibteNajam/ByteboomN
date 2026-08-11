@@ -3587,6 +3587,9 @@ html.cine .pcard--rec {
   justify-content: center;
   text-align: center;
   margin-bottom: clamp(12px, 2vh, 20px);
+  perspective: 1200px;
+  perspective-origin: 50% 30%;
+  transform-style: preserve-3d;
 }
 
 .sec-stack .sec-item--featured {
@@ -3598,7 +3601,8 @@ html.cine .pcard--rec {
 .sec-stack .sec-item--featured .sec-item__visual {
   width: 175px;
   height: 175px;
-  margin-bottom: 10px;
+  margin-bottom: 18px;
+  transform: translate3d(0, -6px, 36px);
 }
 
 .sec-stack .sec-item--featured h3 {
@@ -3616,7 +3620,8 @@ html.cine .pcard--rec {
 .sec-stack .sec-item:not(.sec-item--featured) .sec-item__visual {
   width: 140px;
   height: 140px;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+  transform: translate3d(0, 10px, -28px);
 }
 
 .sec-stack .sec-item:not(.sec-item--featured) h3 {
@@ -3631,8 +3636,10 @@ html.cine .pcard--rec {
   margin-inline: auto;
 }
 
-html.cine .sec-stack .sec-item.is-active .sec-item__visual img {
-  filter: drop-shadow(0 0 28px rgba(34, 168, 255, 0.28));
+html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
+  filter:
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.45))
+    drop-shadow(0 0 28px rgba(34, 168, 255, 0.32));
 }
 
 .sec-row {
@@ -3645,29 +3652,102 @@ html.cine .sec-stack .sec-item.is-active .sec-item__visual img {
   align-items: center;
 }
 
-/* Image container */
+/* Image container — small 3D hologram stage */
 .sec-item__visual {
+  --sec-depth: 0px;
   width: 200px;
   height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   margin-bottom: 16px;
   position: relative;
+  perspective: 900px;
+  transform-style: preserve-3d;
+  isolation: isolate;
 }
 
-.sec-item__visual img {
+.sec-item__orb {
+  position: absolute;
+  inset: 8% 6% 18%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(34, 211, 238, 0.16), transparent 58%),
+    radial-gradient(circle at 50% 70%, rgba(34, 168, 255, 0.1), transparent 62%);
+  filter: blur(1px);
+  transform: translateZ(-18px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.sec-item__figure {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  transform-style: preserve-3d;
+  transform: rotateX(10deg) translateZ(12px);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sec-item__figure img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   mix-blend-mode: screen;
-  filter: drop-shadow(0 0 20px rgba(34, 168, 255, 0.15));
-  transition: transform 0.4s ease, filter 0.4s ease;
+  filter:
+    drop-shadow(0 16px 20px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 18px rgba(34, 168, 255, 0.22));
+  transition: filter 0.4s ease, transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: translateZ(0);
 }
 
-.sec-item:hover .sec-item__visual img {
-  transform: translateY(-6px);
-  filter: drop-shadow(0 0 32px rgba(34, 168, 255, 0.3));
+/* Floor contact — sells “floating above the grid” */
+.sec-item__plinth {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: -2%;
+  height: 18%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at center, rgba(34, 211, 238, 0.28) 0%, rgba(34, 168, 255, 0.1) 38%, transparent 72%);
+  box-shadow: 0 0 24px -4px rgba(34, 211, 238, 0.25);
+  transform: rotateX(68deg) translateZ(-8px) scale(1.05);
+  opacity: 0.85;
+  transition: opacity 0.4s ease, transform 0.45s ease;
+}
+
+.sec-stack .sec-item--featured .sec-item__plinth {
+  left: 10%;
+  right: 10%;
+  bottom: -4%;
+  height: 20%;
+  opacity: 1;
+  background:
+    radial-gradient(ellipse at center, rgba(34, 211, 238, 0.38) 0%, rgba(34, 168, 255, 0.14) 40%, transparent 74%);
+}
+
+.sec-stack .sec-item:not(.sec-item--featured) .sec-item__plinth {
+  opacity: 0.7;
+}
+
+.sec-item:hover .sec-item__figure {
+  transform: rotateX(6deg) translateY(-8px) translateZ(22px);
+}
+
+.sec-item:hover .sec-item__figure img {
+  filter:
+    drop-shadow(0 22px 24px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 0 30px rgba(34, 168, 255, 0.38));
+}
+
+.sec-item:hover .sec-item__plinth {
+  opacity: 1;
+  transform: rotateX(68deg) translateZ(-8px) scale(1.12);
 }
 
 /* Text below images */
@@ -4445,9 +4525,15 @@ html.flat .jbar {
   }
 
   .sec-stack .sec-item__visual,
-  .sec-stack .sec-item--featured .sec-item__visual {
+  .sec-stack .sec-item--featured .sec-item__visual,
+  .sec-stack .sec-item:not(.sec-item--featured) .sec-item__visual {
     width: 160px;
     height: 160px;
+    transform: none;
+  }
+
+  .sec-item__figure {
+    transform: rotateX(8deg) translateZ(8px);
   }
 
   .sec-header {
@@ -4656,6 +4742,7 @@ html.flat .jbar {
     width: 150px;
     height: 150px;
     margin-bottom: 12px;
+    transform: none;
   }
 
   html.cine .sec-stack .sec-item h3 {
@@ -4705,7 +4792,10 @@ html.flat .jbar {
   .trust-stage__aura,
   .bot-card,
   .bbj--inline .jp-speech,
-  .bbj--inline .jp-speech__scan::after {
+  .bbj--inline .jp-speech__scan::after,
+  .sec-item__figure,
+  .sec-item__plinth,
+  .sec-item__orb {
     animation: none;
     transition: none;
   }
@@ -4716,7 +4806,10 @@ html.flat .jbar {
   html.cine .bcards__desktop--depth .bot-card--depth-front,
   html.cine .bbj--inline .journey-path,
   html.cine .bbj--inline .jp-speech,
-  html.cine .bbj--inline .phone-frame {
+  html.cine .bbj--inline .phone-frame,
+  html.cine .sec-item__visual,
+  html.cine .sec-item__figure,
+  html.cine .sec-item__plinth {
     transform: none;
     animation: none;
   }

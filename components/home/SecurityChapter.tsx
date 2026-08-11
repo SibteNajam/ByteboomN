@@ -55,7 +55,11 @@ export default function SecurityChapter() {
                 data-sec={item.id}
               >
                 <div className="sec-item__visual">
-                  <img src={item.image} alt={item.alt} decoding="async" />
+                  <span className="sec-item__orb" aria-hidden="true" />
+                  <div className="sec-item__figure">
+                    <img src={item.image} alt={item.alt} decoding="async" />
+                  </div>
+                  <span className="sec-item__plinth" aria-hidden="true" />
                 </div>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
