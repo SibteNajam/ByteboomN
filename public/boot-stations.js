@@ -58,7 +58,7 @@
 
     var script = document.createElement('script');
     script.id = STATIONS_ID;
-    script.src = asset('/stations.js');
+    script.src = asset('/stations.js?v=scroll-back-smooth');
     script.async = false;
     document.body.appendChild(script);
     return true;

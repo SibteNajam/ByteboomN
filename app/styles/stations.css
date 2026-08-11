@@ -438,7 +438,11 @@ html.cine #trustnode .panel--trust {
   mask-image: radial-gradient(ellipse 128% 118% at 50% 54%, #000 52%, rgba(0, 0, 0, .55) 78%, transparent 100%);
 }
 
-html.cine #productnode .panel--bots,
+html.cine #productnode .panel--bots {
+  -webkit-mask-image: radial-gradient(ellipse 118% 108% at 50% 46%, #000 70%, transparent 100%);
+  mask-image: radial-gradient(ellipse 118% 108% at 50% 46%, #000 70%, transparent 100%);
+}
+
 html.cine #pricingnode .panel--pricing,
 html.cine #securitynode .panel--security {
   -webkit-mask-image: radial-gradient(ellipse 108% 98% at 50% 46%, #000 74%, transparent 100%);
@@ -1310,6 +1314,7 @@ html.cine .trust-phone--front {
   text-align: center;
   translate: 0 -28px;
   pointer-events: auto;
+  overflow: visible;
 }
 
 #productnode .panel--bots::before {
@@ -1368,19 +1373,135 @@ html.cine .trust-phone--front {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   justify-content: center;
-  gap: clamp(20px, 2.4vw, 28px);
+  gap: clamp(28px, 3.2vw, 40px);
   align-items: stretch;
   width: 100%;
   max-width: 940px;
   margin-inline: auto;
-  padding-top: 10px;
+  padding-top: 18px;
+  padding-bottom: 12px;
   pointer-events: auto;
 }
 
-/* Keep the row flat — 3D rotateY on side cards broke hover hit-testing */
-html.cine .bcards__desktop {
-  transform: none;
+/* Depth stage that survives cine panel transforms.
+   Nested translateZ gets flattened when stations.js transforms .panel —
+   so we fake “stepped back” with layout: smaller box size (not CSS scale),
+   lower on the floor, tucked under the center, and different contact shadows.
+   Text stays 1:1 crisp. */
+.bcards__desktop--depth {
+  align-items: end;
+  perspective: none;
   transform-style: flat;
+}
+
+.bcards__desktop--depth .bot-card--depth-back,
+.bcards__desktop--depth .bot-card--depth-front {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+}
+
+.bcards__desktop--depth .bot-card--depth-back .bot-card__title,
+.bcards__desktop--depth .bot-card--depth-back .bot-card__desc,
+.bcards__desktop--depth .bot-card--depth-front .bot-card__title,
+.bcards__desktop--depth .bot-card--depth-front .bot-card__desc {
+  text-shadow: none;
+}
+
+.bcards__desktop--depth .bot-card--depth-back::after,
+.bcards__desktop--depth .bot-card--depth-front::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: -20px;
+  height: 28px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55) 0%, transparent 72%);
+}
+
+/* Side cards: physically smaller + lower = further into the corridor */
+.bcards__desktop--depth .bot-card--depth-left,
+.bcards__desktop--depth .bot-card--depth-right {
+  z-index: 1;
+  width: 80%;
+  transform: none;
+  margin-bottom: 22px;
+  border-color: rgba(var(--bc-rgb), 0.28);
+  background:
+    radial-gradient(ellipse 65% 36% at 50% 14%, rgba(var(--bc-rgb), 0.035), transparent 70%),
+    rgba(5, 10, 18, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 0 1px rgba(var(--bc-rgb), 0.04),
+    0 32px 52px -18px rgba(0, 0, 0, 0.82);
+}
+
+.bcards__desktop--depth .bot-card--depth-left {
+  justify-self: end;
+  margin-right: -12px;
+}
+
+.bcards__desktop--depth .bot-card--depth-right {
+  justify-self: start;
+  margin-left: -12px;
+}
+
+.bcards__desktop--depth .bot-card--depth-back .bot-card__art {
+  height: 104px;
+}
+
+.bcards__desktop--depth .bot-card--depth-back .bot-card__body {
+  padding: 0 14px 24px;
+}
+
+.bcards__desktop--depth .bot-card--depth-back .bot-card__title {
+  font-size: 1.08rem;
+}
+
+.bcards__desktop--depth .bot-card--depth-back::after {
+  left: 16%;
+  right: 16%;
+  bottom: -26px;
+  height: 36px;
+  opacity: 0.95;
+}
+
+/* Center card: full cell, overlaps sides, sits closer to camera */
+.bcards__desktop--depth .bot-card--depth-front {
+  z-index: 4;
+  width: 100%;
+  justify-self: center;
+  margin-bottom: 0;
+  transform: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 0 0 1px rgba(var(--bc-rgb), 0.22),
+    0 14px 26px -10px rgba(0, 0, 0, 0.5),
+    0 0 40px -6px rgba(var(--bc-rgb), 0.45);
+}
+
+.bcards__desktop--depth .bot-card--depth-front::after {
+  left: 5%;
+  right: 5%;
+  bottom: -12px;
+  height: 20px;
+  opacity: 0.65;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.38) 0%, transparent 72%);
+}
+
+.bcards__desktop--depth .bot-card--depth-left:hover,
+.bcards__desktop--depth .bot-card--depth-right:hover {
+  z-index: 3;
+  transform: translateY(-6px);
+  border-color: rgba(var(--bc-rgb), 0.55);
+}
+
+.bcards__desktop--depth .bot-card--depth-front:hover {
+  z-index: 5;
+  transform: translateY(-8px);
 }
 
 .bcards__mobile {
@@ -1418,8 +1539,8 @@ html.cine .bcards__desktop {
   pointer-events: auto;
   cursor: pointer;
   transition:
-    transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.3s ease,
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s ease,
     border-color 0.3s ease,
     background 0.3s ease;
 }
@@ -1730,7 +1851,27 @@ html.cine .bcards__desktop {
   .bcards__desktop {
     max-width: min(100%, 860px);
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
+    gap: 24px;
+  }
+
+  .bcards__desktop--depth .bot-card--depth-left,
+  .bcards__desktop--depth .bot-card--depth-right {
+    width: 82%;
+    margin-bottom: 16px;
+    transform: none;
+  }
+
+  .bcards__desktop--depth .bot-card--depth-front {
+    transform: none;
+  }
+
+  .bcards__desktop--depth .bot-card--depth-left:hover,
+  .bcards__desktop--depth .bot-card--depth-right:hover {
+    transform: translateY(-5px);
+  }
+
+  .bcards__desktop--depth .bot-card--depth-front:hover {
+    transform: translateY(-7px);
   }
 }
 
@@ -1835,12 +1976,13 @@ html.cine .bcards__desktop {
 #journeynode.chapter--journey {
   justify-content: center;
   align-items: center;
-  padding: 36px 4vw 28px;
+  /* Clear the fixed jbar (logo ~80px + bar padding) so the title never overlaps nav */
+  padding: clamp(108px, 16vh, 132px) 2.4vw 26px;
 }
 
 #journeynode .panel--journey {
-  width: min(1140px, 94vw);
-  max-width: 1140px;
+  width: min(1340px, 97vw);
+  max-width: 1340px;
   padding: 0;
   background: none;
   border: none;
@@ -1853,14 +1995,22 @@ html.cine .bcards__desktop {
   display: none;
 }
 
+/* Palette matches newapp's journey exactly — the accents were gold/teal
+   here, which is why the section still read as a different design even
+   once the layout matched. Only the cloud silhouette stays local.
+   These tokens are used by this section alone. */
 .bbj.bbj--inline {
   --bbj-bg: transparent;
-  --bbj-text: #eef4fb;
-  --bbj-muted: rgba(170, 190, 215, .78);
-  --bbj-faint: #6a7688;
-  --bbj-gold: #f0b35e;
-  --bbj-teal: #35e2c6;
-  --bbj-violet: #8f7bff;
+  --bbj-text: #f2f8ff;
+  --bbj-muted: #8ea6c0;
+  --bbj-faint: #5f7794;
+  --bbj-accent: #17d6ee;
+  --bbj-gold: var(--bbj-accent);
+  --bbj-teal: var(--bbj-accent);
+  --bbj-violet: #7d5cff;
+  --bbj-blue: #22a8ff;
+  --bbj-line: rgba(126, 168, 216, .14);
+  --bbj-line-hi: rgba(126, 168, 216, .28);
   --bbj-line-soft: rgba(255, 255, 255, .06);
   --bbj-disp: var(--font-display);
   --bbj-body: var(--font), system-ui, sans-serif;
@@ -1880,14 +2030,23 @@ html.cine .bcards__desktop {
 }
 
 .bbj--inline .bbj-wrap {
-  width: min(1040px, 100%);
+  width: min(1280px, 100%);
   margin: 0 auto;
 }
 
+/* Centred over the symmetric five-dock rail, like newapp. The type itself
+   stays this project's (display face, gold eyebrow). */
 .bbj--inline .bbj-head {
-  margin-bottom: 10px;
-  max-width: 520px;
-  padding: 10px 0 0 4px;
+  margin: 0 auto clamp(8px, 1.6vh, 18px);
+  max-width: 640px;
+  padding: 0;
+  text-align: center;
+}
+
+.bbj--inline .bbj-head h2,
+.bbj--inline .bbj-head .sec-lede {
+  max-width: none;
+  margin-inline: auto;
 }
 
 .bbj--inline .eyebrow {
@@ -1904,155 +2063,116 @@ html.cine .bcards__desktop {
   display: none;
 }
 
+/* newapp's .sec-head scale */
 .bbj--inline h2 {
   font-family: var(--bbj-disp);
   font-weight: 700;
   letter-spacing: -.025em;
-  font-size: clamp(24px, 2.2vw, 35px);
-  line-height: 1.03;
+  font-size: clamp(1.55rem, 3vw, 2.45rem);
+  line-height: 1.1;
   max-width: 15ch;
   margin: 0;
-  color: #eef4fb;
-  text-shadow: 0 2px 28px rgba(34, 168, 255, 0.1);
+  color: var(--bbj-text);
+  text-wrap: balance;
+  text-shadow: 0 2px 30px rgba(34, 168, 255, .14);
 }
 
 .bbj--inline .sec-lede {
   color: var(--bbj-muted);
-  font-size: clamp(13px, .92vw, 14.5px);
-  margin: 6px 0 0;
-  max-width: 44ch;
-  line-height: 1.48;
-  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.35);
+  font-size: clamp(.92rem, 1.05vw, 1.05rem);
+  margin: 10px 0 0;
+  max-width: 58ch;
+  line-height: 1.6;
+  text-wrap: balance;
 }
 
+/* ---- Journey dock rail — mirrors newapp's final section exactly. The one
+   deliberate difference is the speech bubble: this project keeps its cloud
+   instead of newapp's rounded box. Everything else (five docks, ghost
+   phones, live scale, pass 1 = 1–5 / pass 2 = 6–8, timings) is the same.
+
+   --jp-h is only a ceiling: the real size is whichever is smaller, that
+   height or what one of the five columns can take, so the row never
+   overflows sideways on a wide short screen. */
 .bbj--inline .journey-path {
+  --jp-cols: 5;
+  --jp-gap: clamp(8px, 1.1vw, 18px);
+  --jp-h: clamp(300px, 53vh, 540px);
+  --jp-w: calc(var(--jp-h) * 0.469);
+  --jp-bubble-h: clamp(118px, 15vh, 148px);
+  --jp-fade: 0.55s;
+  --jp-ghost: 0.08;
   position: relative;
-  margin-top: clamp(6px, 1.2vh, 12px);
+  margin-top: clamp(2px, 0.6vh, 8px);
   padding-bottom: 0;
+  perspective: 1200px;
+  transform-style: preserve-3d;
 }
 
 html.cine .bbj--inline .journey-path {
   transform-style: preserve-3d;
-  /* light tilt only — heavy rotate made speech text soft */
-  transform: rotateX(1.5deg);
 }
 
-.bbj--inline .jp-canvas {
+.bbj--inline .jp-rail {
   position: relative;
-  display: block;
-  min-height: 320px;
+  display: grid;
+  grid-template-columns: repeat(var(--jp-cols), minmax(0, 1fr));
+  gap: var(--jp-gap);
+  align-items: end;
+  padding-bottom: clamp(4px, 0.8vh, 10px);
   transform-style: preserve-3d;
 }
 
-.bbj--inline .jp-svg {
-  width: min(100%, 620px);
-  height: auto;
-  display: block;
-  overflow: visible;
-}
-
-.bbj--inline .jp-route-base {
-  stroke: rgba(255, 255, 255, .1);
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.bbj--inline .jp-route-lit {
-  stroke: url(#bbjGlow);
-  stroke-width: 5.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  filter: drop-shadow(0 0 4px rgba(53, 226, 198, .22));
-}
-
-.bbj--inline .jp-stop-ring {
-  fill: rgba(5, 8, 14, .85);
-  stroke: rgba(255, 255, 255, .22);
-  stroke-width: 1.8;
-}
-
-.bbj--inline .jp-stop-dot {
-  fill: rgba(255, 255, 255, .4);
-}
-
-.bbj--inline .jp-stop-label {
-  fill: var(--bbj-faint);
-  font-family: var(--bbj-mono);
-  font-size: 10px;
-}
-
-.bbj--inline .jp-stop.is-active .jp-stop-ring {
-  stroke: rgba(53, 226, 198, .75);
-  filter: drop-shadow(0 0 5px rgba(53, 226, 198, .28));
-}
-
-.bbj--inline .jp-stop.is-active .jp-stop-dot {
-  fill: var(--bbj-teal);
-}
-
-.bbj--inline .jp-stop.is-active .jp-stop-label {
-  fill: var(--bbj-teal);
-}
-
-.bbj--inline .jp-bot-halo {
-  fill: rgba(53, 226, 198, .12);
-  stroke: rgba(53, 226, 198, .55);
-  stroke-width: 1.5;
-}
-
-.bbj--inline .jp-bot-core {
-  fill: #0b1218;
-  stroke: var(--bbj-gold);
-  stroke-width: 1.5;
-}
-
-.bbj--inline .jp-bot-eye {
-  fill: var(--bbj-teal);
-}
-
-.bbj--inline .jp-popup {
-  position: absolute;
-  right: 4%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: min(238px, 37vw, calc(68vh * 0.469));
-  opacity: 1;
-  pointer-events: none;
-  z-index: 4;
-}
-
-html.cine .bbj--inline .jp-popup {
+.bbj--inline .jp-slot {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  justify-items: center;
+  align-items: end;
+  gap: clamp(6px, 1vh, 12px);
   transform-style: preserve-3d;
-  transform: translateY(-50%) translateZ(18px);
+  transition: transform var(--jp-fade, 1s) ease-out;
 }
 
-.bbj--inline .jp-popup > * {
-  pointer-events: auto;
+.bbj--inline .jp-slot > * {
+  width: min(100%, var(--jp-w));
 }
 
-/* Cinematic cloud bubble — top-left of phone mockup */
+.bbj--inline .jp-stage {
+  position: relative;
+  aspect-ratio: 9 / 19.2;
+  transform-style: preserve-3d;
+}
+
+/* Cloud speech — box matches cloud SVG aspect; padding keeps copy inside */
 .bbj--inline .jp-speech {
-  position: absolute;
-  right: calc(100% - 18px);
-  top: -28px;
-  width: min(348px, 38vw);
-  min-height: 168px;
+  position: relative;
+  align-self: end;
+  width: 100%;
+  aspect-ratio: 300 / 142;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   margin: 0;
-  padding: 34px 38px 30px 34px;
+  /* % padding is relative to width — clears the cloud's lobes evenly */
+  padding: 14% 15% 18% 14%;
+  box-sizing: border-box;
   z-index: 6;
   background: transparent;
-  animation: jpSpeechFloat 6s ease-in-out infinite;
+  opacity: 0;
+  visibility: hidden;
+  transform: none;
+  transition:
+    opacity var(--jp-fade, 0.55s) ease,
+    visibility 0s linear var(--jp-fade, 0.55s);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
 }
 
-html.cine .bbj--inline .jp-speech {
-  transform: translateZ(36px);
-  animation: jpSpeechFloatCine 6s ease-in-out infinite;
-}
-
+/* Cloud fills the speech box 1:1 with the path */
 .bbj--inline .jp-speech__cloud {
   position: absolute;
   inset: 0;
@@ -2062,27 +2182,20 @@ html.cine .bbj--inline .jp-speech {
   overflow: visible;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.88;
+  opacity: 0.92;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .28));
 }
 
 .bbj--inline .jp-speech__inner {
   position: relative;
   z-index: 1;
+  width: 100%;
   margin: 0;
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-  text-align: left;
+  text-align: center;
   overflow: visible;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition: opacity .28s ease, transform .28s cubic-bezier(.2, .8, .2, 1);
 }
 
 .bbj--inline .jp-speech__scan {
@@ -2091,12 +2204,8 @@ html.cine .bbj--inline .jp-speech {
   overflow: hidden;
   pointer-events: none;
   z-index: 2;
-  opacity: .28;
-  border-radius: 0;
-}
-
-.bbj--inline .jp-speech__inner::before {
-  display: none;
+  opacity: .18;
+  border-radius: 40%;
 }
 
 .bbj--inline .jp-speech__scan::after {
@@ -2110,22 +2219,15 @@ html.cine .bbj--inline .jp-speech {
   animation: jpSpeechScan 4.5s ease-in-out infinite;
 }
 
-.bbj--inline .jp-speech.is-updating .jp-speech__inner {
-  opacity: .88;
-  transform: translateZ(0) translateY(1px);
-  filter: none;
-}
-
 .bbj--inline .jp-speech__tail {
   position: absolute;
-  right: 8%;
-  bottom: -6px;
-  top: auto;
-  transform: translate(72%, 58%);
+  left: 50%;
+  bottom: 4%;
+  transform: translate(-35%, 85%);
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  gap: 4px;
+  gap: 3px;
   z-index: 2;
   pointer-events: none;
 }
@@ -2134,37 +2236,26 @@ html.cine .bbj--inline .jp-speech {
   display: block;
   border-radius: 50%;
   background: linear-gradient(145deg, rgba(16, 26, 42, .72), rgba(8, 12, 22, .62));
-  border: 1px solid rgba(130, 170, 215, .14);
-  box-shadow: none;
+  border: 1px solid var(--bbj-line);
 }
 
 .bbj--inline .jp-speech__tail span:nth-child(1) {
-  width: 13px;
-  height: 13px;
+  width: 10px;
+  height: 10px;
 }
 
 .bbj--inline .jp-speech__tail span:nth-child(2) {
-  width: 9px;
-  height: 9px;
-  margin-bottom: -5px;
+  width: 7px;
+  height: 7px;
+  margin-bottom: -4px;
   opacity: .9;
 }
 
 .bbj--inline .jp-speech__tail span:nth-child(3) {
-  width: 5px;
-  height: 5px;
-  margin-bottom: -11px;
+  width: 4px;
+  height: 4px;
+  margin-bottom: -8px;
   opacity: .7;
-}
-
-@keyframes jpSpeechFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-@keyframes jpSpeechFloatCine {
-  0%, 100% { transform: translateZ(36px) translateY(0); }
-  50% { transform: translateZ(36px) translateY(-4px); }
 }
 
 @keyframes jpSpeechScan {
@@ -2173,40 +2264,74 @@ html.cine .bbj--inline .jp-speech {
   55% { top: 105%; opacity: .6; }
 }
 
-.bbj--inline .journey-divider {
-  display: none;
-}
-
-.bbj--inline .phone-frame {
-  justify-self: center;
-  flex: none;
+.bbj--inline .jp-speech .jp-kicker,
+.bbj--inline .jp-speech .jp-title,
+.bbj--inline .jp-speech .jp-body {
   position: relative;
   z-index: 4;
-  width: 100%;
-  transform-style: preserve-3d;
 }
 
-html.cine .bbj--inline .phone-frame {
-  transform: rotateY(-6deg) rotateX(3.5deg) translateZ(26px);
+/* Caption type — sized to fit inside the cloud safely */
+.bbj--inline .jp-speech .jp-kicker {
+  font-family: var(--bbj-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--bbj-accent);
+  margin: 0 0 4px;
+}
+
+.bbj--inline .jp-speech .jp-title {
+  font-family: var(--bbj-disp);
+  font-size: clamp(12px, 0.95vw, 14px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.2;
+  color: var(--bbj-text);
+  margin: 0 0 4px;
+}
+
+.bbj--inline .jp-speech .jp-body {
+  font-family: var(--bbj-body);
+  font-size: clamp(10px, 0.68vw, 11px);
+  color: var(--bbj-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Phone — ghost by default, live scales evenly from centre */
+.bbj--inline .phone-frame {
+  position: relative;
+  width: 100%;
+}
+
+.bbj--inline .jp-phone {
+  position: absolute;
+  inset: 0;
+  opacity: var(--jp-ghost, 0.08);
+  visibility: visible;
+  transform: scale(0.97);
+  transform-origin: center center;
+  transition:
+    opacity var(--jp-fade, 0.55s) ease,
+    transform var(--jp-fade, 0.55s) ease;
+  z-index: 4;
 }
 
 .bbj--inline .phone-rim {
   position: relative;
-  width: 100%;
-  aspect-ratio: 9 / 19.2;
+  height: 100%;
   border-radius: 24px;
   padding: 2px;
-  background: linear-gradient(145deg, rgba(53, 226, 198, .75) 0%, rgba(74, 125, 255, .7) 48%, rgba(143, 123, 255, .72) 100%);
-  box-shadow:
-    0 0 10px rgba(53, 226, 198, .06),
-    0 12px 28px rgba(0, 0, 0, .28),
-    inset 0 1px 0 rgba(255, 255, 255, .1);
+  background: linear-gradient(145deg, #17d6ee 0%, #22a8ff 48%, #7d5cff 100%);
+  box-shadow: 0 24px 44px -18px rgba(0, 0, 0, .66);
 }
 
 .bbj--inline .phone-screen {
   position: relative;
   height: 100%;
-  border-radius: 20px;
+  border-radius: 21px;
   overflow: hidden;
   background: #05070c;
 }
@@ -2218,66 +2343,38 @@ html.cine .bbj--inline .phone-frame {
   transform: translateX(-50%);
   z-index: 2;
   pointer-events: none;
-  background: linear-gradient(90deg, #35e2c6, #8f7bff);
+  background: linear-gradient(90deg, #17d6ee, #7d5cff);
   border-radius: 999px;
   opacity: .8;
 }
 
 .bbj--inline .phone-notch {
   top: 9px;
-  width: 68px;
-  height: 7px;
+  width: 54px;
+  height: 5px;
 }
 
 .bbj--inline .phone-home {
-  bottom: 9px;
-  width: 52px;
-  height: 3.5px;
-  opacity: .65;
+  bottom: 8px;
+  width: 42px;
+  height: 3px;
+  opacity: .6;
 }
 
-.bbj--inline .jp-slide-stage {
-  position: relative;
-  overflow: hidden;
-}
-
-.bbj--inline .jp-slide {
+.bbj--inline .jp-shot {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top center;
-  transform: translateX(108%);
-  opacity: 0;
-  pointer-events: none;
-  will-change: transform, opacity;
-  transition: transform .3s cubic-bezier(.22, 1, .36, 1), opacity .24s ease;
   z-index: 1;
-}
-
-.bbj--inline .jp-slide.is-show {
-  transform: translateX(0);
-  opacity: 1;
-  z-index: 2;
-}
-
-.bbj--inline .jp-slide.is-enter {
-  transform: translateX(108%);
-  opacity: 0;
-  z-index: 3;
-  transition: none;
-}
-
-.bbj--inline .jp-slide.is-exit {
-  transform: translateX(-108%);
-  opacity: 0;
-  z-index: 2;
 }
 
 .bbj--inline .jp-mock-fallback {
   position: absolute;
   inset: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2287,12 +2384,17 @@ html.cine .bbj--inline .phone-frame {
   background: linear-gradient(180deg, #0d121c, #070a10);
 }
 
+/* Class display:flex beats the UA [hidden] rule — force hide when painted */
+.bbj--inline .jp-mock-fallback[hidden] {
+  display: none !important;
+}
+
 .bbj--inline .jp-phone-chip {
   font-family: var(--bbj-mono);
   font-size: 11px;
   letter-spacing: .12em;
-  color: var(--bbj-teal);
-  border: 1px solid rgba(53, 226, 198, .3);
+  color: var(--bbj-accent);
+  border: 1px solid rgba(23, 214, 238, .3);
   border-radius: 999px;
   padding: 4px 10px;
 }
@@ -2311,117 +2413,128 @@ html.cine .bbj--inline .phone-frame {
   margin: 0;
 }
 
-.bbj--inline .jp-speech .jp-kicker,
-.bbj--inline .jp-speech .jp-title,
-.bbj--inline .jp-speech .jp-body,
-.bbj--inline .jp-speech .jp-dots {
-  position: relative;
-  z-index: 4;
+/* Live dock */
+.bbj--inline .jp-slot.is-live {
+  z-index: 3;
 }
 
-.bbj--inline .jp-speech .jp-kicker {
-  font-family: var(--bbj-mono);
-  font-size: 10.5px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--bbj-gold);
-  margin: 0 0 7px;
+.bbj--inline .jp-slot.is-live .jp-phone {
+  opacity: 1;
+  transform: scale(1.04);
+  transform-origin: center center;
+  transition:
+    opacity var(--jp-fade, 0.55s) ease,
+    transform var(--jp-fade, 0.55s) ease;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.35));
 }
 
-.bbj--inline .jp-speech .jp-title {
-  font-family: var(--bbj-disp);
-  font-size: clamp(17px, 1.4vw, 20px);
-  font-weight: 700;
-  letter-spacing: -.02em;
-  line-height: 1.22;
-  color: #f4f8fc;
-  margin: 0 0 7px;
+.bbj--inline .jp-slot.is-live .jp-speech {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity var(--jp-fade, 0.55s) ease,
+    visibility 0s;
 }
 
-.bbj--inline .jp-speech .jp-body {
-  font-family: var(--bbj-body);
-  font-size: clamp(12px, .85vw, 13px);
-  color: var(--bbj-muted);
-  line-height: 1.5;
-  margin: 0;
-  max-width: none;
+/* Empty docks on the last pass — fully gone so the end is clear */
+.bbj--inline .jp-slot.is-empty .jp-phone,
+.bbj--inline .jp-slot.is-empty .jp-speech {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transform: none !important;
+  pointer-events: none;
 }
 
-.bbj--inline .jp-dots {
-  display: flex;
-  justify-content: flex-start;
-  gap: 6px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(130, 170, 215, .1);
+/* Instant snap when the engine passes animate=false (init / skip / scrub) */
+.bbj--inline .jp-rail.is-instant .jp-phone,
+.bbj--inline .jp-rail.is-instant .jp-speech,
+.bbj--inline .jp-rail.is-instant .jp-slot {
+  transition: none !important;
 }
 
-.bbj--inline .jp-dots i {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .2);
-  transition: width .25s, background .25s, border-radius .25s;
-}
+@media (prefers-reduced-motion: reduce) {
+  .bbj--inline .journey-path {
+    --jp-fade: 0.28s;
+  }
 
-.bbj--inline .jp-dots i.is-on {
-  width: 22px;
-  border-radius: 999px;
-  background: var(--bbj-teal);
-  box-shadow: 0 0 6px rgba(53, 226, 198, .28);
+  .bbj--inline .jp-slot {
+    transform-style: flat;
+    transition: none;
+  }
+
+  .bbj--inline .jp-phone {
+    transform: scale(0.97);
+  }
+
+  /* the live phone still scales up — that step, like newapp's, is the
+     cue for which dock is active, not decoration */
+
+  .bbj--inline .jp-speech__scan::after {
+    animation: none;
+  }
 }
 
 .bbj--inline .jp-legend {
-  position: relative;
-  list-style: none;
   display: flex;
+  gap: 6px 14px;
   flex-wrap: wrap;
-  justify-content: flex-start;
-  gap: 8px;
-  margin: 18px 0 0;
+  justify-content: center;
+  list-style: none;
   padding: 0;
-  max-width: 680px;
+  margin: clamp(8px, 1.4vh, 16px) 0 0;
 }
 
 .bbj--inline .jp-legend li {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, .06);
-  background: rgba(255, 255, 255, .02);
-  color: var(--bbj-muted);
-  font-size: 12px;
-  transition: border-color .25s, color .25s, background .25s;
+  gap: 7px;
+  font: 500 11px var(--bbj-body);
+  color: var(--bbj-faint);
+  transition: color 0.25s ease;
 }
 
 .bbj--inline .jp-legend li b {
-  font-family: var(--bbj-mono);
-  font-size: 12px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font: 600 10px var(--bbj-mono);
   color: var(--bbj-faint);
+  border: 1px solid var(--bbj-line);
+  background: rgba(9, 16, 29, .38);
+  transition: all 0.25s ease;
+}
+
+.bbj--inline .jp-legend li.is-done b {
+  color: var(--bbj-teal);
+  border-color: rgba(23, 214, 238, .4);
 }
 
 .bbj--inline .jp-legend li.is-active {
   color: var(--bbj-text);
-  border-color: rgba(53, 226, 198, .32);
-  background: rgba(53, 226, 198, .06);
 }
 
 .bbj--inline .jp-legend li.is-active b {
-  color: var(--bbj-teal);
+  color: #04121a;
+  background: var(--bbj-teal);
+  border-color: var(--bbj-teal);
 }
 
-/* Journey skip — escape hatch without stepping every screenshot */
+/* The narrow-screen collapse (rail -> one centred dock) lives in the
+   existing @media (max-width: 900px) block further down this file. */
+
+
+/* Journey skip — escape hatch without stepping every screenshot.
+   Same pill as newapp: edge-aligned, uppercase display face, no rule above. */
 .journey-skip {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  justify-content: space-between;
+  gap: 10px;
   flex-wrap: wrap;
-  margin-top: 22px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(130, 170, 215, .05);
+  margin-top: clamp(8px, 1.4vh, 14px);
 }
 
 .journey-skip__btn {
@@ -2429,33 +2542,26 @@ html.cine .bbj--inline .phone-frame {
   align-items: center;
   justify-content: center;
   gap: 0.35em;
-  padding: 0.55em 1.15em;
+  padding: 7px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(130, 170, 215, .14);
-  background: rgba(255, 255, 255, .02);
-  color: #c8d4e0;
-  font-family: var(--font);
-  font-size: 0.8125rem;
+  border: 1px solid rgba(126, 168, 216, .28);
+  background: rgba(9, 16, 29, .38);
+  backdrop-filter: blur(10px);
+  color: #8ea6c0;
+  font-family: var(--font-display);
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
 }
 
-.journey-skip__btn:hover {
-  color: #fff;
-  border-color: rgba(23, 214, 238, .35);
-  background: rgba(23, 214, 238, .06);
-}
-
-.journey-skip__btn--fwd {
-  border-color: rgba(23, 214, 238, .28);
-  color: #eef8fc;
-}
-
+.journey-skip__btn:hover,
 .journey-skip__btn--fwd:hover {
-  background: rgba(23, 214, 238, .1);
-  border-color: rgba(23, 214, 238, .45);
+  color: #f2f8ff;
+  border-color: #17d6ee;
+  background: rgba(23, 214, 238, .07);
 }
 
 /* decision flow compact */
@@ -2820,8 +2926,8 @@ html.cine .bbj--inline .phone-frame {
 }
 
 .chapter[data-side="center"] .panel--pricing {
-  width: min(1440px, 94vw);
-  max-width: 1440px;
+  width: min(1120px, 94vw);
+  max-width: 1120px;
   padding: 0;
   background: none;
   border: none;
@@ -2870,12 +2976,15 @@ html.cine .bbj--inline .phone-frame {
 .pricing-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: 24px;
   align-items: stretch;
   text-align: left;
-  /* -8% of the row's own width, so each of the three equal columns
-     shrinks proportionally instead of stretching edge-to-edge */
-  max-width: 92%;
+  /* Hard cap, not just a percentage: on a wide monitor the old 92%-of-1440
+     let each card run past 420px, which is what made the row read as three
+     slabs. 1032 - 2 gaps over 3 columns lands each card at ~328px, the size
+     a pricing card is normally read at. The 92% still governs below ~1120px
+     so the columns keep shrinking proportionally on smaller screens. */
+  max-width: min(1032px, 92%);
   margin: 0 auto;
 }
 
@@ -2948,8 +3057,8 @@ html.cine .pricing-grid .pcard.is-active {
   position: relative;
   background: linear-gradient(175deg, #0b0f1b 0%, #080b14 100%);
   border: 1px solid rgba(140, 170, 215, .14);
-  border-radius: 22px;
-  padding: 28px 26px 26px;
+  border-radius: 18px;
+  padding: 22px 20px 20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -3080,19 +3189,19 @@ html.cine .pcard--rec {
 }
 
 .pcard-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  margin-bottom: 13px;
   border: 1px solid;
 }
 
 .pcard-icon svg {
-  width: 21px;
-  height: 21px;
+  width: 18px;
+  height: 18px;
 }
 
 .pcard--basic .pcard-icon {
@@ -3111,8 +3220,8 @@ html.cine .pcard--rec {
 }
 
 .pcard--pro .pcard-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 23px;
+  height: 23px;
   color: #22d3ee;
   stroke: none;
 }
@@ -3123,27 +3232,27 @@ html.cine .pcard--rec {
 }
 
 .pcard--master .pcard-icon svg {
-  width: 28px;
-  height: 28px;
+  width: 23px;
+  height: 23px;
   color: #c084fc;
   stroke: none;
 }
 
 .pcard-name {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 17.5px;
   font-weight: 700;
-  margin-bottom: 7px;
+  margin-bottom: 6px;
   letter-spacing: -0.01em;
   color: #f4f7fc;
 }
 
 .pcard-desc {
-  font-size: 13px;
+  font-size: 12.5px;
   color: #8894ac;
   line-height: 1.55;
-  margin-bottom: 20px;
-  min-height: 38px;
+  margin-bottom: 16px;
+  min-height: 34px;
 }
 
 .pcard-price {
@@ -3156,13 +3265,13 @@ html.cine .pcard--rec {
 }
 
 .pcard-price s {
-  font-size: 18px;
+  font-size: 15px;
   color: #4b5468;
   text-decoration: line-through;
 }
 
 .pcard-price b {
-  font-size: 36px;
+  font-size: 29px;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
@@ -3172,30 +3281,30 @@ html.cine .pcard--rec {
 }
 
 .pcard-price span {
-  font-size: 13px;
+  font-size: 12px;
   color: #7b869c;
   font-weight: 500;
   font-family: var(--font);
 }
 
 .pcard-billed {
-  font-size: 12.5px;
+  font-size: 11.5px;
   color: #57627a;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .pcard-hr {
   border: none;
   border-top: 1px solid rgba(140, 170, 215, .12);
-  margin: 0 0 18px 0;
+  margin: 0 0 14px 0;
 }
 
 .pcard-feats {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 11px;
-  margin: 0 0 22px 0;
+  gap: 9px;
+  margin: 0 0 18px 0;
   padding: 0;
   flex-grow: 1;
 }
@@ -3203,8 +3312,8 @@ html.cine .pcard--rec {
 .pcard-feats li {
   display: flex;
   align-items: center;
-  gap: 11px;
-  font-size: 13.5px;
+  gap: 9px;
+  font-size: 12.75px;
   color: #c3cadb;
   letter-spacing: .002em;
 }
@@ -3214,8 +3323,8 @@ html.cine .pcard--rec {
 }
 
 .pcard-chk {
-  width: 17px;
-  height: 17px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3246,9 +3355,9 @@ html.cine .pcard--rec {
 
 .pcard-cta {
   width: 100%;
-  padding: 13px;
-  border-radius: 12px;
-  font-size: 13.5px;
+  padding: 11px;
+  border-radius: 11px;
+  font-size: 12.75px;
   font-weight: 700;
   letter-spacing: .01em;
   border: none;
@@ -4059,7 +4168,6 @@ html.flat .chapter .panel {
 
 html.flat .bcards__desktop,
 html.flat .bbj--inline .journey-path,
-html.flat .bbj--inline .jp-popup,
 html.flat .bbj--inline .jp-speech,
 html.flat .bbj--inline .phone-frame {
   transform: none;
@@ -4159,7 +4267,7 @@ html.flat .jbar {
   }
 
   #journeynode.chapter--journey {
-    padding-bottom: 6vh;
+    padding: clamp(100px, 14vh, 120px) 4vw 6vh;
   }
 
   #journeynode .panel--journey {
@@ -4276,66 +4384,36 @@ html.flat .jbar {
     font-size: 13px;
   }
 
-  .bbj--inline .jp-canvas {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-height: auto;
-  }
-
   .bbj--inline .bbj-head {
     max-width: 100%;
     padding-top: 6px;
   }
 
-  .bbj--inline .jp-popup {
-    position: relative;
-    right: auto;
-    top: auto;
-    transform: none;
-    width: min(168px, 40vw);
-    margin: 0 auto;
+  /* matches newapp's narrow-screen sizes */
+  .bbj--inline .journey-path {
+    --jp-h: clamp(320px, 56vh, 520px);
+    --jp-bubble-h: clamp(96px, 14vh, 132px);
   }
 
-  .bbj--inline .jp-speech {
-    right: calc(100% - 12px);
-    top: -12px;
-    width: min(288px, 82vw);
-    min-height: 148px;
-    padding: 28px 30px 24px 26px;
-    animation: none;
+  .bbj--inline .jp-rail {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
   }
 
-  .bbj--inline .jp-speech__tail {
-    right: 6%;
-    bottom: -4px;
-    transform: translate(68%, 52%);
+  .bbj--inline .jp-slot {
+    grid-area: 1 / 1;
   }
 
-  .bbj--inline .journey-divider {
-    display: none;
+  .bbj--inline .jp-slot:not(.is-live) .jp-phone {
+    opacity: 0;
+    visibility: hidden;
   }
 
-  .bbj--inline .phone-rim {
-    width: 100%;
+  .bbj--inline .jp-slot.is-live {
+    z-index: 2;
   }
 
-  .bbj--inline .jp-speech .jp-title {
-    font-size: 18px;
-  }
-
-  .bbj--inline .jp-speech .jp-body {
-    font-size: 13.5px;
-  }
-
-  .bbj--inline .jp-dots {
-    margin-top: 10px;
-    justify-content: flex-start;
-  }
-
-  .bbj--inline .jp-legend {
-    display: none;
-  }
+  /* legend stays on narrow screens, same as newapp */
 
   .jcards,
   .flow6c,
@@ -4634,8 +4712,9 @@ html.flat .jbar {
 
   html.cine .bcards__desktop,
   html.cine .bcards__desktop .bot-card,
+  html.cine .bcards__desktop--depth .bot-card--depth-back,
+  html.cine .bcards__desktop--depth .bot-card--depth-front,
   html.cine .bbj--inline .journey-path,
-  html.cine .bbj--inline .jp-popup,
   html.cine .bbj--inline .jp-speech,
   html.cine .bbj--inline .phone-frame {
     transform: none;

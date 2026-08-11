@@ -170,9 +170,24 @@ function ChipIcon({ type }: { type: BotIcon }) {
   );
 }
 
-function BotCardView({ card }: { card: BotCard }) {
+function BotCardView({
+  card,
+  depth = "flat",
+}: {
+  card: BotCard;
+  depth?: "back-left" | "front" | "back-right" | "flat";
+}) {
+  const depthClass =
+    depth === "front"
+      ? "bot-card--depth-front"
+      : depth === "back-left"
+        ? "bot-card--depth-back bot-card--depth-left"
+        : depth === "back-right"
+          ? "bot-card--depth-back bot-card--depth-right"
+          : "";
+
   return (
-    <article className={`bot-card ${card.variant}`}>
+    <article className={`bot-card ${card.variant}${depthClass ? ` ${depthClass}` : ""}`}>
       {card.popular ? <span className="bot-card__tag">Recommended</span> : null}
 
       <header className="bot-card__head">
@@ -260,9 +275,15 @@ export default function BotsChapter() {
         </header>
 
         <div className="bcards">
-          <div className="bcards__desktop">
-            {BOT_CARDS.map((card) => (
-              <BotCardView key={card.id} card={card} />
+          <div className="bcards__desktop bcards__desktop--depth">
+            {BOT_CARDS.map((card, index) => (
+              <BotCardView
+                key={card.id}
+                card={card}
+                depth={
+                  index === 1 ? "front" : index === 0 ? "back-left" : "back-right"
+                }
+              />
             ))}
           </div>
 

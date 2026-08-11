@@ -242,298 +242,247 @@
     const fq = $$('.faq__list details'); fq.forEach(d => d.addEventListener('toggle', () => { if (d.open) fq.forEach(o => { if (o !== d) o.open = false; }); }));
   })();
 
-  /* ---------- inline trading journey (chapter 3) ---------- */
+  /* ---------- inline trading journey (chapter 3) ----------
+     Five docks. Pass 1 = steps 1–5. Pass 2 = steps 6–8 only — unused
+     docks stay empty so the end is obvious. Live phone fades up and
+     scales slightly; others sit at ghost opacity. Cloud speech kept. */
+  const JOURNEY_NOOP = {
+    STOP_COUNT: 0,
+    tick() { },
+    isArmed: () => false,
+    isCompleted: () => false,
+    isAnimating: () => false,
+    isLocked: () => false,
+    getStep: () => 0,
+    setArmed() { },
+    resetToStart() { },
+    releaseAtEnd() { },
+    resetCompleted() { },
+    handleWheel: () => ({ consumed: false }),
+    setProgress() { },
+  };
+
   function initInlineJourney(rootEl) {
-    const noopCtrl = () => ({
-      STOP_COUNT: 0,
-      tick() { },
-      isArmed: () => false,
-      isCompleted: () => true,
-      isAnimating: () => false,
-      isLocked: () => false,
-      getStep: () => 0,
-      setArmed() { },
-      resetToStart() { },
-      releaseAtEnd() { },
-      resetCompleted() { },
-      handleWheel() { return { consumed: false }; },
-      setProgress() { },
-    });
-    if (!rootEl) return noopCtrl();
+    if (!rootEl) return JOURNEY_NOOP;
     const q = sel => rootEl.querySelector(sel);
     const qa = sel => [...rootEl.querySelectorAll(sel)];
     const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-    const lit = q('.jp-route-lit');
-    const bot = q('.jp-bot');
-    const stopsG = q('.jp-stops');
-    const popup = q('.jp-popup');
-    if (!lit || !bot || !stopsG || !popup) return noopCtrl();
+    const rail = q('.jp-rail');
+    const slots = qa('.jp-slot');
+    if (!rail || !slots.length) return JOURNEY_NOOP;
 
-    const JOURNEY_GROUPS = [
-      { groupId: 1, kicker: '01 · Open', title: 'Login / Signup', body: 'Creates an account or logs in — fast entry into the product.', mocks: ['onboard.jpeg', 'login.jpeg'] },
-      { groupId: 2, kicker: '02 · Explore', title: 'Signals + Demo', body: 'Preview signals free and watch the simulated demo bot against live prices. Demo is not indicative of future performance.', mocks: ['live singnals free.jpeg'] },
-      { groupId: 3, kicker: '03 · Subscribe', title: 'Wallet one-click pay', body: 'Choose a plan, approve the wallet payment, then unlock the full product experience.', mocks: ['chooseplan.jpeg', 'connect wallet.jpeg', 'connectwalet2.jpeg', 'paynow.jpeg', 'confirmpayinwallet.jpeg', 'byteboomverifiespayment.jpeg', 'paymentverifiestalset.jpeg'] },
-      { groupId: 4, kicker: '04 · Connect', title: 'Binance API keys', body: 'Trade on, withdrawals off. Funds stay on Binance while the in-app guide walks the setup.', mocks: ['setupapikeys.jpeg', 'setupapikeys2.jpeg', 'setupkeys4.jpeg'] },
-      { groupId: 5, kicker: '05 · Activate', title: 'Start & follow', body: 'Start the bot and monitor positions, orders, and status in one place.', mocks: ['contorlsbot.jpeg'] },
-      { groupId: 6, kicker: '06 · Unlink', title: 'Remove exchange keys', body: 'Disconnect Binance from ByteBoom without deleting your profile.', mocks: [] },
-      { groupId: 7, kicker: '07 · Delete', title: 'Delete account', body: 'Complete exit from the product after unlink if still linked.', mocks: [] },
+    const STEPS = [
+      {
+        kicker: '01 · Open',
+        title: 'Open the app',
+        body: 'Land in ByteBoom and watch live market intelligence before committing to anything.',
+        mock: 'onboard.jpeg',
+      },
+      {
+        kicker: '02 · Account',
+        title: 'Login / Signup',
+        body: 'Create an account or sign in — fast entry, no exchange access yet.',
+        mock: 'login.jpeg',
+      },
+      {
+        kicker: '03 · Explore',
+        title: 'Signals + demo',
+        body: 'Preview signals free and watch the demo bot run against live prices.',
+        mock: 'live singnals free.jpeg',
+      },
+      {
+        kicker: '04 · Subscribe',
+        title: 'Choose your plan',
+        body: 'Pick the plan that fits, then unlock the full product experience.',
+        mock: 'chooseplan.jpeg',
+      },
+      {
+        kicker: '05 · Wallet',
+        title: 'Connect wallet',
+        body: 'One-click pay from MetaMask, Binance Wallet, SafePal or Trust.',
+        mock: 'connect wallet.jpeg',
+      },
+      {
+        kicker: '06 · Pay',
+        title: 'Approve & verify',
+        body: 'Approve in your wallet — ByteBoom verifies the payment on-chain.',
+        mock: 'confirmpayinwallet.jpeg',
+      },
+      {
+        kicker: '07 · Connect',
+        title: 'Binance API keys',
+        body: 'Trade on, withdrawals off. Funds never leave your Binance account.',
+        mock: 'setupapikeys.jpeg',
+      },
+      {
+        kicker: '08 · Activate',
+        title: 'Start & follow',
+        body: 'Run the bot and track positions and orders — unlink or delete whenever you choose.',
+        mock: 'contorlsbot.jpeg',
+      },
     ];
 
-    /* One thread dot = one screenshot (14 total — matches /traidngjourney/images/). */
-    const STOPS = [];
-    let stopId = 1;
-    JOURNEY_GROUPS.forEach(g => {
-      g.mocks.forEach(mock => {
-        STOPS.push({
-          id: stopId++,
-          groupId: g.groupId,
-          kicker: g.kicker,
-          title: g.title,
-          body: g.body,
-          mock,
-        });
-      });
-    });
-    const STOP_COUNT = STOPS.length;
-    STOPS.forEach((s, i) => {
-      s.at = STOP_COUNT === 1 ? 0.5 : 0.02 + (i / (STOP_COUNT - 1)) * 0.94;
-    });
+    const STOP_COUNT = STEPS.length;
+    const DOCK_COUNT = slots.length;
+    const dockOf = idx => idx % DOCK_COUNT;
+    const passOf = idx => Math.floor(idx / DOCK_COUNT);
 
-    const mockDir = rootEl.dataset.mockDir || '../traidngjourney/images/';
+    const stepForDock = (pass, dock) => {
+      const primary = pass * DOCK_COUNT + dock;
+      if (primary < STOP_COUNT) return primary;
+      return null;
+    };
+
+    const mockDir = rootEl.dataset.mockDir || '/traidngjourney/images/';
     const mockSrc = file => mockDir + encodeURIComponent(file);
-    const len = lit.getTotalLength();
-    lit.style.strokeDasharray = String(len);
-    lit.style.strokeDashoffset = String(len);
-
-    const ringR = STOP_COUNT > 10 ? 8 : 11;
-    const dotR = STOP_COUNT > 10 ? 3.5 : 4.5;
-    STOPS.forEach(s => {
-      const pt = lit.getPointAtLength(len * s.at);
-      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      g.classList.add('jp-stop');
-      g.dataset.stop = String(s.id);
-      g.setAttribute('transform', `translate(${pt.x},${pt.y})`);
-      g.innerHTML = '<circle r="' + ringR + '" class="jp-stop-ring"/><circle r="' + dotR + '" class="jp-stop-dot"/><text y="22" text-anchor="middle" class="jp-stop-label">' + s.id + '</text>';
-      stopsG.appendChild(g);
-    });
+    STEPS.forEach(s => { if (s.mock) { const im = new Image(); im.src = mockSrc(s.mock); } });
 
     const legend = qa('.jp-legend li');
-    const slides = qa('.jp-slide');
-    const slideA = slides[0], slideB = slides[1];
-    const fallback = q('.jp-mock-fallback');
-    const kickerEl = q('.jp-kicker');
-    const titleEl = q('.jp-title');
-    const bodyEl = q('.jp-body');
-    const speechEl = q('.jp-speech');
-    const numEl = q('.jp-stop-num');
-    let activeGroupId = -1, shownKey = '', frontIsA = true, sliding = false;
-    let pendingFrame = null;
-    let slideSafetyTimer = 0;
-    const SLIDE_MS = 320;
-    const frontEl = () => frontIsA ? slideA : slideB;
-    const backEl = () => frontIsA ? slideB : slideA;
 
-    const syncMarkers = (stop, legendGroup) => {
-      if (!stop) return;
-      const lg = legendGroup != null ? legendGroup : stop.groupId;
-      qa('.jp-stop').forEach(n => n.classList.toggle('is-active', n.dataset.stop === String(stop.id)));
-      legend.forEach(li => li.classList.toggle('is-active', li.dataset.group === String(lg)));
-    };
-    const syncLegendGroup = groupId => {
-      if (groupId === activeGroupId) return;
-      const g = JOURNEY_GROUPS.find(x => x.groupId === groupId);
-      if (!g) return;
-      activeGroupId = groupId;
-      if (speechEl) {
-        speechEl.classList.add('is-updating');
-        speechEl.classList.add('is-open');
-      }
-      if (kickerEl) kickerEl.textContent = g.kicker;
-      if (titleEl) titleEl.textContent = g.title;
-      if (bodyEl) bodyEl.textContent = g.body;
-      popup.classList.add('is-open');
-      if (speechEl) {
-        requestAnimationFrame(() => {
-          setTimeout(() => speechEl.classList.remove('is-updating'), 280);
-        });
-      }
-    };
-    const syncCopy = stop => syncLegendGroup(stop.groupId);
-    const showImmediate = (el, src, alt) => {
-      if (!el) return;
-      el.classList.remove('is-enter', 'is-exit', 'is-show');
-      el.src = src; el.alt = alt; el.classList.add('is-show');
-    };
-    const finishSlide = () => {
-      if (slideSafetyTimer) {
-        clearTimeout(slideSafetyTimer);
-        slideSafetyTimer = 0;
-      }
-      sliding = false;
-      if (pendingFrame) {
-        const next = pendingFrame;
-        pendingFrame = null;
-        applyFrame(next.stop, next.animate);
-      }
-    };
-    const slideTo = (src, alt, animate) => {
-      const front = frontEl(), back = backEl();
-      if (!front || !back) return;
-      const canAnimate = animate && !reduced && front.classList.contains('is-show') && front.getAttribute('src');
-      if (!canAnimate) {
-        showImmediate(front, src, alt);
-        back.classList.remove('is-show', 'is-enter', 'is-exit');
-        finishSlide();
-        return;
-      }
-      if (front.getAttribute('src') === src) {
-        finishSlide();
-        return;
-      }
-      sliding = true;
-      if (slideSafetyTimer) clearTimeout(slideSafetyTimer);
-      slideSafetyTimer = setTimeout(() => {
-        /* Image load / transition never completed — unlock so wheel keeps working */
-        showImmediate(front, src, alt);
-        back.classList.remove('is-show', 'is-enter', 'is-exit');
-        finishSlide();
-      }, SLIDE_MS + 900);
-      back.classList.remove('is-show', 'is-enter', 'is-exit');
-      back.src = src; back.alt = alt;
-      const run = () => {
-        back.onload = null;
-        back.onerror = null;
-        back.classList.add('is-enter');
-        void back.offsetWidth;
-        front.classList.remove('is-show');
-        front.classList.add('is-exit');
-        back.classList.remove('is-enter');
-        back.classList.add('is-show');
-        setTimeout(() => {
-          front.classList.remove('is-exit');
-          frontIsA = !frontIsA;
-          finishSlide();
-        }, SLIDE_MS);
-      };
-      const fail = () => {
-        back.onload = null;
-        back.onerror = null;
-        showImmediate(front, src, alt);
-        back.classList.remove('is-show', 'is-enter', 'is-exit');
-        finishSlide();
-      };
-      if (back.complete && back.naturalWidth > 0) run();
-      else {
-        back.onload = () => { back.onload = null; back.onerror = null; run(); };
-        back.onerror = fail;
-      }
-    };
-    const applyFrame = (stop, animate) => {
-      const key = String(stop.id);
-      if (key === shownKey) return;
-      if (sliding) {
-        pendingFrame = { stop, animate };
-        return;
-      }
-      shownKey = key;
-      if (numEl) numEl.textContent = String(stop.id);
-      if (!stop.mock) {
-        slideA.classList.remove('is-show');
-        slideB.classList.remove('is-show');
-        if (fallback) fallback.hidden = false;
-        return;
-      }
-      if (fallback) fallback.hidden = true;
-      slideTo(mockSrc(stop.mock), stop.title + ' — screen ' + stop.id, animate);
-    };
+    const FADE_MS = reduced ? 220 : 550;
+    const STEP_COOLDOWN_MS = reduced ? 280 : 750;
+    const WHEEL_LOCK_MS = STEP_COOLDOWN_MS;
 
-    const BEATS = STOPS.map((stop, idx) => ({ stop, idx }));
-
-    STOPS.forEach(s => { if (s.mock) { const im = new Image(); im.src = mockSrc(s.mock); } });
-
-    const STEP_MS = reduced ? 0 : 380;
-    const WHEEL_LOCK_MS = reduced ? 0 : 520;
-    let currentStep = 0;
-    let pathProgress = STOPS[0].at;
-    let pathFrom = pathProgress;
-    let pathTo = pathProgress;
-    let pathT0 = 0;
-    let pathAnimating = false;
+    let currentStep = -1;
+    let liveDock = -1;
     let armed = false;
     let wheelLocked = false;
     let completed = false;
+    let animating = false;
+    let animTimer = 0;
+    let lockTimer = 0;
+    let lastStepAt = 0;
 
-    const paintPath = path => {
-      lit.style.strokeDashoffset = String(len * (1 - path));
-      const pt = lit.getPointAtLength(len * path);
-      bot.setAttribute('transform', `translate(${pt.x},${pt.y})`);
+    const paintDock = (slotEl, step, idx) => {
+      const kicker = slotEl.querySelector('.jp-kicker');
+      const title = slotEl.querySelector('.jp-title');
+      const body = slotEl.querySelector('.jp-body');
+      const num = slotEl.querySelector('.jp-stop-num');
+      const shot = slotEl.querySelector('.jp-shot');
+      const fallback = slotEl.querySelector('.jp-mock-fallback');
+      if (kicker) kicker.textContent = step.kicker;
+      if (title) title.textContent = step.title;
+      if (body) body.textContent = step.body;
+      if (num) num.textContent = String(idx + 1);
+      if (step.mock) {
+        const src = mockSrc(step.mock);
+        if (shot) {
+          if (shot.getAttribute('src') !== src) shot.setAttribute('src', src);
+          shot.alt = step.title + ' — ByteBoom app screen ' + (idx + 1);
+          shot.hidden = false;
+        }
+        if (fallback) fallback.hidden = true;
+      } else {
+        if (shot) shot.hidden = true;
+        if (fallback) fallback.hidden = false;
+      }
     };
 
-    const paintStep = (idx, path) => {
-      paintPath(path);
-      const beat = BEATS[idx];
-      syncMarkers(beat.stop, beat.stop.groupId);
+    const clearDock = slotEl => {
+      const kicker = slotEl.querySelector('.jp-kicker');
+      const title = slotEl.querySelector('.jp-title');
+      const body = slotEl.querySelector('.jp-body');
+      const shot = slotEl.querySelector('.jp-shot');
+      const fallback = slotEl.querySelector('.jp-mock-fallback');
+      if (kicker) kicker.textContent = '';
+      if (title) title.textContent = '';
+      if (body) body.textContent = '';
+      if (shot) {
+        shot.removeAttribute('src');
+        shot.alt = '';
+        shot.hidden = true;
+      }
+      if (fallback) fallback.hidden = true;
+    };
+
+    const clearInlineFade = slotEl => {
+      [slotEl.querySelector('.jp-phone'), slotEl.querySelector('.jp-speech')].forEach(el => {
+        if (!el) return;
+        el.style.opacity = '';
+        el.style.visibility = '';
+        el.style.transform = '';
+      });
+    };
+
+    const syncRail = stepIdx => {
+      const pass = passOf(stepIdx);
+      rail.dataset.pass = String(pass);
+      for (let d = 0; d < DOCK_COUNT; d++) {
+        const stepIdxForDock = stepForDock(pass, d);
+        const slot = slots[d];
+        clearInlineFade(slot);
+        if (stepIdxForDock == null) {
+          slot.classList.add('is-empty');
+          slot.classList.remove('is-live');
+          slot.removeAttribute('data-step');
+          clearDock(slot);
+          continue;
+        }
+        slot.classList.remove('is-empty');
+        slot.dataset.step = String(stepIdxForDock);
+        paintDock(slot, STEPS[stepIdxForDock], stepIdxForDock);
+      }
+    };
+
+    const setLiveDock = dock => {
+      slots.forEach((el, i) => {
+        el.classList.toggle('is-live', i === dock && !el.classList.contains('is-empty'));
+      });
     };
 
     const goToStep = (idx, animate) => {
       idx = clamp(idx, 0, STOP_COUNT - 1);
-      const beat = BEATS[idx];
-      const targetPath = beat.stop.at;
+      if (idx === currentStep && liveDock >= 0) return;
+      const dock = dockOf(idx);
       currentStep = idx;
-      if (animate && !reduced) {
-        pathFrom = pathProgress;
-        pathTo = targetPath;
-        pathT0 = performance.now();
-        pathAnimating = true;
-      } else {
-        pathProgress = targetPath;
-        pathAnimating = false;
-        paintStep(idx, pathProgress);
+      liveDock = dock;
+
+      clearTimeout(animTimer);
+
+      legend.forEach((li, i) => {
+        li.classList.toggle('is-active', i === idx);
+        li.classList.toggle('is-done', i < idx);
+      });
+
+      if (!animate) {
+        rail.classList.add('is-instant');
+        syncRail(idx);
+        setLiveDock(dock);
+        void rail.offsetWidth;
+        rail.classList.remove('is-instant');
+        animating = false;
+        return;
       }
-      syncCopy(beat.stop);
-      applyFrame(beat.stop, animate && !reduced);
-      if (!pathAnimating) paintStep(idx, pathProgress);
+
+      rail.classList.remove('is-instant');
+      animating = true;
+      syncRail(idx);
+      setLiveDock(dock);
+      animTimer = setTimeout(() => { animating = false; }, FADE_MS);
     };
 
-    const tick = () => {
-      if (pathAnimating) {
-        const now = performance.now();
-        const t = clamp((now - pathT0) / STEP_MS, 0, 1);
-        const eased = t * t * (3 - 2 * t);
-        pathProgress = pathFrom + (pathTo - pathFrom) * eased;
-        paintStep(currentStep, pathProgress);
-        if (t >= 1) {
-          pathAnimating = false;
-          pathProgress = pathTo;
-          paintStep(currentStep, pathProgress);
-        }
-      } else if (armed || completed || currentStep > 0) {
-        paintStep(currentStep, pathProgress);
-      } else {
-        paintStep(0, STOPS[0].at);
-      }
+    const lockWheel = () => {
+      wheelLocked = true;
+      clearTimeout(lockTimer);
+      lockTimer = setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
     };
 
     goToStep(0, false);
-    popup.classList.add('is-open');
 
     return {
       STOP_COUNT,
-      tick,
+      tick() { },
       isArmed: () => armed,
       isCompleted: () => completed,
-      isAnimating: () => pathAnimating || sliding,
+      isAnimating: () => animating,
       isLocked: () => wheelLocked,
       getStep: () => currentStep,
       setArmed(on) {
         if (on === armed) return;
         armed = on;
         wheelLocked = false;
-        if (on) {
-          if (completed) completed = false;
-        } else if (!completed) {
-          goToStep(0, false);
-        }
+        if (on && completed) completed = false;
+        /* do not auto-reset to step 0 here — resetToStart is explicit */
       },
       resetToStart() {
         completed = false;
@@ -552,22 +501,31 @@
       handleWheel(deltaY, opts = {}) {
         const fastRewind = !!(opts && opts.fastRewind);
         if (!armed) return { consumed: false };
-        if (!fastRewind && (wheelLocked || pathAnimating || sliding)) return { consumed: false };
-        if (fastRewind && (pathAnimating || sliding)) {
-          pathAnimating = false;
-          if (slideSafetyTimer) {
-            clearTimeout(slideSafetyTimer);
-            slideSafetyTimer = 0;
+
+        const now = performance.now();
+
+        /* Last step: eat inertia until cooldown, then release to next section */
+        if (deltaY > 0 && currentStep >= STOP_COUNT - 1) {
+          if (animating || now - lastStepAt < STEP_COOLDOWN_MS) {
+            return { consumed: true };
           }
-          sliding = false;
-          pendingFrame = null;
+          return { consumed: false, atEnd: true };
+        }
+        if (deltaY < 0 && currentStep <= 0 && !fastRewind) {
+          return { consumed: false, atStart: true };
+        }
+
+        if (!fastRewind && (wheelLocked || animating)) return { consumed: true };
+        if (fastRewind && animating) {
+          animating = false;
           wheelLocked = false;
         }
+        if (!fastRewind && now - lastStepAt < STEP_COOLDOWN_MS) {
+          return { consumed: true };
+        }
         if (deltaY > 0) {
-          if (wheelLocked) return { consumed: false };
-          if (currentStep >= STOP_COUNT - 1) return { consumed: false, atEnd: true };
-          wheelLocked = true;
-          setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
+          lastStepAt = now;
+          lockWheel();
           goToStep(currentStep + 1, true);
           return { consumed: true };
         }
@@ -575,15 +533,14 @@
           if (fastRewind) {
             if (currentStep > 0) {
               wheelLocked = false;
+              lastStepAt = 0;
               goToStep(0, false);
               return { consumed: true };
             }
             return { consumed: false, atStart: true };
           }
-          if (wheelLocked) return { consumed: false };
-          if (currentStep <= 0) return { consumed: false, atStart: true };
-          wheelLocked = true;
-          setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
+          lastStepAt = now;
+          lockWheel();
           goToStep(currentStep - 1, true);
           return { consumed: true };
         }
@@ -592,11 +549,11 @@
       setProgress(tNow) {
         if (armed) return;
         const idx = clamp(Math.floor(clamp(tNow, 0, 1) * STOP_COUNT), 0, STOP_COUNT - 1);
-        if (idx !== currentStep) goToStep(idx, false);
-        else paintStep(currentStep, STOPS[currentStep].at);
+        goToStep(idx, false);
       },
     };
   }
+
   const journeyCtrl = initInlineJourney($('#bbj-inline'));
 
   /* ---------- inline pricing (chapter 4) — scroll through plans one at a time on mobile ---- */
@@ -842,23 +799,35 @@
     lastReadScrollY = top;
   };
 
-  const skipJourneyBack = () => {
-    if (!journeyChapter) return;
-    journeyBypass = false;
+  const releaseJourneyBack = () => {
+    if (journeyExiting) return;
     journeyCtrl.setArmed(false);
     journeyCtrl.resetToStart();
     clearJourneyRelease();
     journeyHoldP = null;
+    /* Bypass so the tick loop does not re-arm + snap while leaving */
+    journeyBypass = true;
     const bots = chapters.find(c => c.el.id === 'productnode');
-    if (bots) {
-      const at = Math.max(0, bots.b - 0.01);
-      const top = at * cineScrollMax();
-      scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
+    if (!bots) return;
+    const at = Math.max(0, bots.b - 0.012);
+    if (reduced) {
       target = at;
       p = at;
+      const top = at * cineScrollMax();
+      scrollTo({ top, behavior: 'auto' });
       journeyLastScrollY = top;
       lastReadScrollY = top;
+      return;
     }
+    /* Same camera-lerp exit as forward → Pricing */
+    journeyExitTarget = at;
+    journeyExiting = true;
+    target = at;
+  };
+
+  const skipJourneyBack = () => {
+    if (!journeyChapter) return;
+    releaseJourneyBack();
   };
 
   const skipBackBtn = $('#journeySkipBack');
@@ -874,17 +843,39 @@
       return;
     }
     if (journeyReleased) return;
-    const inRange = p >= journeyChapter.a && p <= journeyChapter.b;
-    if (!inRange || !journeyFullyVisible()) return;
+    const inRange = p >= journeyChapter.a - 0.002 && p <= journeyChapter.b + 0.002;
+    if (!inRange) return;
+
+    /* Approaching the section: hold only when scrolling forward.
+       Scrolling up must be free so we can leave back to Bots. */
+    if (!journeyFullyVisible()) {
+      if (e.deltaY < 0) {
+        journeyHoldP = null;
+        journeyCtrl.setArmed(false);
+        journeyBypass = true;
+        return;
+      }
+      e.preventDefault();
+      const visP = journeyVisibleP();
+      journeyHoldP = visP;
+      snapJourneyScroll(visP);
+      return;
+    }
 
     if (!journeyCtrl.isArmed() && !journeyReleased) {
+      /* Don't arm while the user is clearly scrolling back out */
+      if (e.deltaY < 0 && journeyCtrl.getStep() <= 0) {
+        releaseJourneyBack();
+        e.preventDefault();
+        return;
+      }
       journeyCtrl.setArmed(true);
       journeyHoldP = journeyVisibleP();
-      if (!scrollDirectionUp) snapJourneyScroll(journeyHoldP);
+      if (e.deltaY > 0) snapJourneyScroll(journeyHoldP);
     }
 
     const holdActive = shouldHoldJourneyScroll();
-    const fastRewind = scrollDirectionUp && e.deltaY < 0;
+    const fastRewind = e.deltaY < 0 && journeyCtrl.getStep() > 0;
     const result = journeyCtrl.handleWheel(e.deltaY, { fastRewind });
     if (result.consumed) {
       e.preventDefault();
@@ -897,10 +888,8 @@
       return;
     }
     if (result.atStart && e.deltaY < 0) {
-      journeyCtrl.setArmed(false);
-      journeyCtrl.resetToStart();
-      clearJourneyRelease();
-      journeyHoldP = null;
+      e.preventDefault();
+      releaseJourneyBack();
       return;
     }
     if (holdActive || journeyCtrl.isLocked() || journeyCtrl.isAnimating()) {
@@ -916,16 +905,7 @@
       return;
     }
     if (journeyExiting || journeyReleased) return;
-    const inRange = p >= journeyChapter.a && p <= journeyChapter.b;
-    if (inRange && journeyFullyVisible() && journeyCtrl.isArmed() && shouldHoldJourneyScroll()) {
-      const delta = scrollY - journeyLastScrollY;
-      if (Math.abs(delta) > 12 && !journeyCtrl.isLocked() && !journeyCtrl.isAnimating()) {
-        const result = journeyCtrl.handleWheel(delta);
-        if (result.atEnd && delta > 0) {
-          releaseJourneyForward();
-        }
-      }
-    }
+    /* Hold scroll only — wheel owns one-impulse-one-step */
     if (journeyHoldP != null && shouldHoldJourneyScroll()) {
       target = journeyHoldP;
       snapJourneyScroll(journeyHoldP);
@@ -1325,16 +1305,17 @@
       const fullyVisible = fadeWindow(p, journeyChapterTick.a, journeyChapterTick.b) >= 0.98;
       const visP = journeyVisibleP();
 
-      if (!journeyReleased && !journeyExiting && p >= journeyChapterTick.a && !fullyVisible && p > visP + 0.004) {
+      if (!journeyReleased && !journeyExiting && !journeyBypass && p >= journeyChapterTick.a && !fullyVisible && p > visP + 0.004) {
         snapJourneyScroll(visP);
         target = visP;
       }
 
       if (inRange && fullyVisible && !journeyReleased && !journeyExiting && !journeyBypass) {
         if (!journeyCtrl.isArmed()) {
-          journeyCtrl.setArmed(true);
-          journeyHoldP = visP;
-          if (!scrollDirectionUp || p <= visP + 0.015) {
+          /* Only arm when arriving forward — never re-trap while leaving upward */
+          if (!scrollDirectionUp) {
+            journeyCtrl.setArmed(true);
+            journeyHoldP = visP;
             snapJourneyScroll(journeyHoldP);
           }
         } else if (shouldHoldJourneyScroll() && journeyHoldP != null) {
@@ -1349,6 +1330,7 @@
         journeyCtrl.resetToStart();
         journeyHoldP = null;
         clearJourneyRelease();
+        journeyBypass = false;
       } else if (p > journeyChapterTick.b + 0.008) {
         journeyHoldP = null;
         if (journeyReleased || journeyCtrl.isCompleted()) {
