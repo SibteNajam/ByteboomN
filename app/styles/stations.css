@@ -948,206 +948,327 @@ html.flat .panel {
   box-shadow: 0 0 8px var(--violet);
 }
 
-/* ---- Trust node: tagline + centered mockup with orbit phrases ---- */
+/* ---- Trust node: split row — custody copy left, app mockups right ----
+   Ported from the newapp build. Two token swaps were needed because this
+   repo's palette has no equivalents: --glass-soft and --line-hi are inlined
+   at their source values so the glass reads identically; everything else
+   maps onto this repo's own --cyan / --violet / --green / --mono. */
 #trustnode.chapter--trust {
   justify-content: center;
   align-items: center;
   padding: 52px 4vw;
 }
 
-#trustnode .trust-head {
-  margin-bottom: 6px;
-}
-
-#trustnode .trust-head h2 {
-  max-width: 30ch;
-  margin-inline: auto;
-  color: #eef4fb;
-  text-shadow: 0 2px 28px rgba(34, 168, 255, 0.1);
-}
-
-#trustnode .trust-head .sec-lead {
-  color: rgba(170, 190, 215, 0.78);
-  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.35);
-}
-
 #trustnode .panel--trust {
-  width: min(980px, 96vw);
-  max-width: 980px;
-  /* the fly-through exit grows from the artwork, not the whole panel's centre */
-  transform-origin: 50% 62%;
+  width: min(1120px, 94vw);
+  max-width: 1120px;
+  /* fly-through grows from the mockups, not the panel's centre */
+  transform-origin: 72% 54%;
   padding: 0;
   background: none;
   border: none;
   border-radius: 0;
   box-shadow: none;
   backdrop-filter: none;
-  text-align: center;
+  text-align: left;
 }
 
 #trustnode .panel--trust::before {
   display: none;
 }
 
-.trust-viz {
-  position: relative;
+.trust-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  align-items: center;
+  gap: clamp(26px, 4.4vw, 66px);
+}
+
+.trust-copy {
+  display: grid;
+  gap: clamp(20px, 3vh, 30px);
+  justify-items: start;
+}
+
+/* this repo's .sec-header is centred; the split row wants it ranged left */
+.trust-copy__head {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  margin: 0;
+  text-align: left;
+}
+
+.trust-copy__head h2 {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.8vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: #f2f8ff;
+  margin: 0;
+  max-width: 17ch;
+}
+
+.trust-copy__head .sec-lead {
+  margin: 0;
+  max-width: 42ch;
+  color: rgba(170, 190, 215, 0.78);
+}
+
+/* ---- custody points ---- */
+.trust-points {
+  display: grid;
+  gap: clamp(12px, 1.8vh, 18px);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.trust-point {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.trust-point__ico {
   display: grid;
   place-items: center;
-  width: fit-content;
-  margin-inline: auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: var(--cyan);
+  background: rgba(9, 16, 29, 0.38);
+  border: 1px solid rgba(126, 168, 216, 0.28);
+  backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Sit in the corridor plane — subtle 3D like the bots fan cards */
-html.cine .trust-viz {
-  transform-style: preserve-3d;
-  transform: rotateX(5deg) rotateY(-1.8deg);
-  filter: none;
+.trust-point[data-tone="violet"] .trust-point__ico {
+  color: var(--violet-2);
 }
 
-html.cine .trust-viz .tv-art {
-  transform-style: preserve-3d;
+.trust-point[data-tone="green"] .trust-point__ico {
+  color: var(--green);
 }
 
-html.cine .trust-viz .tv-stage {
-  transform-style: preserve-3d;
+.trust-point__ico svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
 }
 
-html.cine .trust-viz .badge {
-  transform: translateZ(14px);
+.trust-point__text h3 {
+  font-family: var(--font-display);
+  font-size: clamp(0.95rem, 1.15vw, 1.05rem);
+  line-height: 1.25;
+  color: #f2f8ff;
+  margin: 0 0 4px;
 }
 
-html.cine .trust-viz .trust-orbit--n,
-html.cine .trust-viz .trust-orbit--s {
-  transform: translateX(-50%) translateZ(8px);
+.trust-point__text p {
+  font-size: clamp(0.83rem, 0.95vw, 0.93rem);
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 40ch;
+  margin: 0;
 }
 
-html.cine .trust-viz .trust-orbit--ne,
-html.cine .trust-viz .trust-orbit--e,
-html.cine .trust-viz .trust-orbit--se,
-html.cine .trust-viz .trust-orbit--sw,
-html.cine .trust-viz .trust-orbit--w,
-html.cine .trust-viz .trust-orbit--nw {
-  transform: translateZ(8px);
-}
-
-.trust-viz__img {
+/* ---- mockup stage ---- */
+.trust-stage {
   position: relative;
-  z-index: 1;
-  width: min(100%, 720px, calc(50vh * 1.6));
-  height: auto;
-  display: block;
-  mix-blend-mode: screen;
-  filter: none;
-  -webkit-user-drag: none;
-  user-select: none;
-  pointer-events: none;
+  width: 100%;
+  max-width: 540px;
+  margin-inline: auto;
+  aspect-ratio: 1 / 1.16;
+  /* the camera the two devices are yawed under — one shared vanishing point,
+     pulled right/high so it sits where the copy column is looking */
+  perspective: 1500px;
+  perspective-origin: 56% 42%;
 }
 
-html.cine .trust-viz__img {
-  opacity: 0.92;
-  filter: none;
-}
-
-/* Quiet chips — no plate, no blur glass that reads as overlay */
-.trust-orbit {
+/* soft light the phones sit inside — reads as part of the world, not a card */
+.trust-stage__aura {
   position: absolute;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font: 600 clamp(10.5px, 1.05vw, 12.5px)/1 var(--font-display);
-  letter-spacing: .035em;
-  color: rgba(200, 220, 242, .82);
-  white-space: nowrap;
-  background: rgba(6, 12, 22, .16);
-  border: 1px solid rgba(120, 170, 220, .1);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
+  left: 50%;
+  top: 47%;
+  translate: -50% -50%;
+  width: 86%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 168, 255, 0.22) 0%, rgba(23, 214, 238, 0.07) 44%, transparent 70%);
+  filter: blur(34px);
+  pointer-events: none;
+  animation: trustPulse 5.5s ease-in-out infinite;
+}
+
+/* fading dot field — quiet structure behind the devices */
+.trust-stage__field {
+  position: absolute;
+  inset: -4%;
+  background-image: radial-gradient(rgba(126, 168, 216, 0.28) 1px, transparent 1px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(58% 52% at 50% 46%, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 78%);
+  mask-image: radial-gradient(58% 52% at 50% 46%, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 78%);
+  opacity: 0.7;
   pointer-events: none;
 }
 
-.trust-orbit::before {
+.trust-phones {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  /* both devices and the floor glow live in one shared 3D space, so the
+     browser sorts them by their z-offset instead of by DOM order */
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+/* ---- the devices ----
+   Each PNG in /images/mobile mockup is already a finished device render:
+   chassis, rail, side keys and dynamic island are baked into the pixels on a
+   transparent ground. So there is no CSS hardware here — drawing a bezel
+   around these would double every one of those. The figure is sized to the
+   export's exact 1419×2796 so nothing is cropped, and all of the depth comes
+   from the stage's perspective plus the per-device yaw/roll/z below. */
+.trust-phone {
+  position: absolute;
+  margin: 0;
+  aspect-ratio: 1419 / 2796;
+  animation: trustFloat 6.5s ease-in-out infinite;
+}
+
+.trust-phone__shot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* contain, not cover: the figure matches the export's ratio exactly, and a
+     crop here would slice through the render's own aluminium rail */
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Specular sweep — the world's light raking across the front glass. Masked by
+   the shot's own alpha channel, so it follows the rounded rail to the pixel
+   instead of guessing at a border-radius, and never bleeds into the gap
+   between the two devices. */
+.trust-phone__gloss {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  background:
+    linear-gradient(112deg,
+      rgba(255, 255, 255, 0) 0 6%,
+      rgba(196, 226, 255, 0.17) 17%,
+      rgba(255, 255, 255, 0.05) 26%,
+      rgba(255, 255, 255, 0) 38%),
+    radial-gradient(74% 34% at 14% -6%, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(302deg, rgba(86, 150, 255, 0.12) 0%, rgba(86, 150, 255, 0) 40%);
+  -webkit-mask-image: var(--shot);
+  mask-image: var(--shot);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  mask-mode: alpha;
+}
+
+/* ground light so the devices sit on something instead of floating in a void.
+   At z:0 it falls between the two of them — behind the front, in front of the
+   back — which is what sells the gap. */
+.trust-phones::after {
   content: "";
-  flex: none;
-  width: 5px;
-  height: 5px;
+  position: absolute;
+  left: 50%;
+  top: 92%;
+  translate: -50%;
+  width: 70%;
+  height: 7%;
   border-radius: 50%;
-  background: var(--cyan);
-  box-shadow: none;
-  opacity: .85;
+  background: radial-gradient(ellipse, rgba(23, 214, 238, 0.22) 0%, rgba(34, 168, 255, 0.08) 45%, transparent 72%);
+  filter: blur(12px);
 }
 
-/* status-toned dots: green = safety facts, violet = your controls */
-.trust-orbit--nw::before,
-.trust-orbit--ne::before,
-.trust-orbit--se::before {
-  background: var(--green);
-  box-shadow: none;
+/* Back device: sits behind and above, but only just — it is the second half of
+   the story (pause / unlink), not scenery, so it stays large and legible. It
+   reads as further away through a softer yaw-and-z offset and a light dim,
+   deliberately not through a heavy distance haze. */
+.trust-phone--back {
+  width: 44%;
+  left: 0%;
+  top: 1%;
+  transform: translate3d(0, 0, -70px) rotateX(4deg) rotateY(-14deg) rotateZ(-5deg);
+  filter:
+    brightness(0.86) saturate(0.95)
+    drop-shadow(0 30px 38px rgba(0, 0, 0, 0.72));
+  animation-delay: -3.2s;
 }
 
-.trust-orbit--s::before,
-.trust-orbit--e::before {
-  background: var(--violet-2);
-  box-shadow: none;
-}
-
-/* positions tuned to TrustViz (funnel left-mid, bars upper-right,
-   target lower-right, twin phones centre) */
-.trust-orbit--n {
-  top: 1.5%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.trust-orbit--ne {
-  top: 18%;
-  right: 2%;
-}
-
-.trust-orbit--e {
-  top: 42%;
-  right: -1%;
-}
-
-.trust-orbit--se {
-  bottom: 18%;
-  right: 1%;
-}
-
-.trust-orbit--s {
-  bottom: -2%;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.trust-orbit--sw {
-  bottom: 12%;
-  left: 2%;
-}
-
-.trust-orbit--w {
-  top: 48%;
-  left: -1%;
-}
-
-.trust-orbit--nw {
+/* Front device: forward of the floor glow, yawed under the same camera. Every
+   shadow is a drop-shadow rather than a box-shadow so it traces the render's
+   silhouette — including the leftward cast that lands on the back device, and
+   the tight cyan halo that reads as rim light off the world. */
+.trust-phone--front {
+  width: 47%;
+  left: 35%;
   top: 14%;
-  left: 1%;
+  transform: translate3d(0, 0, 70px) rotateX(3deg) rotateY(-13deg) rotateZ(3.5deg);
+  filter:
+    drop-shadow(-38px 32px 28px rgba(1, 6, 16, 0.8))
+    drop-shadow(0 44px 50px rgba(0, 0, 0, 0.62))
+    drop-shadow(0 0 26px rgba(23, 214, 238, 0.16));
 }
 
-/* chips drift gently with the artwork instead of blinking */
-@keyframes trustChip {
+/* cinematic mode spreads the pair further apart in z — same camera, more depth */
+html.cine .trust-stage {
+  perspective-origin: 60% 40%;
+}
 
-  0%,
-  100% {
-    translate: 0 0;
+html.cine .trust-phone--back {
+  transform: translate3d(0, 0, -100px) rotateX(4deg) rotateY(-15deg) rotateZ(-5deg);
+}
+
+html.cine .trust-phone--front {
+  transform: translate3d(0, 0, 105px) rotateX(3deg) rotateY(-14deg) rotateZ(3.5deg);
+}
+
+@media (max-width: 980px) {
+  .trust-split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(28px, 5vh, 44px);
+    justify-items: center;
   }
 
-  50% {
-    translate: 0 -5px;
+  .trust-copy {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .trust-copy__head {
+    justify-items: center;
+    text-align: center;
+    max-width: 620px;
+  }
+
+  .trust-copy__head h2 {
+    max-width: 24ch;
+  }
+
+  .trust-points {
+    text-align: left;
+    max-width: 620px;
+  }
+
+  .trust-stage {
+    max-width: 460px;
+    /* head-on-ish once the stage is centred under the copy — a hard yaw only
+       reads as depth when the devices sit off to one side */
+    perspective-origin: 50% 44%;
   }
 }
 
@@ -1165,27 +1286,8 @@ html.cine .trust-viz__img {
 
 @keyframes trustPulse {
 
-  0%,
-  100% {
-    opacity: .7;
-    transform: scale(1);
-  }
-
   50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes trustLabel {
-
-  0%,
-  100% {
-    opacity: .78;
-  }
-
-  50% {
-    opacity: 1;
+    opacity: 0.55;
   }
 }
 
@@ -3955,9 +4057,6 @@ html.flat .chapter .panel {
   mask-image: none;
 }
 
-html.flat .trust-viz,
-html.flat .trust-viz__img,
-html.flat .trust-orbit,
 html.flat .bcards__desktop,
 html.flat .bbj--inline .journey-path,
 html.flat .bbj--inline .jp-popup,
@@ -4173,43 +4272,8 @@ html.flat .jbar {
     max-width: none;
   }
 
-  .trust-viz__img {
-    width: min(100%, 640px, calc(46vh * 1.6));
-  }
-
   .bots-head__lead {
     font-size: 13px;
-  }
-
-  .trust-orbit {
-    font-size: 11px;
-    padding: 6px 11px;
-  }
-
-  .trust-orbit--e,
-  .trust-orbit--w,
-  .trust-orbit--n {
-    display: none;
-  }
-
-  .trust-orbit--ne {
-    right: 0;
-    top: 16%;
-  }
-
-  .trust-orbit--nw {
-    left: 0;
-    top: 10%;
-  }
-
-  .trust-orbit--se {
-    right: 0;
-    bottom: 18%;
-  }
-
-  .trust-orbit--sw {
-    left: 2%;
-    bottom: 12%;
   }
 
   .bbj--inline .jp-canvas {
@@ -4545,25 +4609,8 @@ html.flat .jbar {
 }
 
 @media (max-width: 640px) {
-  #trustnode .trust-head h2 {
+  .trust-copy__head h2 {
     max-width: 22ch;
-  }
-
-  .trust-orbit--ne {
-    top: 14%;
-  }
-
-  .trust-orbit--nw {
-    top: 8%;
-  }
-
-  .trust-orbit--se {
-    bottom: 16%;
-  }
-
-  .trust-orbit--sw {
-    left: 0;
-    bottom: 10%;
   }
 }
 
@@ -4576,9 +4623,8 @@ html.flat .jbar {
     display: none !important;
   }
 
-  .trust-viz__img,
-  .trust-viz::before,
-  .trust-orbit,
+  .trust-phone,
+  .trust-stage__aura,
   .bot-card,
   .bbj--inline .jp-speech,
   .bbj--inline .jp-speech__scan::after {
@@ -4586,7 +4632,6 @@ html.flat .jbar {
     transition: none;
   }
 
-  html.cine .trust-viz,
   html.cine .bcards__desktop,
   html.cine .bcards__desktop .bot-card,
   html.cine .bbj--inline .journey-path,

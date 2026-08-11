@@ -1,7 +1,6 @@
 import Script from 'next/script';
 import WorldLayerShell from '@/components/home/WorldLayerShell';
 import '../styles/stations.css';
-import '../styles/trust-viz.css';
 
 /**
  * boot-stations.js loads Three + stations.js from /public (never blocked by Next dev guards).
