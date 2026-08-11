@@ -59,7 +59,7 @@
       if (!flat && c.panel) {
         const s = 1 - opacity;
         const scale = (0.92 + 0.08 * opacity).toFixed(3);
-        if (c.el.id === 'edgenode' || c.el.id === 'productnode') {
+        if (c.el.id === 'edgenode' || c.el.id === 'productnode' || c.el.id === 'journeynode') {
           c.panel.style.transform = 'translate3d(0,0,0) scale(1)';
           c.panel.style.filter = 'none';
           return;
@@ -243,9 +243,8 @@
   })();
 
   /* ---------- inline trading journey (chapter 3) ----------
-     Five docks. Pass 1 = steps 1–5. Pass 2 = steps 6–8 only — unused
-     docks stay empty so the end is obvious. Live phone fades up and
-     scales slightly; others sit at ghost opacity. Cloud speech kept. */
+     Four FIXED phone docks. Scroll advances sections; only screenshots
+     inside the docks crossfade. Empty docks stay as dim ghost frames. */
   const JOURNEY_NOOP = {
     STOP_COUNT: 0,
     tick() { },
@@ -269,82 +268,72 @@
     const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
     const rail = q('.jp-rail');
     const slots = qa('.jp-slot');
+    const speech = q('.jp-speech--section') || q('.jp-beat') || q('.jp-speech');
     if (!rail || !slots.length) return JOURNEY_NOOP;
 
-    const STEPS = [
+    const SECTIONS = [
       {
         kicker: '01 · Open',
-        title: 'Open the app',
-        body: 'Land in ByteBoom and watch live market intelligence before committing to anything.',
-        mock: 'onboard.jpeg',
+        title: 'Open & sign in',
+        body: 'Land in ByteBoom, then create an account or sign in — no exchange access yet.',
+        screens: ['onboard.jpeg', 'login.jpeg'],
       },
       {
-        kicker: '02 · Account',
-        title: 'Login / Signup',
-        body: 'Create an account or sign in — fast entry, no exchange access yet.',
-        mock: 'login.jpeg',
+        kicker: '02 · Explore',
+        title: 'Signals + plan',
+        body: 'Preview live signals free, then pick the plan that fits your risk.',
+        screens: ['live singnals free.jpeg', 'chooseplan.jpeg'],
       },
       {
-        kicker: '03 · Explore',
-        title: 'Signals + demo',
-        body: 'Preview signals free and watch the demo bot run against live prices.',
-        mock: 'live singnals free.jpeg',
-      },
-      {
-        kicker: '04 · Subscribe',
-        title: 'Choose your plan',
-        body: 'Pick the plan that fits, then unlock the full product experience.',
-        mock: 'chooseplan.jpeg',
-      },
-      {
-        kicker: '05 · Wallet',
+        kicker: '03 · Wallet',
         title: 'Connect wallet',
-        body: 'One-click pay from MetaMask, Binance Wallet, SafePal or Trust.',
-        mock: 'connect wallet.jpeg',
+        body: 'Link MetaMask, Binance Wallet, SafePal or Trust — one tap to pay.',
+        screens: ['connect wallet.jpeg', 'connectwalet2.jpeg'],
       },
       {
-        kicker: '06 · Pay',
+        kicker: '04 · Pay',
         title: 'Approve & verify',
         body: 'Approve in your wallet — ByteBoom verifies the payment on-chain.',
-        mock: 'confirmpayinwallet.jpeg',
+        screens: [
+          'paynow.jpeg',
+          'confirmpayinwallet.jpeg',
+          'byteboomverifiespayment.jpeg',
+          'paymentverifiestalset.jpeg',
+        ],
       },
       {
-        kicker: '07 · Connect',
-        title: 'Binance API keys',
-        body: 'Trade on, withdrawals off. Funds never leave your Binance account.',
-        mock: 'setupapikeys.jpeg',
-      },
-      {
-        kicker: '08 · Activate',
-        title: 'Start & follow',
-        body: 'Run the bot and track positions and orders — unlink or delete whenever you choose.',
-        mock: 'contorlsbot.jpeg',
+        kicker: '05 · Activate',
+        title: 'Keys & go live',
+        body: 'Trade-only API keys, then run the bot — unlink or delete whenever you choose.',
+        screens: [
+          'setupapikeys.jpeg',
+          'setupapikeys2.jpeg',
+          'setupapikeys3.jpeg',
+          'contorlsbot.jpeg',
+        ],
       },
     ];
 
-    const STOP_COUNT = STEPS.length;
-    const DOCK_COUNT = slots.length;
-    const dockOf = idx => idx % DOCK_COUNT;
-    const passOf = idx => Math.floor(idx / DOCK_COUNT);
+    const STOP_COUNT = SECTIONS.length;
+    const DOCK_COUNT = Math.min(4, slots.length);
 
-    const stepForDock = (pass, dock) => {
-      const primary = pass * DOCK_COUNT + dock;
-      if (primary < STOP_COUNT) return primary;
-      return null;
-    };
+    const mockSrc = file =>
+      '/images/userJourney/' + encodeURIComponent(file);
 
-    const mockDir = rootEl.dataset.mockDir || '/traidngjourney/images/';
-    const mockSrc = file => mockDir + encodeURIComponent(file);
-    STEPS.forEach(s => { if (s.mock) { const im = new Image(); im.src = mockSrc(s.mock); } });
+    SECTIONS.forEach(sec => {
+      sec.screens.forEach(file => {
+        const im = new Image();
+        im.src = mockSrc(file);
+      });
+    });
 
     const legend = qa('.jp-legend li');
 
-    const FADE_MS = reduced ? 220 : 550;
-    const STEP_COOLDOWN_MS = reduced ? 280 : 750;
+    const FADE_MS = reduced ? 200 : 750;
+    const STEP_COOLDOWN_MS = reduced ? 280 : 900;
     const WHEEL_LOCK_MS = STEP_COOLDOWN_MS;
 
     let currentStep = -1;
-    let liveDock = -1;
     let armed = false;
     let wheelLocked = false;
     let completed = false;
@@ -352,91 +341,101 @@
     let animTimer = 0;
     let lockTimer = 0;
     let lastStepAt = 0;
+    const dockLayer = slots.map(() => 'a');
 
-    const paintDock = (slotEl, step, idx) => {
-      const kicker = slotEl.querySelector('.jp-kicker');
-      const title = slotEl.querySelector('.jp-title');
-      const body = slotEl.querySelector('.jp-body');
-      const num = slotEl.querySelector('.jp-stop-num');
-      const shot = slotEl.querySelector('.jp-shot');
-      const fallback = slotEl.querySelector('.jp-mock-fallback');
-      if (kicker) kicker.textContent = step.kicker;
-      if (title) title.textContent = step.title;
-      if (body) body.textContent = step.body;
-      if (num) num.textContent = String(idx + 1);
-      if (step.mock) {
-        const src = mockSrc(step.mock);
-        if (shot) {
-          if (shot.getAttribute('src') !== src) shot.setAttribute('src', src);
-          shot.alt = step.title + ' — ByteBoom app screen ' + (idx + 1);
-          shot.hidden = false;
-        }
-        if (fallback) fallback.hidden = true;
-      } else {
-        if (shot) shot.hidden = true;
-        if (fallback) fallback.hidden = false;
+    const paintSpeech = section => {
+      if (!speech) return;
+      const kicker = speech.querySelector('.jp-kicker');
+      const title = speech.querySelector('.jp-title');
+      const body = speech.querySelector('.jp-body');
+      if (kicker) kicker.textContent = section.kicker;
+      if (title) title.textContent = section.title;
+      if (body) body.textContent = section.body;
+      speech.classList.add('is-on');
+    };
+
+    /* Swap only the screenshot layers. Neon phone chrome never hides. */
+    const setDockScreen = (slotEl, dockIdx, file, label, animate) => {
+      const shotA = slotEl.querySelector('.jp-shot[data-layer="a"]');
+      const shotB = slotEl.querySelector('.jp-shot[data-layer="b"]');
+      if (!shotA || !shotB) return;
+
+      if (!file) {
+        shotA.classList.remove('is-on');
+        shotB.classList.remove('is-on');
+        slotEl.classList.add('is-empty');
+        slotEl.classList.remove('is-filled');
+        return;
+      }
+
+      slotEl.classList.remove('is-empty');
+      slotEl.classList.add('is-filled');
+
+      const src = mockSrc(file);
+      const currKey = dockLayer[dockIdx];
+      const outgoing = currKey === 'a' ? shotA : shotB;
+      const incoming = currKey === 'a' ? shotB : shotA;
+
+      if (outgoing.classList.contains('is-on') && outgoing.getAttribute('src') === src) {
+        return;
+      }
+
+      const commit = () => {
+        incoming.alt = label || '';
+        /* Simultaneous crossfade — outgoing stays until incoming is on */
+        incoming.classList.add('is-on');
+        outgoing.classList.remove('is-on');
+        dockLayer[dockIdx] = incoming.dataset.layer;
+      };
+
+      if (!animate || reduced) {
+        incoming.setAttribute('src', src);
+        commit();
+        return;
+      }
+
+      /* Prepare incoming under the current shot, then crossfade together */
+      incoming.classList.remove('is-on');
+      let done = false;
+      const onReady = () => {
+        if (done) return;
+        done = true;
+        incoming.removeEventListener('load', onReady);
+        incoming.removeEventListener('error', onReady);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(commit);
+        });
+      };
+      incoming.addEventListener('load', onReady);
+      incoming.addEventListener('error', onReady);
+      if (incoming.getAttribute('src') !== src) {
+        incoming.setAttribute('src', src);
+      }
+      if (incoming.complete && incoming.naturalWidth > 0 && incoming.getAttribute('src') === src) {
+        onReady();
       }
     };
 
-    const clearDock = slotEl => {
-      const kicker = slotEl.querySelector('.jp-kicker');
-      const title = slotEl.querySelector('.jp-title');
-      const body = slotEl.querySelector('.jp-body');
-      const shot = slotEl.querySelector('.jp-shot');
-      const fallback = slotEl.querySelector('.jp-mock-fallback');
-      if (kicker) kicker.textContent = '';
-      if (title) title.textContent = '';
-      if (body) body.textContent = '';
-      if (shot) {
-        shot.removeAttribute('src');
-        shot.alt = '';
-        shot.hidden = true;
-      }
-      if (fallback) fallback.hidden = true;
-    };
+    const syncSection = (sectionIdx, animate) => {
+      const section = SECTIONS[sectionIdx];
+      if (!section) return;
+      paintSpeech(section);
+      rail.dataset.section = String(sectionIdx);
 
-    const clearInlineFade = slotEl => {
-      [slotEl.querySelector('.jp-phone'), slotEl.querySelector('.jp-speech')].forEach(el => {
-        if (!el) return;
-        el.style.opacity = '';
-        el.style.visibility = '';
-        el.style.transform = '';
-      });
-    };
-
-    const syncRail = stepIdx => {
-      const pass = passOf(stepIdx);
-      rail.dataset.pass = String(pass);
       for (let d = 0; d < DOCK_COUNT; d++) {
-        const stepIdxForDock = stepForDock(pass, d);
-        const slot = slots[d];
-        clearInlineFade(slot);
-        if (stepIdxForDock == null) {
-          slot.classList.add('is-empty');
-          slot.classList.remove('is-live');
-          slot.removeAttribute('data-step');
-          clearDock(slot);
-          continue;
-        }
-        slot.classList.remove('is-empty');
-        slot.dataset.step = String(stepIdxForDock);
-        paintDock(slot, STEPS[stepIdxForDock], stepIdxForDock);
+        const file = section.screens[d] || null;
+        const label = file ? section.title + ' — screen ' + (d + 1) : '';
+        setDockScreen(slots[d], d, file, label, animate);
       }
-    };
-
-    const setLiveDock = dock => {
-      slots.forEach((el, i) => {
-        el.classList.toggle('is-live', i === dock && !el.classList.contains('is-empty'));
-      });
+      for (let d = DOCK_COUNT; d < slots.length; d++) {
+        setDockScreen(slots[d], d, null, '', false);
+      }
     };
 
     const goToStep = (idx, animate) => {
       idx = clamp(idx, 0, STOP_COUNT - 1);
-      if (idx === currentStep && liveDock >= 0) return;
-      const dock = dockOf(idx);
+      if (idx === currentStep && currentStep >= 0) return;
       currentStep = idx;
-      liveDock = dock;
-
       clearTimeout(animTimer);
 
       legend.forEach((li, i) => {
@@ -446,8 +445,7 @@
 
       if (!animate) {
         rail.classList.add('is-instant');
-        syncRail(idx);
-        setLiveDock(dock);
+        syncSection(idx, false);
         void rail.offsetWidth;
         rail.classList.remove('is-instant');
         animating = false;
@@ -456,8 +454,7 @@
 
       rail.classList.remove('is-instant');
       animating = true;
-      syncRail(idx);
-      setLiveDock(dock);
+      syncSection(idx, true);
       animTimer = setTimeout(() => { animating = false; }, FADE_MS);
     };
 
@@ -482,7 +479,6 @@
         armed = on;
         wheelLocked = false;
         if (on && completed) completed = false;
-        /* do not auto-reset to step 0 here — resetToStart is explicit */
       },
       resetToStart() {
         completed = false;
@@ -501,14 +497,10 @@
       handleWheel(deltaY, opts = {}) {
         const fastRewind = !!(opts && opts.fastRewind);
         if (!armed) return { consumed: false };
-
         const now = performance.now();
 
-        /* Last step: eat inertia until cooldown, then release to next section */
         if (deltaY > 0 && currentStep >= STOP_COUNT - 1) {
-          if (animating || now - lastStepAt < STEP_COOLDOWN_MS) {
-            return { consumed: true };
-          }
+          if (animating || now - lastStepAt < STEP_COOLDOWN_MS) return { consumed: true };
           return { consumed: false, atEnd: true };
         }
         if (deltaY < 0 && currentStep <= 0 && !fastRewind) {
@@ -520,9 +512,8 @@
           animating = false;
           wheelLocked = false;
         }
-        if (!fastRewind && now - lastStepAt < STEP_COOLDOWN_MS) {
-          return { consumed: true };
-        }
+        if (!fastRewind && now - lastStepAt < STEP_COOLDOWN_MS) return { consumed: true };
+
         if (deltaY > 0) {
           lastStepAt = now;
           lockWheel();

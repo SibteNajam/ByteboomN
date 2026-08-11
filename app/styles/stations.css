@@ -1972,52 +1972,54 @@ html.cine .trust-phone--front {
   }
 }
 
-/* ---- Journey node: imported trading journey bundle, integrated inline ---- */
+/* ---- Journey node: viewport-fit centered stage ---- */
 #journeynode.chapter--journey {
   justify-content: center;
   align-items: center;
-  /* Clear the fixed jbar (logo ~80px + bar padding) so the title never overlaps nav */
-  padding: clamp(108px, 16vh, 132px) 2.4vw 26px;
+  padding: 84px 2vw 10px;
+  overflow: hidden;
 }
 
+#journeynode.chapter--journey .panel.panel--journey,
 #journeynode .panel--journey {
-  width: min(1340px, 97vw);
-  max-width: 1340px;
-  padding: 0;
-  background: none;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
-  backdrop-filter: none;
+  width: min(1100px, 96vw) !important;
+  max-width: 1100px !important;
+  margin: 0 auto;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  height: min(calc(100dvh - 94px), 780px);
+  text-align: center;
 }
 
 #journeynode .panel--journey::before {
-  display: none;
+  content: none !important;
+  display: none !important;
 }
 
-/* Palette matches newapp's journey exactly — the accents were gold/teal
-   here, which is why the section still read as a different design even
-   once the layout matched. Only the cloud silhouette stays local.
-   These tokens are used by this section alone. */
 .bbj.bbj--inline {
-  --bbj-bg: transparent;
   --bbj-text: #f2f8ff;
   --bbj-muted: #8ea6c0;
   --bbj-faint: #5f7794;
   --bbj-accent: #17d6ee;
   --bbj-gold: var(--bbj-accent);
   --bbj-teal: var(--bbj-accent);
-  --bbj-violet: #7d5cff;
-  --bbj-blue: #22a8ff;
   --bbj-line: rgba(126, 168, 216, .14);
-  --bbj-line-hi: rgba(126, 168, 216, .28);
-  --bbj-line-soft: rgba(255, 255, 255, .06);
   --bbj-disp: var(--font-display);
   --bbj-body: var(--font), system-ui, sans-serif;
   --bbj-mono: var(--mono), ui-monospace, Consolas, monospace;
+  --jp-fade: 0.75s;
   position: relative;
-  height: auto;
-  background: transparent;
+  width: 100%;
+  height: 100%;
   color: var(--bbj-text);
   font-family: var(--bbj-body);
 }
@@ -2030,150 +2032,101 @@ html.cine .trust-phone--front {
 }
 
 .bbj--inline .bbj-wrap {
-  width: min(1280px, 100%);
+  width: 100%;
+  height: 100%;
   margin: 0 auto;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-items: center;
+  justify-items: center;
+  gap: 8px;
 }
 
-/* Centred over the symmetric five-dock rail, like newapp. The type itself
-   stays this project's (display face, gold eyebrow). */
 .bbj--inline .bbj-head {
-  margin: 0 auto clamp(8px, 1.6vh, 18px);
-  max-width: 640px;
+  margin: 0;
+  max-width: 560px;
   padding: 0;
   text-align: center;
 }
 
 .bbj--inline .bbj-head h2,
 .bbj--inline .bbj-head .sec-lede {
-  max-width: none;
   margin-inline: auto;
 }
 
-.bbj--inline .eyebrow {
-  font-family: var(--bbj-mono);
-  font-size: clamp(10px, .82vw, 11.5px);
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  color: var(--bbj-gold);
-  margin: 0 0 9px;
-  display: block;
-}
-
-.bbj--inline .eyebrow::before {
-  display: none;
-}
-
-/* newapp's .sec-head scale */
 .bbj--inline h2 {
   font-family: var(--bbj-disp);
   font-weight: 700;
   letter-spacing: -.025em;
-  font-size: clamp(1.55rem, 3vw, 2.45rem);
-  line-height: 1.1;
-  max-width: 15ch;
+  font-size: clamp(1.2rem, 2.2vw, 1.85rem);
+  line-height: 1.12;
+  max-width: 18ch;
   margin: 0;
   color: var(--bbj-text);
   text-wrap: balance;
-  text-shadow: 0 2px 30px rgba(34, 168, 255, .14);
 }
 
 .bbj--inline .sec-lede {
   color: var(--bbj-muted);
-  font-size: clamp(.92rem, 1.05vw, 1.05rem);
-  margin: 10px 0 0;
-  max-width: 58ch;
-  line-height: 1.6;
+  font-size: clamp(0.8rem, 0.9vw, 0.92rem);
+  margin: 6px 0 0;
+  max-width: 48ch;
+  line-height: 1.45;
   text-wrap: balance;
 }
 
-/* ---- Journey dock rail — mirrors newapp's final section exactly. The one
-   deliberate difference is the speech bubble: this project keeps its cloud
-   instead of newapp's rounded box. Everything else (five docks, ghost
-   phones, live scale, pass 1 = 1–5 / pass 2 = 6–8, timings) is the same.
-
-   --jp-h is only a ceiling: the real size is whichever is smaller, that
-   height or what one of the five columns can take, so the row never
-   overflows sideways on a wide short screen. */
 .bbj--inline .journey-path {
-  --jp-cols: 5;
-  --jp-gap: clamp(8px, 1.1vw, 18px);
-  --jp-h: clamp(300px, 53vh, 540px);
-  --jp-w: calc(var(--jp-h) * 0.469);
-  --jp-bubble-h: clamp(118px, 15vh, 148px);
-  --jp-fade: 0.55s;
-  --jp-ghost: 0.08;
-  position: relative;
-  margin-top: clamp(2px, 0.6vh, 8px);
-  padding-bottom: 0;
-  perspective: 1200px;
-  transform-style: preserve-3d;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  align-items: center;
+  justify-items: center;
+  /* Tight gap — cloud height bumps absorb into this, phones stay put */
+  gap: 4px;
+  margin: 0;
+  padding: 0;
 }
 
 html.cine .bbj--inline .journey-path {
-  transform-style: preserve-3d;
+  transform-style: flat;
 }
 
-.bbj--inline .jp-rail {
+/* Section cloud — height-only tweak; phones use fixed .jp-stage below.
+   +12% height (124 -> 139) with a matching -15px top margin, so the margin
+   box the grid measures is still 124px: the cloud grows upward into the
+   slack above it and the rail below does not move by a pixel. */
+.bbj--inline .jp-speech.jp-speech--section {
   position: relative;
-  display: grid;
-  grid-template-columns: repeat(var(--jp-cols), minmax(0, 1fr));
-  gap: var(--jp-gap);
-  align-items: end;
-  padding-bottom: clamp(4px, 0.8vh, 10px);
-  transform-style: preserve-3d;
-}
-
-.bbj--inline .jp-slot {
-  position: relative;
-  display: grid;
-  grid-template-rows: auto auto;
-  justify-items: center;
-  align-items: end;
-  gap: clamp(6px, 1vh, 12px);
-  transform-style: preserve-3d;
-  transition: transform var(--jp-fade, 1s) ease-out;
-}
-
-.bbj--inline .jp-slot > * {
-  width: min(100%, var(--jp-w));
-}
-
-.bbj--inline .jp-stage {
-  position: relative;
-  aspect-ratio: 9 / 19.2;
-  transform-style: preserve-3d;
-}
-
-/* Cloud speech — box matches cloud SVG aspect; padding keeps copy inside */
-.bbj--inline .jp-speech {
-  position: relative;
-  align-self: end;
-  width: 100%;
-  aspect-ratio: 300 / 142;
-  min-height: 0;
+  width: min(460px, 90vw);
+  height: 139px;
+  min-height: 139px;
+  max-height: 139px;
+  margin: -15px auto 0;
+  padding: 22px 42px 28px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  margin: 0;
-  /* % padding is relative to width — clears the cloud's lobes evenly */
-  padding: 14% 15% 18% 14%;
-  box-sizing: border-box;
   z-index: 6;
   background: transparent;
   opacity: 0;
   visibility: hidden;
-  transform: none;
-  transition:
-    opacity var(--jp-fade, 0.55s) ease,
-    visibility 0s linear var(--jp-fade, 0.55s);
+  transition: opacity 0.28s ease, visibility 0s linear 0.28s;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
+  flex: 0 0 auto;
 }
 
-/* Cloud fills the speech box 1:1 with the path */
-.bbj--inline .jp-speech__cloud {
+.bbj--inline .jp-speech.jp-speech--section.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.28s ease, visibility 0s linear 0s;
+}
+
+.bbj--inline .jp-speech--section .jp-speech__cloud {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -2182,11 +2135,11 @@ html.cine .bbj--inline .journey-path {
   overflow: visible;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.92;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .28));
+  opacity: 0.95;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
 }
 
-.bbj--inline .jp-speech__inner {
+.bbj--inline .jp-speech--section .jp-speech__inner {
   position: relative;
   z-index: 1;
   width: 100%;
@@ -2195,143 +2148,129 @@ html.cine .bbj--inline .journey-path {
   background: transparent;
   border: none;
   text-align: center;
-  overflow: visible;
 }
 
-.bbj--inline .jp-speech__scan {
+.bbj--inline .jp-speech--section .jp-speech__scan {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 2;
-  opacity: .18;
+  opacity: 0.16;
   border-radius: 40%;
 }
 
-.bbj--inline .jp-speech__scan::after {
+.bbj--inline .jp-speech--section .jp-speech__scan::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   height: 40%;
   top: -45%;
-  background: linear-gradient(180deg, transparent, rgba(23, 214, 238, .12), transparent);
+  background: linear-gradient(180deg, transparent, rgba(23, 214, 238, 0.12), transparent);
   animation: jpSpeechScan 4.5s ease-in-out infinite;
-}
-
-.bbj--inline .jp-speech__tail {
-  position: absolute;
-  left: 50%;
-  bottom: 4%;
-  transform: translate(-35%, 85%);
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 3px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.bbj--inline .jp-speech__tail span {
-  display: block;
-  border-radius: 50%;
-  background: linear-gradient(145deg, rgba(16, 26, 42, .72), rgba(8, 12, 22, .62));
-  border: 1px solid var(--bbj-line);
-}
-
-.bbj--inline .jp-speech__tail span:nth-child(1) {
-  width: 10px;
-  height: 10px;
-}
-
-.bbj--inline .jp-speech__tail span:nth-child(2) {
-  width: 7px;
-  height: 7px;
-  margin-bottom: -4px;
-  opacity: .9;
-}
-
-.bbj--inline .jp-speech__tail span:nth-child(3) {
-  width: 4px;
-  height: 4px;
-  margin-bottom: -8px;
-  opacity: .7;
 }
 
 @keyframes jpSpeechScan {
   0%, 100% { top: -45%; opacity: 0; }
   15% { opacity: 1; }
-  55% { top: 105%; opacity: .6; }
+  55% { top: 105%; opacity: 0.6; }
 }
 
-.bbj--inline .jp-speech .jp-kicker,
-.bbj--inline .jp-speech .jp-title,
-.bbj--inline .jp-speech .jp-body {
+.bbj--inline .jp-speech--section .jp-kicker,
+.bbj--inline .jp-speech--section .jp-title,
+.bbj--inline .jp-speech--section .jp-body {
   position: relative;
   z-index: 4;
 }
 
-/* Caption type — sized to fit inside the cloud safely */
-.bbj--inline .jp-speech .jp-kicker {
-  font-family: var(--bbj-mono);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: .14em;
+.bbj--inline .jp-speech--section .jp-kicker {
+  margin: 0 0 2px;
+  font: 600 10px/1.2 var(--bbj-mono);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bbj-accent);
-  margin: 0 0 4px;
 }
 
-.bbj--inline .jp-speech .jp-title {
+.bbj--inline .jp-speech--section .jp-title {
+  margin: 0 0 3px;
   font-family: var(--bbj-disp);
-  font-size: clamp(12px, 0.95vw, 14px);
+  font-size: clamp(0.95rem, 1.25vw, 1.1rem);
   font-weight: 700;
-  letter-spacing: -.02em;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
   color: var(--bbj-text);
-  margin: 0 0 4px;
 }
 
-.bbj--inline .jp-speech .jp-body {
-  font-family: var(--bbj-body);
-  font-size: clamp(10px, 0.68vw, 11px);
-  color: var(--bbj-muted);
-  line-height: 1.4;
+.bbj--inline .jp-speech--section .jp-body {
   margin: 0;
+  font-size: clamp(11px, 0.82vw, 12.5px);
+  line-height: 1.35;
+  color: var(--bbj-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-/* Phone — ghost by default, live scales evenly from centre */
-.bbj--inline .phone-frame {
-  position: relative;
+.bbj--inline .jp-rail {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 24px);
   width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
 }
 
+/* All 4 neon frames always visible and centered */
+.bbj--inline .jp-slot {
+  flex: 0 1 auto;
+  height: auto;
+  max-height: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bbj--inline .jp-stage {
+  /* Fixed size so taller cloud cannot shrink the phones */
+  position: relative;
+  height: min(430px, 52vh);
+  max-height: 430px;
+  width: auto;
+  aspect-ratio: 9 / 19.2;
+  flex: 0 0 auto;
+}
+
+/* Neon chrome always stays — never fade the whole phone out */
 .bbj--inline .jp-phone {
   position: absolute;
   inset: 0;
-  opacity: var(--jp-ghost, 0.08);
-  visibility: visible;
-  transform: scale(0.97);
-  transform-origin: center center;
-  transition:
-    opacity var(--jp-fade, 0.55s) ease,
-    transform var(--jp-fade, 0.55s) ease;
-  z-index: 4;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none;
+  transition: none;
 }
 
 .bbj--inline .phone-rim {
   position: relative;
   height: 100%;
-  border-radius: 24px;
+  border-radius: 22px;
   padding: 2px;
   background: linear-gradient(145deg, #17d6ee 0%, #22a8ff 48%, #7d5cff 100%);
-  box-shadow: 0 24px 44px -18px rgba(0, 0, 0, .66);
+  box-shadow: 0 18px 36px -16px rgba(0, 0, 0, 0.7);
+  transition: filter 0.35s ease, opacity 0.35s ease;
 }
 
 .bbj--inline .phone-screen {
   position: relative;
   height: 100%;
-  border-radius: 21px;
+  border-radius: 20px;
   overflow: hidden;
   background: #05070c;
 }
@@ -2341,26 +2280,37 @@ html.cine .bbj--inline .journey-path {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
   background: linear-gradient(90deg, #17d6ee, #7d5cff);
   border-radius: 999px;
-  opacity: .8;
+  opacity: 0.85;
 }
 
 .bbj--inline .phone-notch {
-  top: 9px;
-  width: 54px;
-  height: 5px;
+  top: 8px;
+  width: 48px;
+  height: 4px;
 }
 
 .bbj--inline .phone-home {
-  bottom: 8px;
-  width: 42px;
+  bottom: 7px;
+  width: 36px;
   height: 3px;
-  opacity: .6;
+  opacity: 0.55;
 }
 
+/* Idle glow when dock has no screenshot yet */
+.bbj--inline .jp-screen-idle {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 30%, rgba(34, 211, 238, 0.08), transparent 70%),
+    #05070c;
+}
+
+/* Screenshots only — soft simultaneous crossfade inside fixed neon frames */
 .bbj--inline .jp-shot {
   position: absolute;
   inset: 0;
@@ -2369,142 +2319,60 @@ html.cine .bbj--inline .journey-path {
   object-fit: cover;
   object-position: top center;
   z-index: 1;
-}
-
-.bbj--inline .jp-mock-fallback {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 16px;
-  background: linear-gradient(180deg, #0d121c, #070a10);
-}
-
-/* Class display:flex beats the UA [hidden] rule — force hide when painted */
-.bbj--inline .jp-mock-fallback[hidden] {
-  display: none !important;
-}
-
-.bbj--inline .jp-phone-chip {
-  font-family: var(--bbj-mono);
-  font-size: 11px;
-  letter-spacing: .12em;
-  color: var(--bbj-accent);
-  border: 1px solid rgba(23, 214, 238, .3);
-  border-radius: 999px;
-  padding: 4px 10px;
-}
-
-.bbj--inline .jp-phone-chip b {
-  color: var(--bbj-text);
-}
-
-.bbj--inline .jp-pending {
-  font-family: var(--bbj-mono);
-  font-size: 11px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--bbj-faint);
-  text-align: center;
-  margin: 0;
-}
-
-/* Live dock */
-.bbj--inline .jp-slot.is-live {
-  z-index: 3;
-}
-
-.bbj--inline .jp-slot.is-live .jp-phone {
-  opacity: 1;
-  transform: scale(1.04);
-  transform-origin: center center;
-  transition:
-    opacity var(--jp-fade, 0.55s) ease,
-    transform var(--jp-fade, 0.55s) ease;
-  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.35));
-}
-
-.bbj--inline .jp-slot.is-live .jp-speech {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-  transition:
-    opacity var(--jp-fade, 0.55s) ease,
-    visibility 0s;
-}
-
-/* Empty docks on the last pass — fully gone so the end is clear */
-.bbj--inline .jp-slot.is-empty .jp-phone,
-.bbj--inline .jp-slot.is-empty .jp-speech {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  transform: none !important;
+  opacity: 0;
   pointer-events: none;
+  transition: opacity var(--jp-fade) ease-in-out;
+  will-change: opacity;
 }
 
-/* Instant snap when the engine passes animate=false (init / skip / scrub) */
-.bbj--inline .jp-rail.is-instant .jp-phone,
-.bbj--inline .jp-rail.is-instant .jp-speech,
-.bbj--inline .jp-rail.is-instant .jp-slot {
+.bbj--inline .jp-shot.is-on {
+  opacity: 1;
+  z-index: 2;
+}
+
+.bbj--inline .jp-rail.is-instant .jp-shot {
   transition: none !important;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bbj--inline .journey-path {
-    --jp-fade: 0.28s;
-  }
+.bbj--inline .jp-slot.is-filled .phone-rim {
+  filter: none;
+  opacity: 1;
+}
 
-  .bbj--inline .jp-slot {
-    transform-style: flat;
-    transition: none;
-  }
-
-  .bbj--inline .jp-phone {
-    transform: scale(0.97);
-  }
-
-  /* the live phone still scales up — that step, like newapp's, is the
-     cue for which dock is active, not decoration */
-
-  .bbj--inline .jp-speech__scan::after {
-    animation: none;
-  }
+/* Empty dock = neon shell stays; only screen content is quieter */
+.bbj--inline .jp-slot.is-empty .phone-rim {
+  filter: saturate(0.75) brightness(0.92);
+  opacity: 0.88;
 }
 
 .bbj--inline .jp-legend {
   display: flex;
-  gap: 6px 14px;
+  gap: 6px 12px;
   flex-wrap: wrap;
   justify-content: center;
   list-style: none;
   padding: 0;
-  margin: clamp(8px, 1.4vh, 16px) 0 0;
+  margin: 0;
 }
 
 .bbj--inline .jp-legend li {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   font: 500 11px var(--bbj-body);
   color: var(--bbj-faint);
-  transition: color 0.25s ease;
 }
 
 .bbj--inline .jp-legend li b {
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  font: 600 10px var(--bbj-mono);
+  font: 600 9px var(--bbj-mono);
   color: var(--bbj-faint);
   border: 1px solid var(--bbj-line);
   background: rgba(9, 16, 29, .38);
-  transition: all 0.25s ease;
 }
 
 .bbj--inline .jp-legend li.is-done b {
@@ -2517,17 +2385,21 @@ html.cine .bbj--inline .journey-path {
 }
 
 .bbj--inline .jp-legend li.is-active b {
-  color: #04121a;
-  background: var(--bbj-teal);
-  border-color: var(--bbj-teal);
+  color: #041018;
+  border-color: var(--bbj-accent);
+  background: var(--bbj-accent);
 }
 
-/* The narrow-screen collapse (rail -> one centred dock) lives in the
-   existing @media (max-width: 900px) block further down this file. */
+.bbj--inline .journey-skip {
+  margin-top: 0 !important;
+  gap: 8px;
+}
 
+.bbj--inline .journey-skip__btn {
+  padding: 5px 12px;
+  font-size: 11px;
+}
 
-/* Journey skip — escape hatch without stepping every screenshot.
-   Same pill as newapp: edge-aligned, uppercase display face, no rule above. */
 .journey-skip {
   display: flex;
   align-items: center;
@@ -4249,7 +4121,7 @@ html.flat .chapter .panel {
 html.flat .bcards__desktop,
 html.flat .bbj--inline .journey-path,
 html.flat .bbj--inline .jp-speech,
-html.flat .bbj--inline .phone-frame {
+html.flat .bbj--inline .jp-device {
   transform: none;
 }
 
@@ -4347,11 +4219,13 @@ html.flat .jbar {
   }
 
   #journeynode.chapter--journey {
-    padding: clamp(100px, 14vh, 120px) 4vw 6vh;
+    padding: 80px 3vw 8px;
   }
 
+  #journeynode.chapter--journey .panel.panel--journey,
   #journeynode .panel--journey {
-    width: min(980px, 98vw);
+    width: min(960px, 98vw) !important;
+    height: min(calc(100dvh - 88px), 700px);
   }
 
   #aboutnode.chapter--about {
@@ -4464,33 +4338,28 @@ html.flat .jbar {
     font-size: 13px;
   }
 
-  .bbj--inline .bbj-head {
-    max-width: 100%;
-    padding-top: 6px;
-  }
-
-  /* matches newapp's narrow-screen sizes */
-  .bbj--inline .journey-path {
-    --jp-h: clamp(320px, 56vh, 520px);
-    --jp-bubble-h: clamp(96px, 14vh, 132px);
+  /* same +12%, same upward-only compensation */
+  .bbj--inline .jp-speech.jp-speech--section {
+    width: min(400px, 92vw);
+    height: 128px;
+    min-height: 128px;
+    max-height: 128px;
+    margin: -14px auto 0;
+    padding: 20px 34px 24px;
   }
 
   .bbj--inline .jp-rail {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
+    gap: 10px;
   }
 
-  .bbj--inline .jp-slot {
-    grid-area: 1 / 1;
+  .bbj--inline .jp-stage {
+    height: min(360px, 44vh);
+    max-height: 360px;
   }
 
-  .bbj--inline .jp-slot:not(.is-live) .jp-phone {
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .bbj--inline .jp-slot.is-live {
-    z-index: 2;
+  #journeynode.chapter--journey .panel.panel--journey,
+  #journeynode .panel--journey {
+    height: min(calc(100dvh - 88px), 720px);
   }
 
   /* legend stays on narrow screens, same as newapp */
@@ -4806,7 +4675,8 @@ html.flat .jbar {
   html.cine .bcards__desktop--depth .bot-card--depth-front,
   html.cine .bbj--inline .journey-path,
   html.cine .bbj--inline .jp-speech,
-  html.cine .bbj--inline .phone-frame,
+  html.cine .bbj--inline .jp-device,
+  html.cine .bbj--inline .jp-shot,
   html.cine .sec-item__visual,
   html.cine .sec-item__figure,
   html.cine .sec-item__plinth {
