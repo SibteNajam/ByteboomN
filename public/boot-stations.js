@@ -58,7 +58,7 @@
 
     var script = document.createElement('script');
     script.id = STATIONS_ID;
-    script.src = asset('/stations.js?v=drop-notif');
+    script.src = asset('/stations.js?v=scroll-unlock');
     script.async = false;
     document.body.appendChild(script);
     return true;

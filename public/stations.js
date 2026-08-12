@@ -328,8 +328,10 @@
 
     const legend = qa('.jp-legend li');
 
+    /* Visual fade can stay long; wheel unlock stays short so scroll
+       doesn't feel stuck / pulled back while screenshots ease. */
     const FADE_MS = reduced ? 200 : 750;
-    const STEP_COOLDOWN_MS = reduced ? 280 : 900;
+    const STEP_COOLDOWN_MS = reduced ? 220 : 460;
     const WHEEL_LOCK_MS = STEP_COOLDOWN_MS;
 
     let currentStep = -1;
@@ -499,15 +501,16 @@
         const now = performance.now();
 
         if (deltaY > 0 && currentStep >= STOP_COUNT - 1) {
-          if (animating || now - lastStepAt < STEP_COOLDOWN_MS) return { consumed: true };
+          if (now - lastStepAt < STEP_COOLDOWN_MS) return { consumed: true };
           return { consumed: false, atEnd: true };
         }
         if (deltaY < 0 && currentStep <= 0 && !fastRewind) {
           return { consumed: false, atStart: true };
         }
 
-        if (!fastRewind && (wheelLocked || animating)) return { consumed: true };
-        if (fastRewind && animating) {
+        /* Don't gate on animating — long screenshot fades must not snap-scroll back */
+        if (!fastRewind && wheelLocked) return { consumed: true };
+        if (fastRewind) {
           animating = false;
           wheelLocked = false;
         }
