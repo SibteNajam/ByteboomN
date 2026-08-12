@@ -308,7 +308,6 @@
         screens: [
           'setupapikeys.jpeg',
           'setupapikeys2.jpeg',
-          'setupapikeys3.jpeg',
           'contorlsbot.jpeg',
         ],
       },
