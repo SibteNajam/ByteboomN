@@ -8,7 +8,7 @@ export default function AboutChapter() {
 
       <div className="sec-header">
         <h2>Discipline, <span className="grad">engineered</span> — not adrenaline, promised.</h2>
-        <p className="sec-lead">Rules-based execution that runs while you sleep — no impulse trades, no chart-watching marathons.</p>
+        <p className="sec-lead">Built for calm decisions — so you are not glued to charts all night.</p>
       </div>
 
       <div className="about-steps">
@@ -31,7 +31,7 @@ export default function AboutChapter() {
               <use href="#i-shield" />
             </svg><span className="about-step__num">03</span></div>
           <h3>The product</h3>
-          <p>Connects through Binance&apos;s API — scoped to trade, pause, and stop on your terms.</p>
+          <p>A trading engine that follows rules — so you trade with a plan, not with panic.</p>
         </div>
       </div>
 
@@ -42,8 +42,8 @@ export default function AboutChapter() {
             <span className="about-principle__icon about-principle__icon--cyan"><svg className="i">
                 <use href="#i-layers" />
               </svg></span>
-            <h4>Built on Binance</h4>
-            <p>Every trade executes on <b className="hl hl--cyan">Binance's own engine</b>.</p>
+            <h4>Same rules every time</h4>
+            <p>No mood swings — <b className="hl hl--cyan">one clear playbook</b>.</p>
           </div>
           <div className="about-principle">
             <span className="about-principle__icon about-principle__icon--violet"><svg className="i">
@@ -56,15 +56,15 @@ export default function AboutChapter() {
             <span className="about-principle__icon about-principle__icon--amber"><svg className="i">
                 <use href="#i-clock" />
               </svg></span>
-            <h4>Always-on discipline</h4>
-            <p>Same logic, applied <b className="hl hl--amber">every single time</b>.</p>
+            <h4>Works while you sleep</h4>
+            <p>Markets never rest — <b className="hl hl--amber">neither does the trading engine</b>.</p>
           </div>
           <div className="about-principle">
             <span className="about-principle__icon about-principle__icon--green"><svg className="i">
                 <use href="#i-exit" />
               </svg></span>
-            <h4>Exit anytime</h4>
-            <p>Revoke API access <b className="hl hl--green">in one click</b>.</p>
+            <h4>You stay in charge</h4>
+            <p>Pause or stop when <b className="hl hl--green">you</b> decide.</p>
           </div>
         </div>
       </div>

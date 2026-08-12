@@ -5,7 +5,7 @@ import './styles/styles.css';
 export const metadata: Metadata = {
   title: 'ByteBoom — Enter the system',
   description:
-    'Travel through the ByteBoom system: an AI crypto trading bot for Binance. Non-custodial, trade-only API, exit anytime.',
+    'ByteBoom — AI spot trading automation that runs while you live. Pick your risk style and start in minutes.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

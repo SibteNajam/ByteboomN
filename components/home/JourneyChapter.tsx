@@ -76,8 +76,7 @@ export default function JourneyChapter() {
             <header className="bbj-head">
               <h2>Your trading journey</h2>
               <p className="sec-lede">
-                Onboard &amp; explore → connect wallet &amp; pay → subscribe → Binance keys →
-                activate.
+                From first open to a live trading engine — each step shown on the phone as you scroll.
               </p>
             </header>
 
@@ -133,7 +132,7 @@ export default function JourneyChapter() {
 
             <nav className="journey-skip" aria-label="Skip journey section">
               <button type="button" className="journey-skip__btn journey-skip__btn--back" id="journeySkipBack">
-                ← Back to Bots
+                ← Back to Engines
               </button>
               <button type="button" className="journey-skip__btn journey-skip__btn--fwd" id="journeySkipForward">
                 Skip to Pricing →

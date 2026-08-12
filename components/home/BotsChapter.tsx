@@ -25,14 +25,14 @@ const BOT_CARDS: BotCard[] = [
     variant: "bot-card--aggressive",
     multiplier: "0.5×",
     kicker: "% Aggressive",
-    title: "Aggressive Bot",
+    title: "Aggressive Trading Engine",
     descLines: ["High risk, high reward", "Maximum profit potential"],
     specs: [
       { label: "Risk Level", value: "High", tone: "is-risk" },
       { label: "Profit Potential", value: "Very High", tone: "is-high" },
       { label: "Trade Frequency", value: "High", tone: "is-info" },
     ],
-    cta: "Start Aggressive Bot",
+    cta: "Start Aggressive Engine",
     note: "Best for experienced traders",
     icon: "aggressive",
   },
@@ -42,14 +42,14 @@ const BOT_CARDS: BotCard[] = [
     popular: true,
     multiplier: "0.5×",
     kicker: "% Balanced",
-    title: "Balanced Bot",
+    title: "Balanced Trading Engine",
     descLines: ["Balanced risk & reward", "Consistent PnL growth"],
     specs: [
       { label: "Risk Level", value: "Medium", tone: "is-med" },
       { label: "Profit Potential", value: "High", tone: "is-high" },
       { label: "Trade Frequency", value: "Medium", tone: "is-info" },
     ],
-    cta: "Start Balanced Bot",
+    cta: "Start Balanced Engine",
     note: "Best balance for steady growth",
     icon: "balanced",
   },
@@ -58,14 +58,14 @@ const BOT_CARDS: BotCard[] = [
     variant: "bot-card--conservative",
     multiplier: "0.6×",
     kicker: "% Conservative",
-    title: "Conservative Bot",
+    title: "Conservative Trading Engine",
     descLines: ["Low risk, stable returns", "Capital preservation focused"],
     specs: [
       { label: "Risk Level", value: "Low", tone: "is-low" },
       { label: "Profit Potential", value: "Moderate", tone: "is-med" },
       { label: "Trade Frequency", value: "Low", tone: "is-info" },
     ],
-    cta: "Start Conservative Bot",
+    cta: "Start Conservative Engine",
     note: "Best for long-term safety",
     icon: "conservative",
   },
@@ -269,8 +269,8 @@ export default function BotsChapter() {
             Pick the automation style that fits <span className="bots-head__pill">your risk</span>
           </h2>
           <p className="bots-head__lead">
-            Aggressive, balanced, or conservative — the same autonomous engine on Binance; only the
-            risk profile changes.
+            Aggressive, balanced, or conservative — three styles, one engine. Pick how bold you want
+            to be.
           </p>
         </header>
 
@@ -289,7 +289,7 @@ export default function BotsChapter() {
 
           <div className="bcards__mobile">
             <div className="bcards__shell">
-              <button type="button" className="bcards__nav" onClick={goPrev} aria-label="Previous bot mode">
+              <button type="button" className="bcards__nav" onClick={goPrev} aria-label="Previous trading engine">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     d="M14 6l-6 6 6 6"
@@ -304,7 +304,7 @@ export default function BotsChapter() {
               <div className="bcards__viewport" key={BOT_CARDS[active].id}>
                 <BotCardView card={BOT_CARDS[active]} />
               </div>
-              <button type="button" className="bcards__nav" onClick={goNext} aria-label="Next bot mode">
+              <button type="button" className="bcards__nav" onClick={goNext} aria-label="Next trading engine">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     d="M10 6l6 6-6 6"
@@ -317,7 +317,7 @@ export default function BotsChapter() {
                 </svg>
               </button>
             </div>
-            <div className="bcards__dots" role="tablist" aria-label="Bot modes">
+            <div className="bcards__dots" role="tablist" aria-label="Trading engines">
               {BOT_CARDS.map((card, index) => (
                 <button
                   key={card.id}

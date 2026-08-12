@@ -5,10 +5,10 @@ export default function NavBar() {
     <>
 <div className="jbar">
     <a className="brand" href="#top">
-      <img className="brand__logo" src="/images/mainlogo.png" alt="ByteBoom" width="264" height="80" decoding="async" />
+      <img className="brand__logo" src="/images/mainlogo.png" alt="ByteBoom" width="316" height="96" decoding="async" />
     </a>
     <nav className="jnav" aria-label="Sections">
-      <a href="#productnode">Bots</a>
+      <a href="#productnode">Engines</a>
       <a href="#journeynode">Journey</a>
       <a href="#pricingnode">Pricing</a>
       <a href="#securitynode">Security</a>

@@ -3,7 +3,7 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'Documentation — ByteBoom',
   description:
-    'ByteBoom documentation — guides for connecting Binance, configuring bots, and managing automated spot trading.',
+    'ByteBoom documentation — guides for connecting Binance, configuring trading engines, and managing automated spot trading.',
 };
 
 export default function DocsPage() {
@@ -21,8 +21,8 @@ export default function DocsPage() {
           <p className="legal-doc__meta">Getting started with ByteBoom · Updated July 2026</p>
           <div className="legal-doc__intro">
             <p>
-              ByteBoom is an automated spot trading bot for Binance. Connect your exchange with a{' '}
-              <span className="hl">trade-only API key</span>, choose a strategy, and let the bot execute orders on your
+              ByteBoom is an automated spot trading engine for Binance. Connect your exchange with a{' '}
+              <span className="hl">trade-only API key</span>, choose a strategy, and let the trading engine execute orders on your
               account — non-custodial, with your funds always on Binance.
             </p>
           </div>
@@ -30,13 +30,13 @@ export default function DocsPage() {
             <h2>Getting started</h2>
             <p>
               Create a ByteBoom account, link your Binance API credentials, deposit USDT on Binance (if needed), and
-              activate a bot from the dashboard.
+              activate a trading engine from the dashboard.
             </p>
             <ol>
               <li>Sign up at ByteBoom and verify your email.</li>
               <li>Add a Binance API key with Enable Spot &amp; Margin Trading only — no withdrawals.</li>
               <li>Select a trading pair (e.g. BTC/USDT) and allocate capital.</li>
-              <li>Start the bot and monitor performance from the app or web dashboard.</li>
+              <li>Start the trading engine and monitor performance from the app or web dashboard.</li>
             </ol>
           </section>
           <section className="legal-section" id="api-keys">

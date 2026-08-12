@@ -58,7 +58,7 @@
 
     var script = document.createElement('script');
     script.id = STATIONS_ID;
-    script.src = asset('/stations.js?v=journey-subscribe');
+    script.src = asset('/stations.js?v=hero-text-fix');
     script.async = false;
     document.body.appendChild(script);
     return true;

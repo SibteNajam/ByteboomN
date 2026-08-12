@@ -279,19 +279,19 @@
           {
             kicker: '01 · Open',
             title: 'Open the app',
-            body: 'Land in ByteBoom and watch live market intelligence before committing to anything.',
+            body: 'Land in ByteBoom and see live market updates before you commit to anything.',
             mock: 'onboard.jpeg',
           },
           {
             kicker: '02 · Account',
             title: 'Login / Signup',
-            body: 'Create an account or sign in — fast entry, no exchange access yet.',
+            body: 'Create an account or sign in — quick start, no exchange link yet.',
             mock: 'login.jpeg',
           },
           {
             kicker: '03 · Explore',
             title: 'Signals + demo',
-            body: 'Preview signals free and watch the demo bot run against live prices.',
+            body: 'Preview free signals and watch a demo trading engine run on live prices.',
             mock: 'live singnals free.jpeg',
           },
         ],
@@ -302,13 +302,13 @@
           {
             kicker: '04 · Wallet',
             title: 'Connect wallet',
-            body: 'One-click pay from MetaMask, Binance Wallet, SafePal or Trust.',
+            body: 'Pay in one step from your crypto wallet.',
             mock: 'connect wallet.jpeg',
           },
           {
             kicker: '05 · Pay',
             title: 'Approve & verify',
-            body: 'Approve in your wallet — ByteBoom verifies the payment on-chain.',
+            body: 'Approve in your wallet — ByteBoom confirms the payment.',
             mock: 'connectwalet2.jpeg',
           },
         ],
@@ -319,7 +319,7 @@
           {
             kicker: '06 · Plan',
             title: 'Choose your plan',
-            body: 'Pick the plan that fits, then unlock the full product experience.',
+            body: 'Pick the plan that fits, then unlock the full experience.',
             mock: 'chooseplan.jpeg',
           },
           {
@@ -337,13 +337,13 @@
           {
             kicker: '09 · Verify',
             title: 'ByteBoom verifies',
-            body: 'ByteBoom checks the payment on-chain before unlocking access.',
+            body: 'ByteBoom confirms your payment before unlocking access.',
             mock: 'byteboomverifiespayment.jpeg',
           },
           {
             kicker: '10 · Confirmed',
             title: 'Payment verified',
-            body: 'You’re subscribed — continue to connect Binance and activate.',
+            body: 'You’re subscribed — next, link your exchange account and activate.',
             mock: 'paymentverifiestalset.jpeg',
           },
         ],
@@ -352,21 +352,21 @@
         label: 'Connect',
         shots: [
           {
-            kicker: '11 · Keys',
-            title: 'Binance API keys',
-            body: 'Trade on, withdrawals off. Funds never leave your Binance account.',
+            kicker: '11 · Link',
+            title: 'Link exchange account',
+            body: 'Connect so ByteBoom can trade for you — it still can’t take money out.',
             mock: 'setupapikeys.jpeg',
           },
           {
             kicker: '12 · Setup',
-            title: 'Configure access',
-            body: 'Finish key permissions so the bot can trade — never withdraw.',
+            title: 'Set permissions',
+            body: 'Allow trading only — withdrawals stay off so your funds stay put.',
             mock: 'setupapikeys2.jpeg',
           },
           {
             kicker: '13 · Confirm',
-            title: 'Keys ready',
-            body: 'Confirm the connection — your funds stay in your Binance account.',
+            title: 'Connection ready',
+            body: 'Confirm the link — your money stays in your exchange account.',
             mock: 'setupkeys4.jpeg',
           },
         ],
@@ -377,7 +377,7 @@
           {
             kicker: '14 · Activate',
             title: 'Start & follow',
-            body: 'Run the bot and track positions and orders — unlink or delete whenever you choose.',
+            body: 'Run the trading engine and follow results — pause, unlink, or delete whenever you choose.',
             mock: 'contorlsbot.jpeg',
           },
         ],

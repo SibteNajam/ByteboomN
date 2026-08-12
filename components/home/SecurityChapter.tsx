@@ -5,25 +5,25 @@ const SECURITY_ITEMS = [
     id: '0',
     featured: true,
     image: '/images/funsecurity/sec1.png',
-    alt: 'Non-custodial fund protection',
-    title: 'Your Funds Stay Yours',
-    body: 'Binance enforces API scopes at the exchange level. A trade-only key has no technical ability to move your balance — not for us, and not for anyone who might compromise our servers.',
+    alt: 'Private account connection',
+    title: 'Private by Default',
+    body: 'Your account link stays between you and ByteBoom — not shared, not exposed in the product UI.',
   },
   {
     id: '1',
     featured: false,
     image: '/images/funsecurity/sec2.png',
-    alt: 'Verified account security',
-    title: 'You Control Access',
-    body: "One click in your dashboard revokes ByteBoom's API access instantly — no waiting period, no support ticket, no questions asked.",
+    alt: 'You choose when access is on',
+    title: 'Access On Your Schedule',
+    body: 'Turn the connection on when you want help trading, and turn it off the moment you don’t.',
   },
   {
     id: '2',
     featured: false,
     image: '/images/funsecurity/sec3.png',
-    alt: '100% encrypted reserves',
-    title: 'Encrypted End to End',
-    body: 'Credentials locked with AES-256 at rest. Every connection between ByteBoom and your exchange stays encrypted.',
+    alt: 'Protected connection details',
+    title: 'Details Stay Protected',
+    body: 'Login and connection details are stored carefully so only authorized access can use them.',
   },
 ];
 
@@ -39,10 +39,10 @@ export default function SecurityChapter() {
     >
       <div className="panel panel--security">
         <div className="sec-header">
-          <h2>Your funds. Your control. Always.</h2>
+          <h2>Built to keep your link safe.</h2>
           <p className="sec-lead">
-            Every credential is locked down and every connection encrypted end to end — engineered so
-            there&apos;s no technical path for anyone but you to move your balance.
+            How we protect the connection between ByteBoom and your account — private, controlled,
+            and easy to shut off.
           </p>
         </div>
 

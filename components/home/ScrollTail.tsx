@@ -16,28 +16,10 @@ export default function ScrollTail() {
 
       <div className="sec-header">
         <h2>Straight answers before you <span className="grad">connect</span></h2>
-        <p className="sec-lead">Everything you need to know before linking your exchange.</p>
+        <p className="sec-lead">Practical questions — plans, support, and what happens next.</p>
       </div>
 
       <div className="faq-grid">
-        <details className="faq-item">
-          <summary>
-            <span>Where do my funds stay?</span>
-            <span className="faq-item__chev"><svg className="i">
-                <use href="#i-chev" />
-              </svg></span>
-          </summary>
-          <p>On Binance, under your login. We cannot withdraw or transfer — the API scope prevents it.</p>
-        </details>
-        <details className="faq-item">
-          <summary>
-            <span>What API permissions do I need?</span>
-            <span className="faq-item__chev"><svg className="i">
-                <use href="#i-chev" />
-              </svg></span>
-          </summary>
-          <p>Trade only — never withdrawal. Keys with withdrawal are rejected.</p>
-        </details>
         <details className="faq-item">
           <summary>
             <span>Is profit guaranteed?</span>
@@ -49,21 +31,30 @@ export default function ScrollTail() {
         </details>
         <details className="faq-item">
           <summary>
-            <span>Can I pause, stop, unlink or delete?</span>
+            <span>How long does setup take?</span>
             <span className="faq-item__chev"><svg className="i">
                 <use href="#i-chev" />
               </svg></span>
           </summary>
-          <p>Yes — pause, stop, emergency exit, unlink your exchange, or delete your account, anytime.</p>
+          <p>Most people finish signup, plan, and linking in a few minutes from the app.</p>
         </details>
         <details className="faq-item">
           <summary>
-            <span>Which exchanges are supported?</span>
+            <span>Can I pause or stop anytime?</span>
             <span className="faq-item__chev"><svg className="i">
                 <use href="#i-chev" />
               </svg></span>
           </summary>
-          <p>Binance spot today — link from your dashboard in a few steps.</p>
+          <p>Yes — pause, stop, or remove the trading engine from your dashboard whenever you want.</p>
+        </details>
+        <details className="faq-item">
+          <summary>
+            <span>Which markets can I trade?</span>
+            <span className="faq-item__chev"><svg className="i">
+                <use href="#i-chev" />
+              </svg></span>
+          </summary>
+          <p>Spot markets on supported exchanges — choose what you want from your dashboard.</p>
         </details>
         <details className="faq-item">
           <summary>
@@ -72,7 +63,16 @@ export default function ScrollTail() {
                 <use href="#i-chev" />
               </svg></span>
           </summary>
-          <p>No — ByteBoom does not offer a free trial. Plans are billed when you subscribe. You can pause, stop, or cancel anytime from your dashboard.</p>
+          <p>No free trial today. Plans start when you subscribe, and you can cancel anytime.</p>
+        </details>
+        <details className="faq-item">
+          <summary>
+            <span>Who do I contact for help?</span>
+            <span className="faq-item__chev"><svg className="i">
+                <use href="#i-chev" />
+              </svg></span>
+          </summary>
+          <p>Email support@byteboom.ai — we usually reply within one business day.</p>
         </details>
       </div>
 
@@ -100,8 +100,8 @@ export default function ScrollTail() {
             <a className="footer__logo-link" href="#top">
               <img className="footer__logo" src="/images/mainlogo.png" alt="ByteBoom" width="280" height="86" decoding="async" />
             </a>
-            <p className="footer__headline">Disciplined automation on your Binance account.</p>
-            <p className="footer__sub">Spot automation for Binance traders. Pause, stop, or unlink from your dashboard anytime.</p>
+            <p className="footer__headline">ByteBoom — automation built for calm traders.</p>
+            <p className="footer__sub">Connect once, start the trading engine, and check in when you want — not every minute.</p>
             <a className="footer__email" href="mailto:support@byteboom.ai">support@byteboom.ai</a>
             <div className="footer__social" aria-label="Social links">
               <a href="#" title="GitHub — coming soon" aria-label="GitHub"><svg className="i"><use href="#i-github" /></svg></a>

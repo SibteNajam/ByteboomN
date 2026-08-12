@@ -41,13 +41,13 @@ export default function PricingChapter() {
                   <span className="pcard-chk on"></span>1 exchange connection
                 </li>
                 <li>
-                  <span className="pcard-chk on"></span>Conservative bot only
+                  <span className="pcard-chk on"></span>Conservative trading engine only
                 </li>
                 <li>
                   <span className="pcard-chk on"></span>Basic portfolio tracking
                 </li>
                 <li className="off">
-                  <span className="pcard-chk"></span>Aggressive & balanced bots
+                  <span className="pcard-chk"></span>Aggressive &amp; balanced engines
                 </li>
                 <li className="off">
                   <span className="pcard-chk"></span>Priority signal alerts
@@ -83,7 +83,7 @@ export default function PricingChapter() {
                   <span className="pcard-chk on"></span>3 exchange connections
                 </li>
                 <li>
-                  <span className="pcard-chk on"></span>Aggressive & balanced bots
+                  <span className="pcard-chk on"></span>Aggressive &amp; balanced engines
                 </li>
                 <li>
                   <span className="pcard-chk on"></span>Priority signal alerts
@@ -124,7 +124,7 @@ export default function PricingChapter() {
                   <span className="pcard-chk on"></span>Unlimited exchanges
                 </li>
                 <li>
-                  <span className="pcard-chk on"></span>All bot modes unlocked
+                  <span className="pcard-chk on"></span>All trading engines unlocked
                 </li>
                 <li>
                   <span className="pcard-chk on"></span>Priority signal alerts

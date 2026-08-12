@@ -10,20 +10,20 @@ const TRUST_POINTS = [
   {
     icon: 'i-key',
     tone: 'cyan',
-    title: 'Trade-only API key',
-    body: 'Permission is scoped at the exchange itself. Withdrawal and transfer rights never exist on the key you hand over.',
+    title: 'Trades only — never withdrawals',
+    body: 'ByteBoom can place and close trades for you. It cannot withdraw or send your money anywhere.',
   },
   {
     icon: 'i-lock',
     tone: 'violet',
-    title: 'Non-custodial by design',
-    body: 'Your coins never leave your own exchange account. ByteBoom sends orders — it never holds a balance.',
+    title: 'Your money stays in your account',
+    body: 'Nothing moves off your exchange. ByteBoom sends trade instructions — it never holds your balance.',
   },
   {
     icon: 'i-exit',
     tone: 'green',
-    title: 'Unlink in one click',
-    body: 'Pause the bot or revoke access instantly from your dashboard. No waiting period, no support ticket.',
+    title: 'Disconnect in one click',
+    body: 'Pause the trading engine or remove access anytime from your dashboard. No waiting, no support ticket.',
   },
 ];
 
@@ -92,8 +92,8 @@ export default function TrustChapter() {
               </p>
               <h2>Connected to your exchange. Never in control of it.</h2>
               <p className="sec-lead">
-                One restricted API key with trade permission only. ByteBoom opens and closes
-                positions — it can never withdraw, transfer, or move your coins.
+                You link your exchange account so ByteBoom can trade for you — it can never take money
+                out, transfer coins, or move your balance.
               </p>
             </header>
 
@@ -131,7 +131,7 @@ export default function TrustChapter() {
               <PhoneMockup
                 className="trust-phone--back"
                 src="/images/mobile mockup/bot-controls-clean.png"
-                alt="ByteBoom app — bot controls, exchange link and unlink"
+                alt="ByteBoom app — trading engine controls, exchange link and unlink"
               />
               <PhoneMockup
                 className="trust-phone--front"

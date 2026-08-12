@@ -152,15 +152,14 @@ export default function HeroChapter() {
               AI trading system · live
             </p>
             <h1 className="hero-title">
-              AI spot trading <span className="hero-title__grad">on your own Binance account</span>
+              AI spot trading <span className="hero-title__grad">that runs while you live</span>
             </h1>
             <p className="hero-lead">
-              Disciplined automation through a restricted, trade-only API key — your funds stay on
-              your exchange, always.
+              Connect once — ByteBoom watches the market and places trades for you, day and night.
             </p>
             <div className="hero-actions">
               <a href="#productnode" className="btn btn--primary btn--lg" data-magnetic>
-                Explore bots
+                Explore trading engines
                 <svg className="i" viewBox="0 0 24 24" aria-hidden="true">
                   <path
                     d="M5 12h14M13 6l6 6-6 6"
@@ -177,9 +176,9 @@ export default function HeroChapter() {
               </a>
             </div>
             <ul className="hero-assure" aria-label="Core guarantees">
-              <li>Non-custodial</li>
-              <li>Trade-only API</li>
-              <li>Exit anytime</li>
+              <li>Always-on automation</li>
+              <li>Connect &amp; go</li>
+              <li>Start in minutes</li>
             </ul>
           </div>
 
