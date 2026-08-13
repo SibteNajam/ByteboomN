@@ -4234,6 +4234,588 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
   border: 1px dashed rgba(34, 211, 238, 0.25);
 }
 
+.edge-card__icon--chart {
+  background: none;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 0;
+  overflow: visible;
+  min-height: 210px;
+}
+
+/* ---- Edge metric charts (metric-specific, live-triggered) ---- */
+.em {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  color: #9eb2c8;
+  font: 600 10px/1.2 var(--mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* 01 Risk — needle sweeps into calm zone */
+.em-gauge {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.em-gauge__track {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
+.em-gauge__arc {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.edge-slide.is-live .em-gauge__arc {
+  animation: emArc 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+
+.em-gauge__needle {
+  transform-box: view-box;
+  transform-origin: 100px 110px;
+  transform: rotate(-78deg);
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-gauge__needle {
+  animation: emNeedle 1.55s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+
+.em-gauge__val {
+  fill: #eef5fc;
+  font: 700 22px var(--font-display);
+  letter-spacing: -0.03em;
+  text-transform: none;
+  opacity: 0;
+}
+
+.em-gauge__unit {
+  fill: #7d92a8;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-gauge__val,
+.edge-slide.is-live .em-gauge__unit {
+  animation: emFadeUp 0.55s ease 0.85s forwards;
+}
+
+.em-legend {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 6px;
+}
+
+.em-legend__ok { color: #4ade80; }
+.em-legend__warn { color: #ff8f8f; }
+
+@keyframes emArc {
+  to { stroke-dashoffset: 42; }
+}
+
+@keyframes emNeedle {
+  0% { transform: rotate(-78deg); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: rotate(-38deg); opacity: 1; }
+}
+
+@keyframes emFadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* 02 Steady — sessions light green one-by-one, win-rate appears */
+.em-steady__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.em-steady__rate {
+  font: 700 28px/1 var(--font-display);
+  letter-spacing: -0.03em;
+  color: #4ade80;
+  text-transform: none;
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.edge-slide.is-live .em-steady__rate {
+  animation: emFadeUp 0.5s ease 1.1s forwards;
+}
+
+.em-steady__label {
+  color: #7d92a8;
+}
+
+.em-sessions {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 96px;
+}
+
+.em-session {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.em-session__bar {
+  width: 100%;
+  height: 0;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(180deg, #4ade80, rgba(34, 168, 255, 0.2));
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.15);
+}
+
+.em-session.is-bad .em-session__bar {
+  background: linear-gradient(180deg, #ff6b6b, rgba(255, 107, 107, 0.15));
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.12);
+}
+
+.edge-slide.is-live .em-session__bar {
+  animation: emBar 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(0.12s + var(--i) * 0.11s);
+}
+
+.em-session__day {
+  color: #5f738a;
+  font-size: 8px;
+}
+
+.em-steady__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #7d92a8;
+  opacity: 0;
+}
+
+.em-steady__note i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+}
+
+.edge-slide.is-live .em-steady__note {
+  animation: emFadeUp 0.45s ease 1.25s forwards;
+}
+
+@keyframes emBar {
+  to { height: var(--h, 50%); }
+}
+
+/* 03 Borrow — ring fills under the cap */
+.em-ring {
+  width: min(148px, 78%);
+  margin: 0 auto;
+  display: block;
+}
+
+.em-ring__track {
+  stroke: rgba(255, 255, 255, 0.07);
+}
+
+.em-ring__limit {
+  stroke: rgba(125, 92, 255, 0.22);
+}
+
+.em-ring__used {
+  stroke: #5de8f7;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.45));
+}
+
+.edge-slide.is-live .em-ring__used {
+  animation: emRing 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+
+.em-ring__val {
+  fill: #eef5fc;
+  font: 700 22px var(--font-display);
+  letter-spacing: -0.03em;
+  text-transform: none;
+  opacity: 0;
+}
+
+.em-ring__sub {
+  fill: #7d92a8;
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-ring__val,
+.edge-slide.is-live .em-ring__sub {
+  animation: emFadeUp 0.5s ease 0.9s forwards;
+}
+
+.em-borrow__meta {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.em-borrow__meta b {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+  background: #5de8f7;
+  vertical-align: -1px;
+}
+
+.em-borrow__meta b.is-cap {
+  background: rgba(125, 92, 255, 0.55);
+}
+
+.em-borrow__ok {
+  align-self: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(74, 222, 128, 0.28);
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  opacity: 0;
+  transform: scale(0.92);
+}
+
+.edge-slide.is-live .em-borrow__ok {
+  animation: emPop 0.45s cubic-bezier(0.22, 1, 0.36, 1) 1.15s forwards;
+}
+
+@keyframes emRing {
+  to { stroke-dashoffset: var(--ring); }
+}
+
+@keyframes emPop {
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 04 Growth — area draws, then compounding bars climb */
+.em-growth__head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.em-growth__val {
+  font: 700 26px/1 var(--font-display);
+  letter-spacing: -0.03em;
+  color: #c4b5ff;
+  text-transform: none;
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-growth__val {
+  animation: emFadeUp 0.5s ease 1.2s forwards;
+}
+
+.em-growth__label { color: #7d92a8; }
+
+.em-area {
+  width: 100%;
+  height: 78px;
+  display: block;
+}
+
+.em-area__grid line {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 1;
+}
+
+.em-area__fill {
+  fill: url(#emGrowFill);
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-area__fill {
+  animation: emFade 0.7s ease 0.55s forwards;
+}
+
+.em-area__line {
+  stroke: #a78bfa;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  filter: drop-shadow(0 0 6px rgba(125, 92, 255, 0.55));
+}
+
+.edge-slide.is-live .em-area__line {
+  animation: emDraw 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+
+.em-area__dot {
+  fill: #eef5fc;
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-area__dot {
+  animation: emPop 0.35s ease 1.35s forwards;
+}
+
+.em-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 42px;
+}
+
+.em-bars span {
+  flex: 1;
+  height: 0;
+  border-radius: 3px 3px 1px 1px;
+  background: linear-gradient(180deg, #7d5cff, rgba(34, 168, 255, 0.25));
+}
+
+.edge-slide.is-live .em-bars span {
+  animation: emBar 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(0.75s + var(--i) * 0.1s);
+}
+
+@keyframes emDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes emFade {
+  to { opacity: 1; }
+}
+
+/* 05 Coverage — markets light up around the core */
+.em-orbit {
+  width: min(150px, 82%);
+  margin: 0 auto;
+  display: block;
+  overflow: visible;
+}
+
+.em-orbit__ring {
+  fill: none;
+  stroke: rgba(34, 211, 238, 0.18);
+  stroke-width: 1;
+}
+
+.em-orbit__ring--mid {
+  stroke: rgba(34, 211, 238, 0.12);
+}
+
+.em-orbit__core {
+  fill: #5de8f7;
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.7));
+  transform-origin: 70px 70px;
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.edge-slide.is-live .em-orbit__core {
+  animation: emPop 0.45s cubic-bezier(0.22, 1, 0.36, 1) 0.05s forwards;
+}
+
+.em-orbit__node {
+  opacity: 0;
+}
+
+.em-orbit__spoke {
+  stroke: rgba(34, 211, 238, 0.28);
+  stroke-width: 1;
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+}
+
+.em-orbit__node circle {
+  fill: #0b1524;
+  stroke: #5de8f7;
+  stroke-width: 1.6;
+}
+
+.em-orbit__node text {
+  fill: #cfe8f5;
+  font-size: 7px;
+  letter-spacing: 0.08em;
+}
+
+.edge-slide.is-live .em-orbit__node {
+  animation: emFade 0.35s ease forwards;
+  animation-delay: calc(0.25s + var(--i) * 0.16s);
+}
+
+.edge-slide.is-live .em-orbit__spoke {
+  animation: emSpoke 0.55s ease forwards;
+  animation-delay: calc(0.2s + var(--i) * 0.16s);
+}
+
+.em-cover__count {
+  text-align: center;
+  color: #7d92a8;
+  opacity: 0;
+}
+
+.em-cover__count b {
+  color: #5de8f7;
+  font: 700 14px var(--font-display);
+  letter-spacing: -0.02em;
+  text-transform: none;
+  margin-right: 4px;
+}
+
+.edge-slide.is-live .em-cover__count {
+  animation: emFadeUp 0.45s ease 1.15s forwards;
+}
+
+@keyframes emSpoke {
+  to { stroke-dashoffset: 0; }
+}
+
+/* 06 Drawdown — equity path dips, red zone, then recovers */
+.em-dd {
+  width: 100%;
+  height: 100px;
+  display: block;
+  overflow: visible;
+}
+
+.em-dd__grid line {
+  stroke: rgba(255, 255, 255, 0.05);
+  stroke-width: 1;
+}
+
+.em-dd__line {
+  stroke: #5de8f7;
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.4));
+}
+
+.edge-slide.is-live .em-dd__line {
+  animation: emDraw 1.7s cubic-bezier(0.22, 1, 0.36, 1) 0.08s forwards;
+}
+
+.em-dd__dip {
+  fill: url(#emDdFill);
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-dd__dip {
+  animation: emFade 0.5s ease 0.7s forwards;
+}
+
+.em-dd__peak {
+  fill: #4ade80;
+  opacity: 0;
+}
+
+.em-dd__trough {
+  fill: #ff6b6b;
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-dd__peak {
+  animation: emPop 0.3s ease 0.55s forwards;
+}
+
+.edge-slide.is-live .em-dd__trough {
+  animation: emPop 0.3s ease 0.95s forwards;
+}
+
+.em-dd__callout {
+  opacity: 0;
+}
+
+.em-dd__callout line {
+  stroke: rgba(255, 107, 107, 0.55);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.em-dd__callout text {
+  fill: #ff8f8f;
+  font: 700 11px var(--font-display);
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+.edge-slide.is-live .em-dd__callout {
+  animation: emFadeUp 0.4s ease 1.1s forwards;
+}
+
+.em-dd__foot {
+  text-align: center;
+  color: #7d92a8;
+  opacity: 0;
+}
+
+.edge-slide.is-live .em-dd__foot {
+  animation: emFadeUp 0.4s ease 1.3s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edge-slide.is-live .em-gauge__arc,
+  .edge-slide.is-live .em-gauge__needle,
+  .edge-slide.is-live .em-session__bar,
+  .edge-slide.is-live .em-ring__used,
+  .edge-slide.is-live .em-area__line,
+  .edge-slide.is-live .em-bars span,
+  .edge-slide.is-live .em-orbit__spoke,
+  .edge-slide.is-live .em-dd__line {
+    animation: none !important;
+  }
+
+  .em-gauge__arc { stroke-dashoffset: 42; }
+  .em-gauge__needle { transform: rotate(-38deg); opacity: 1; }
+  .em-session__bar { height: var(--h, 50%); }
+  .em-ring__used { stroke-dashoffset: var(--ring); }
+  .em-area__line,
+  .em-dd__line { stroke-dashoffset: 0; }
+  .em-bars span { height: var(--h, 50%); }
+  .em-orbit__spoke { stroke-dashoffset: 0; }
+  .em-gauge__val,
+  .em-gauge__unit,
+  .em-steady__rate,
+  .em-steady__note,
+  .em-ring__val,
+  .em-ring__sub,
+  .em-borrow__ok,
+  .em-growth__val,
+  .em-area__fill,
+  .em-area__dot,
+  .em-orbit__core,
+  .em-orbit__node,
+  .em-cover__count,
+  .em-dd__dip,
+  .em-dd__peak,
+  .em-dd__trough,
+  .em-dd__callout,
+  .em-dd__foot {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 .edge-card__icon--img {
   background: none;
   border: none;

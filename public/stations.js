@@ -183,6 +183,17 @@
       } else {
         edgePaint(slide, edgeRest(i), 0, 0);
       }
+      const live = i === edgeIdx;
+      if (slide.classList.contains('is-live') !== live) {
+        if (live) {
+          /* Drop + reflow + re-add so .is-live chart CSS animations always restart */
+          slide.classList.remove('is-live');
+          void slide.offsetWidth;
+          slide.classList.add('is-live');
+        } else {
+          slide.classList.remove('is-live');
+        }
+      }
     });
 
     if (edgeFixed) edgeFixed.style.opacity = '1';
