@@ -3330,6 +3330,14 @@ html.cine .pcard--rec {
   font-size: 12.75px;
   color: #c3cadb;
   letter-spacing: .002em;
+  padding-left: 0;
+  position: relative;
+}
+
+/* Kill legacy .pcard ul li::before dots from styles.css — ticks only */
+.pcard-feats li::before {
+  content: none !important;
+  display: none !important;
 }
 
 .pcard-feats li.off {
