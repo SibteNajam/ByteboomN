@@ -79,17 +79,6 @@ export default function ScrollTail() {
         </div>
       </div>
 
-      <div className="arrival-cta">
-        <div className="faq-final">
-          <div className="faq-final__glow" aria-hidden="true"></div>
-          <h3 className="faq-final__title">Ready when you are — connect in minutes</h3>
-          <div className="btnrow">
-            <a href="#pricingnode" className="btn btn--primary btn--lg" data-magnetic>Get Started</a>
-            <a href="mailto:support@byteboom.ai" className="btn btn--ghost btn--lg">Talk to support</a>
-          </div>
-          <p className="faq-final__note">Markets remain unpredictable — no automated system can guarantee profit or eliminate loss.</p>
-        </div>
-      </div>
     </section>
 
     <footer className="footer site-footer" id="footer">
