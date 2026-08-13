@@ -2991,7 +2991,7 @@ html.cine .bbj--inline .journey-path {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  align-items: stretch;
+  align-items: start !important;
   text-align: left;
   /* Hard cap, not just a percentage: on a wide monitor the old 92%-of-1440
      let each card run past 420px, which is what made the row read as three
@@ -3072,12 +3072,25 @@ html.cine .pricing-grid .pcard.is-active {
   background: linear-gradient(175deg, #0b0f1b 0%, #080b14 100%);
   border: 1px solid rgba(140, 170, 215, .14);
   border-radius: 18px;
-  padding: 22px 20px 20px;
+  padding: 18px 18px 16px;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  align-items: stretch;
+  align-self: start;
+  gap: 14px;
+  height: auto !important;
+  min-height: 0 !important;
   overflow: hidden;
   box-shadow: 0 20px 44px -28px rgba(0, 0, 0, .7);
   transition: border-color .3s ease, transform .3s ease;
+}
+
+.pcard-top {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-height: 0;
 }
 
 html.cine .pcard {
@@ -3264,16 +3277,15 @@ html.cine .pcard--rec {
 .pcard-desc {
   font-size: 12.5px;
   color: #8894ac;
-  line-height: 1.55;
-  margin-bottom: 16px;
-  min-height: 34px;
+  line-height: 1.45;
+  margin: 0 0 12px 0 !important;
 }
 
 .pcard-price {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   color: #fff;
   font-family: var(--font-display);
 }
@@ -3304,23 +3316,27 @@ html.cine .pcard--rec {
 .pcard-billed {
   font-size: 11.5px;
   color: #57627a;
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .pcard-hr {
   border: none;
   border-top: 1px solid rgba(140, 170, 215, .12);
-  margin: 0 0 14px 0;
+  margin: 0 0 10px 0;
+  flex: 0 0 auto;
 }
 
 .pcard-feats {
-  list-style: none;
-  display: flex;
+  list-style: none !important;
+  display: flex !important;
   flex-direction: column;
-  gap: 9px;
-  margin: 0 0 18px 0;
-  padding: 0;
-  flex-grow: 1;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 0 !important;
+  flex: 0 0 auto !important;
+  flex-grow: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
 }
 
 .pcard-feats li {
@@ -3377,6 +3393,9 @@ html.cine .pcard--rec {
 
 .pcard-cta {
   width: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+  flex: 0 0 auto;
   padding: 11px;
   border-radius: 11px;
   font-size: 12.75px;
@@ -5229,7 +5248,7 @@ html.flat .jbar {
     grid-template-rows: 1fr;
     width: min(320px, calc(100% - 12px));
     max-width: none;
-    min-height: 470px;
+    min-height: 0;
     margin: 0 auto;
     gap: 0;
   }

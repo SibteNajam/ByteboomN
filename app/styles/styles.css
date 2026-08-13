@@ -273,6 +273,13 @@ svg.i{width:1.15em;height:1.15em;fill:none;stroke:currentColor;flex:none}
 .pcard ul{list-style:none;display:grid;gap:.5rem;margin-bottom:1.3rem;position:relative}
 .pcard ul li{position:relative;padding-left:1.3rem;font-size:.9rem;color:var(--muted)}
 .pcard ul li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+/* Pricing chapter uses .pcard-feats + tick icons — never show legacy cyan dots */
+.pcard .pcard-feats,
+.pcard ul.pcard-feats{display:flex;flex-direction:column;gap:8px;margin:0 0 14px;padding:0;list-style:none;flex:0 0 auto}
+.pcard .pcard-feats li,
+.pcard ul.pcard-feats li{padding-left:0;display:flex;align-items:center;gap:9px}
+.pcard .pcard-feats li::before,
+.pcard ul.pcard-feats li::before{content:none;display:none}
 .risk{display:inline-block;font:600 .68rem var(--mono);letter-spacing:.08em;padding:.3em .7em;border-radius:100px;position:relative}
 .risk--bal{color:var(--cyan);background:rgba(23,214,238,.1)}
 .risk--low{color:var(--green);background:rgba(51,227,155,.1)}

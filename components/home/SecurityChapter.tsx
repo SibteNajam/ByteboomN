@@ -7,7 +7,7 @@ const SECURITY_ITEMS = [
     image: '/images/funsecurity/sec1.png',
     alt: 'Private account connection',
     title: 'Private by Default',
-    body: 'Your account link stays between you and ByteBoom — not shared, not exposed in the product UI.',
+    body: 'Your link stays between you and ByteBoom — never shared.',
   },
   {
     id: '1',
@@ -15,7 +15,7 @@ const SECURITY_ITEMS = [
     image: '/images/funsecurity/sec2.png',
     alt: 'You choose when access is on',
     title: 'Access On Your Schedule',
-    body: 'Turn the connection on when you want help trading, and turn it off the moment you don’t.',
+    body: 'Turn the connection on when you need it, off when you don’t.',
   },
   {
     id: '2',
@@ -23,7 +23,7 @@ const SECURITY_ITEMS = [
     image: '/images/funsecurity/sec3.png',
     alt: 'Protected connection details',
     title: 'Details Stay Protected',
-    body: 'Login and connection details are stored carefully so only authorized access can use them.',
+    body: 'Login details are stored carefully — only you authorize access.',
   },
 ];
 
@@ -41,8 +41,7 @@ export default function SecurityChapter() {
         <div className="sec-header">
           <h2>Built to keep your link safe.</h2>
           <p className="sec-lead">
-            How we protect the connection between ByteBoom and your account — private, controlled,
-            and easy to shut off.
+            Private connection. You’re in control. Easy to shut off.
           </p>
         </div>
 
