@@ -6,24 +6,24 @@ import type { CSSProperties } from 'react';
     No orbit rings; the phones sit in a soft aura over a fading dot field so
     the world's animation reads straight through the section. Exit is the
     signature fly-through, now growing from the mockups. */
+/* One bold line each, in place of a heading plus a two-line paragraph that
+   mostly restated it. Each line keeps the same shape — what ByteBoom does,
+   then the guarantee after the dash — so the three read as one contract. */
 const TRUST_POINTS = [
   {
     icon: 'i-key',
     tone: 'cyan',
-    title: 'Trades only — never withdrawals',
-    body: 'ByteBoom can place and close trades for you. It cannot withdraw or send your money anywhere.',
+    title: 'Opens and closes trades for you — it can never withdraw or move your money',
   },
   {
     icon: 'i-lock',
     tone: 'violet',
-    title: 'Your money stays in your account',
-    body: 'Nothing moves off your exchange. ByteBoom sends trade instructions — it never holds your balance.',
+    title: 'Your money stays on your exchange — ByteBoom sends instructions, never holds your balance',
   },
   {
     icon: 'i-exit',
     tone: 'green',
-    title: 'Disconnect in one click',
-    body: 'Pause the trading engine or remove access anytime from your dashboard. No waiting, no support ticket.',
+    title: 'Pause or remove access anytime from your dashboard — no waiting, no support ticket',
   },
 ];
 
@@ -105,10 +105,7 @@ export default function TrustChapter() {
                       <use href={`#${point.icon}`} />
                     </svg>
                   </span>
-                  <div className="trust-point__text">
-                    <h3>{point.title}</h3>
-                    <p>{point.body}</p>
-                  </div>
+                  <h3 className="trust-point__text">{point.title}</h3>
                 </li>
               ))}
             </ul>
