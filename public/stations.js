@@ -25,6 +25,7 @@
   const chapters = $$('.chapter').map(el => ({ el, a: +el.dataset.a, b: +el.dataset.b, dir: el.dataset.dir || 'up', exit: el.dataset.exit || '', panel: $('.panel', el) }));
   const depthBar = $('#depth'), hint = $('#hint'), runwayEl = $('#runway'), scrollTailHint = $('#scrollTailHint');
   const navLinks = $$('.jnav a'); let navAt = '';
+  const routeMap = $('#routemap');
   const litPath = $('#routemap #litpath'), rider = $('#routemap #rider'), rmNodes = $$('#routemap .node');
   let litLen = 0; if (litPath) { litLen = litPath.getTotalLength(); litPath.style.strokeDasharray = litLen; litPath.style.strokeDashoffset = litLen; }
 
@@ -41,54 +42,79 @@
     if (p > b - f) return b >= 1 ? 1 : (b - p) / f;
     return 1;
   }
-  function updateChapters(p) {
+  /* Called every frame, so nothing may touch the DOM unless the value it
+     would write actually changed. Opacity is quantised to 1/500 — finer than
+     the eye resolves — which lets a settled chapter cost zero style writes. */
+  const chapState = chapters.map(() => ({ op: -1, tf: '', fl: '' }));
+  let lastRoutePaint = -1;
+
+  function chapterOpacity(c, p) {
+    if (c.el.id !== 'edgenode') return fadeWindow(p, c.a, c.b);
+    // Edge needs a solid hold so both waves can finish a full zoom
+    const f = 0.01;
+    if (p < c.a || p > c.b) return 0;
+    if (p < c.a + f) return (p - c.a) / f;
+    if (p > c.b - f) return (c.b - p) / f;
+    return 1;
+  }
+
+  /* `pp` may run past 1 during the About -> FAQ hand-off. Everything that
+     describes the corridor clamps to 1 and instead dissolves by `tailT`, so
+     the last chapter fades out under the incoming FAQ rather than cutting. */
+  function updateChapters(pp, tailT) {
+    const p = pp > 1 ? 1 : pp;
+    const live = 1 - (tailT || 0);
     const flat = root.classList.contains('flat');
-    chapters.forEach(c => {
-      let opacity = fadeWindow(p, c.a, c.b);
-      // Edge needs a solid hold so both waves can finish a full zoom
-      if (c.el.id === 'edgenode') {
-        const edgeIn = 0.01, edgeOut = 0.01;
-        if (p < c.a || p > c.b) opacity = 0;
-        else if (p < c.a + edgeIn) opacity = (p - c.a) / edgeIn;
-        else if (p > c.b - edgeOut) opacity = (c.b - p) / edgeOut;
-        else opacity = 1;
+    chapters.forEach((c, i) => {
+      const st = chapState[i];
+      const opacity = Math.round(chapterOpacity(c, p) * live * 500) / 500;
+      /* The `=== ''` arms make the cache self-healing: if anything wipes the
+         inline styles (a re-render, HMR) we repaint instead of trusting it. */
+      if (opacity !== st.op || c.el.style.opacity === '') {
+        st.op = opacity;
+        c.el.style.opacity = opacity;
+        c.el.classList.toggle('live', opacity > 0.01);
+        c.el.style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
       }
-      c.el.style.opacity = opacity;
-      c.el.classList.toggle('live', opacity > 0.01);
-      c.el.style.pointerEvents = opacity > 0.5 ? 'auto' : 'none';
-      if (!flat && c.panel) {
-        const s = 1 - opacity;
-        const scale = (0.92 + 0.08 * opacity).toFixed(3);
-        if (c.el.id === 'edgenode' || c.el.id === 'productnode') {
-          c.panel.style.transform = 'translate3d(0,0,0) scale(1)';
-          c.panel.style.filter = 'none';
-          return;
-        }
-        if (c.exit === 'into') {
-          // Fly-through: depth on the way in, rush past + blur on the way out.
-          const out = p > (c.a + c.b) / 2;
-          const z = out ? s * 90 : -s * 42;
-          c.panel.style.transform = `translate3d(0,0,${z.toFixed(1)}px) scale(${(out ? 1 + s * 0.5 : 1 - s * 0.12).toFixed(3)})`;
-          c.panel.style.filter = out && s > 0.002 ? `blur(${(s * 12).toFixed(1)}px)` : 'none';
-          return;
-        }
-        let tx = 0, ty = 0, ry = 0, rx = 0, tz = -s * 76;
+      if (flat || !c.panel) return;
+
+      const s = 1 - opacity;
+      let tf, fl;
+      if (c.el.id === 'edgenode' || c.el.id === 'productnode') {
+        tf = 'translate3d(0,0,0) scale(1)';
+        fl = 'none';
+      } else if (c.exit === 'into') {
+        // Fly-through: depth on the way in, rush past + blur on the way out.
+        const out = p > (c.a + c.b) / 2;
+        const z = out ? s * 90 : -s * 42;
+        tf = `translate3d(0,0,${z.toFixed(1)}px) scale(${(out ? 1 + s * 0.5 : 1 - s * 0.12).toFixed(3)})`;
+        fl = out && s > 0.002 ? `blur(${(s * 12).toFixed(1)}px)` : 'none';
+      } else {
+        let tx = 0, ty = 0, ry = 0, rx = 0;
+        const tz = -s * 76;
         if (c.dir === 'left') { tx = -s * 110; ry = s * 7; }
         else if (c.dir === 'right') { tx = s * 110; ry = -s * 7; }
         else { ty = s * 46; rx = s * 4.5; }
-        c.panel.style.transform = `translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,${tz.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) scale(${scale})`;
-        c.panel.style.filter = s > 0.38 ? `blur(${(s * 2.8).toFixed(1)}px)` : 'none';
+        tf = `translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,${tz.toFixed(1)}px) rotateY(${ry.toFixed(2)}deg) rotateX(${rx.toFixed(2)}deg) scale(${(0.92 + 0.08 * opacity).toFixed(3)})`;
+        fl = s > 0.38 ? `blur(${(s * 2.8).toFixed(1)}px)` : 'none';
       }
+      if (tf !== st.tf || c.panel.style.transform === '') { st.tf = tf; c.panel.style.transform = tf; }
+      if (fl !== st.fl || c.panel.style.filter === '') { st.fl = fl; c.panel.style.filter = fl; }
     });
-    if (depthBar) depthBar.style.width = (p * 100) + '%';
-    if (hint) hint.style.opacity = p > 0.015 ? 0 : 1;
+
+    /* HUD dissolves on the same curve as the chapter, so nothing is left
+       hanging over the FAQ waiting for the tail-mode class to catch up. */
+    if (depthBar) { depthBar.style.width = (p * 100) + '%'; depthBar.style.opacity = live; }
+    if (routeMap) routeMap.style.opacity = live;
+    // Hero's own stop sits at ~0.017, so the hint has to survive past it
+    if (hint) hint.style.opacity = p > 0.05 ? 0 : 1;
     if (scrollTailHint) {
-      const showTailHint = !flat && p > 0.88 && !root.classList.contains('tail-mode');
+      const showTailHint = !flat && p > 0.88 && live > 0.99 && !root.classList.contains('tail-mode');
       scrollTailHint.classList.toggle('is-on', showTailHint);
       scrollTailHint.setAttribute('aria-hidden', showTailHint ? 'false' : 'true');
     }
     if (navLinks.length) {
-      const inTail = root.classList.contains('tail-mode');
+      const inTail = root.classList.contains('tail-mode') || live < 0.5;
       const here = inTail
         ? chapters.find(c => c.el.id === 'aboutnode')
         : chapters.find(c => p >= c.a && p <= c.b);
@@ -103,7 +129,11 @@
         navLinks.forEach(a => a.classList.toggle('is-on', a.hash === '#' + id));
       }
     }
-    if (litPath && rider && litPath.isConnected && rider.isConnected) {
+    /* getPointAtLength() forces SVG geometry work — 1/500 steps is plenty for
+       a 150px-tall minimap and skips it entirely while the camera is parked. */
+    const routeStep = Math.round(p * 500);
+    if (routeStep !== lastRoutePaint && litPath && rider && litPath.isConnected && rider.isConnected) {
+      lastRoutePaint = routeStep;
       try {
         litPath.style.strokeDashoffset = litLen * (1 - p);
         const pt = litPath.getPointAtLength(litLen * p);
@@ -132,24 +162,33 @@
   };
   addEventListener('resize', measureEdgeZoom); measureEdgeZoom();
 
-  const EDGE_MS = 1000;   // one full hand-off, start to finish
+  const EDGE_MS = 820;    // one full hand-off, matched to the edge card flight
   const EDGE_OUT = 0.5;   // first half sends the old card away, second brings the new one
   let edgeIdx = 0, edgeFrom = 0, edgeT0 = 0, edgeBusy = false;
   const easeIO = x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(2 - 2 * x, 3) / 2;
 
-  const edgePaint = (slide, scale, opacity, ty) => {
+  /* Runs inside the frame loop, so it must be a no-op once a card has settled. */
+  const edgeLast = edgeSlides.map(() => '');
+  const edgePaint = (slide, scale, opacity, ty, i) => {
+    const tf = `translate(-50%, calc(-50% + ${ty.toFixed(1)}px)) scale(${scale.toFixed(3)})`;
+    const key = tf + '|' + opacity.toFixed(3);
+    if (edgeLast[i] === key && slide.style.transform !== '') return;
+    edgeLast[i] = key;
     slide.style.visibility = opacity < 0.02 ? 'hidden' : 'visible';
     slide.style.opacity = String(opacity);
-    slide.style.transform = `translate(-50%, calc(-50% + ${ty.toFixed(1)}px)) scale(${scale.toFixed(3)})`;
+    slide.style.transform = tf;
     slide.style.pointerEvents = opacity > 0.9 && scale > 0.95 && scale < 1.05 ? 'auto' : 'none';
   };
   // cards already sent off rest oversized, ones still to come rest small
   const edgeRest = i => i < edgeIdx ? edgeMax : 0.24;
 
-  function updateEdgeZoom(t) {
+  /* Driven by the scroll engine's committed stop, not by live scroll position,
+     so the hand-off starts on the flick instead of halfway through the flight. */
+  function updateEdgeZoom(wantIdx) {
     if (!edgeSlides.length) return;
     const n = edgeSlides.length;
-    const want = Math.max(0, Math.min(n - 1, Math.floor(t * n)));
+    const want = Math.max(0, Math.min(n - 1, wantIdx | 0));
+    if (!edgeBusy && want === edgeIdx && edgeLast[edgeIdx]) return;   // settled
     const now = performance.now();
 
     // Only ever animate a single step, so a fast flick jumps straight to the
@@ -170,18 +209,18 @@
     const fwd = edgeIdx > edgeFrom;
     edgeSlides.forEach((slide, i) => {
       if (q >= 1) {
-        if (i === edgeIdx) edgePaint(slide, 1, 1, 0);
-        else edgePaint(slide, edgeRest(i), 0, 0);
+        if (i === edgeIdx) edgePaint(slide, 1, 1, 0, i);
+        else edgePaint(slide, edgeRest(i), 0, 0, i);
       } else if (i === edgeFrom) {
         // leaving: forward it swells past the reader, backward it recedes
         const e = easeIO(Math.min(1, q / EDGE_OUT));
-        edgePaint(slide, fwd ? 1 + e * (edgeMax - 1) : 1 - e * 0.7, 1 - e, fwd ? -e * 40 : e * 20);
+        edgePaint(slide, fwd ? 1 + e * (edgeMax - 1) : 1 - e * 0.7, 1 - e, fwd ? -e * 40 : e * 20, i);
       } else if (i === edgeIdx) {
         // arriving: waits for the screen to clear, then settles at full size
         const r = q <= EDGE_OUT ? 0 : easeIO((q - EDGE_OUT) / (1 - EDGE_OUT));
-        edgePaint(slide, fwd ? 0.3 + r * 0.7 : edgeMax - r * (edgeMax - 1), r, (fwd ? 26 : -26) * (1 - r));
+        edgePaint(slide, fwd ? 0.3 + r * 0.7 : edgeMax - r * (edgeMax - 1), r, (fwd ? 26 : -26) * (1 - r), i);
       } else {
-        edgePaint(slide, edgeRest(i), 0, 0);
+        edgePaint(slide, edgeRest(i), 0, 0, i);
       }
       const live = i === edgeIdx;
       if (slide.classList.contains('is-live') !== live) {
@@ -249,8 +288,14 @@
     // community unlock
     const form = $('#commForm'), board = $('#commBoard');
     form && form.addEventListener('submit', e => { e.preventDefault(); board.classList.add('unlocked'); });
-    // faq accordion (single open)
-    const fq = $$('.faq__list details'); fq.forEach(d => d.addEventListener('toggle', () => { if (d.open) fq.forEach(o => { if (o !== d) o.open = false; }); }));
+    /* faq accordion (single open) — the markup is .faq-grid > details.faq-item;
+       the old '.faq__list details' selector matched nothing, so every answer
+       just stacked open. */
+    const fq = $$('.faq-grid details');
+    fq.forEach(d => d.addEventListener('toggle', () => {
+      if (!d.open) return;
+      fq.forEach(o => { if (o !== d && o.open) o.open = false; });
+    }));
   })();
 
   /* ---------- inline trading journey (chapter 3) ----------
@@ -258,19 +303,8 @@
      Scroll advances one screenshot beat; same dock crossfades in-phone;
      dock highlight only moves when the category changes. */
   const JOURNEY_NOOP = {
-    STOP_COUNT: 0,
-    tick() { },
-    isArmed: () => false,
-    isCompleted: () => false,
-    isAnimating: () => false,
-    isLocked: () => false,
-    getStep: () => 0,
-    setArmed() { },
-    resetToStart() { },
-    releaseAtEnd() { },
-    resetCompleted() { },
-    handleWheel: () => ({ consumed: false }),
-    setProgress() { },
+    STOP_COUNT: 1,
+    setStep() { },
   };
 
   function initInlineJourney(rootEl) {
@@ -411,19 +445,8 @@
 
     const legend = qa('.jp-legend li');
 
-    const FADE_MS = reduced ? 220 : 550;
-    const STEP_COOLDOWN_MS = reduced ? 280 : 750;
-    const WHEEL_LOCK_MS = STEP_COOLDOWN_MS;
-
     let currentStep = -1;
     let liveDock = -1;
-    let armed = false;
-    let wheelLocked = false;
-    let completed = false;
-    let animating = false;
-    let animTimer = 0;
-    let lockTimer = 0;
-    let lastStepAt = 0;
 
     const ensureShotLayers = slotEl => {
       const screen = slotEl.querySelector('.phone-screen');
@@ -537,16 +560,15 @@
       });
     };
 
+    /* Paint one beat. The scroll engine owns pacing, so this is pure output:
+       no arming, no locks, no wheel state to fall out of sync with the page. */
     const goToStep = (idx, animate) => {
       idx = clamp(idx, 0, STOP_COUNT - 1);
       if (idx === currentStep && liveDock >= 0) return;
       const prevDock = liveDock;
       const dock = STEPS[idx].dock;
-      const sameDock = dock === prevDock;
       currentStep = idx;
       liveDock = dock;
-
-      clearTimeout(animTimer);
 
       legend.forEach((li, i) => {
         li.classList.toggle('is-active', i === dock);
@@ -559,223 +581,223 @@
         setLiveDock(dock);
         void rail.offsetWidth;
         rail.classList.remove('is-instant');
-        animating = false;
         return;
       }
 
       rail.classList.remove('is-instant');
-      animating = true;
-      syncRail(idx, sameDock || prevDock < 0);
+      syncRail(idx, dock === prevDock || prevDock < 0);
       setLiveDock(dock);
-      animTimer = setTimeout(() => { animating = false; }, FADE_MS);
-    };
-
-    const lockWheel = () => {
-      wheelLocked = true;
-      clearTimeout(lockTimer);
-      lockTimer = setTimeout(() => { wheelLocked = false; }, WHEEL_LOCK_MS);
     };
 
     goToStep(0, false);
 
     return {
       STOP_COUNT,
-      tick() { },
-      isArmed: () => armed,
-      isCompleted: () => completed,
-      isAnimating: () => animating,
-      isLocked: () => wheelLocked,
-      getStep: () => currentStep,
-      setArmed(on) {
-        if (on === armed) return;
-        armed = on;
-        wheelLocked = false;
-        if (on && completed) completed = false;
-      },
-      resetToStart() {
-        completed = false;
-        goToStep(0, false);
-      },
-      releaseAtEnd() {
-        armed = false;
-        wheelLocked = false;
-        completed = true;
-        goToStep(STOP_COUNT - 1, false);
-      },
-      resetCompleted() {
-        completed = false;
-        if (!armed) goToStep(0, false);
-      },
-      handleWheel(deltaY, opts = {}) {
-        const fastRewind = !!(opts && opts.fastRewind);
-        if (!armed) return { consumed: false };
-
-        const now = performance.now();
-
-        if (deltaY > 0 && currentStep >= STOP_COUNT - 1) {
-          if (animating || now - lastStepAt < STEP_COOLDOWN_MS) {
-            return { consumed: true };
-          }
-          return { consumed: false, atEnd: true };
-        }
-        if (deltaY < 0 && currentStep <= 0 && !fastRewind) {
-          return { consumed: false, atStart: true };
-        }
-
-        if (!fastRewind && (wheelLocked || animating)) return { consumed: true };
-        if (fastRewind && animating) {
-          animating = false;
-          wheelLocked = false;
-        }
-        if (!fastRewind && now - lastStepAt < STEP_COOLDOWN_MS) {
-          return { consumed: true };
-        }
-        if (deltaY > 0) {
-          lastStepAt = now;
-          lockWheel();
-          goToStep(currentStep + 1, true);
-          return { consumed: true };
-        }
-        if (deltaY < 0) {
-          if (fastRewind) {
-            if (currentStep > 0) {
-              wheelLocked = false;
-              lastStepAt = 0;
-              goToStep(0, false);
-              return { consumed: true };
-            }
-            return { consumed: false, atStart: true };
-          }
-          lastStepAt = now;
-          lockWheel();
-          goToStep(currentStep - 1, true);
-          return { consumed: true };
-        }
-        return { consumed: false };
-      },
-      setProgress(tNow) {
-        if (armed) return;
-        const idx = clamp(Math.floor(clamp(tNow, 0, 1) * STOP_COUNT), 0, STOP_COUNT - 1);
-        goToStep(idx, false);
-      },
+      setStep(idx, animate) { goToStep(idx, animate !== false); },
     };
   }
 
   const journeyCtrl = initInlineJourney($('#bbj-inline'));
 
-  /* ---------- inline pricing (chapter 4) — scroll through plans one at a time on mobile ---- */
-  function initInlinePricing(rootEl) {
-    if (!rootEl) return () => { };
-    const cards = [...rootEl.querySelectorAll('.pcard')];
-    if (!cards.length) return () => { };
-
-    const PLAN_COUNT = cards.length;
-    const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-    let activeIdx = 0;
-
-    const setActive = idx => {
-      activeIdx = clamp(idx, 0, PLAN_COUNT - 1);
-      cards.forEach((card, i) => card.classList.toggle('is-active', i === activeIdx));
+  /* ---------- simple one-at-a-time stacks (pricing plans, security items) ----------
+     Each exposes its item count so the scroll engine can give every item its
+     own stop; setting the index is the only thing scroll has to do. */
+  function initStack(rootEl, sel) {
+    const items = rootEl ? [...rootEl.querySelectorAll(sel)] : [];
+    if (!items.length) return { count: 1, set() { } };
+    let activeIdx = -1;
+    const api = {
+      count: items.length,
+      set(idx) {
+        idx = idx < 0 ? 0 : idx > items.length - 1 ? items.length - 1 : idx;
+        if (idx === activeIdx) return;
+        activeIdx = idx;
+        items.forEach((el, i) => el.classList.toggle('is-active', i === idx));
+      },
     };
-
-    setActive(0);
-
-    return function setPricingProgress(tNow) {
-      const pLocal = clamp(tNow, 0, 1);
-      const idx = clamp(Math.floor(pLocal * PLAN_COUNT), 0, PLAN_COUNT - 1);
-      if (idx !== activeIdx) setActive(idx);
-    };
+    api.set(0);
+    return api;
   }
-  const pricingProgress = initInlinePricing($('#pricing-inline'));
+  const pricingStack = initStack($('#pricing-inline'), '.pcard');
+  const securityStack = initStack($('#security-inline'), '.sec-item');
 
-  function initInlineSecurity(rootEl) {
-    if (!rootEl) return () => { };
-    const items = [...rootEl.querySelectorAll('.sec-item')];
-    if (!items.length) return () => { };
+  /* ===================================================================
+     SCROLL ENGINE — one impulse, one stop
 
-    const ITEM_COUNT = items.length;
-    const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
-    let activeIdx = 0;
+     Every chapter, and every card inside a chapter, is a STOP: a scroll
+     position where something is fully composed on screen. Scroll input never
+     moves the page directly — it only picks the next stop, and a time-based
+     tween flies the camera there. That buys three things the old free-scroll
+     + rescue-glide model could not:
+       · the view can never park between two chapters
+       · one flick always completes one whole move, at any refresh rate
+       · there is no arm / hold / release / bypass state left to desync
+  =================================================================== */
+  let p = 0;                     // camera progress — the single source of truth
+  let scrollMax = 1;
 
-    const setActive = idx => {
-      activeIdx = clamp(idx, 0, ITEM_COUNT - 1);
-      items.forEach((item, i) => item.classList.toggle('is-active', i === activeIdx));
+  /* p runs 0..1 across the runway. The classic-scroll tail (FAQ + footer) sits
+     a screen below the runway's end, so it gets its own slice of p ABOVE 1.
+     Without it, leaving About meant jumping to p=1 — the last, empty screen of
+     the runway — which is the blank frame between About and the FAQ. Giving
+     the tail real p means the hand-off runs through the same tween as every
+     other transition: About fades while the FAQ slides up under it. */
+  const tailEl = $('#scroll-tail');
+  let pTail = 1;
+  const measureScroll = () => {
+    scrollMax = cineScrollMax();
+    pTail = tailEl && tailEl.offsetTop > 0
+      ? Math.max(1.0001, tailEl.offsetTop / scrollMax)
+      : 1;
+  };
+  measureScroll();
+
+  const clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
+  const clampP = v => (v < 0 ? 0 : v > pTail ? pTail : v);
+  /* how far into the About -> FAQ hand-off we are, 0..1 */
+  const tailProgress = () => (pTail > 1 ? clamp01((p - 1) / (pTail - 1)) : (p >= 1 ? 1 : 0));
+  const easeInOut = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(2 - 2 * x, 3) / 2);
+  /* refresh-rate independent approach; tau in seconds */
+  const smoothTo = (cur, tgt, tau, dt) => cur + (tgt - cur) * (1 - Math.exp(-dt / tau));
+
+  /* A chapter's plateau is the stretch of its window where it is fully
+     opaque — mirrors fadeWindow() and the edge chapter's custom hold. */
+  const fadeSpan = c => (c.el.id === 'edgenode' ? 0.01 : Math.min((c.b - c.a) * 0.32, 0.03));
+  const plateauOf = c => {
+    const f = fadeSpan(c) + 0.006;
+    return {
+      A: c.a <= 0 ? 0 : Math.min(c.a + f, c.b),
+      B: c.b >= 1 ? 1 : Math.max(c.b - f, c.a),
     };
-
-    setActive(0);
-
-    return function setSecurityProgress(tNow) {
-      const pLocal = clamp(tNow, 0, 1);
-      const idx = clamp(Math.floor(pLocal * ITEM_COUNT), 0, ITEM_COUNT - 1);
-      if (idx !== activeIdx) setActive(idx);
-    };
-  }
-  const securityProgress = initInlineSecurity($('#security-inline'));
-
-  /* ---------- scroll ---------- */
-  let target = 0, p = 0;
-  let journeyExiting = false;
-  let journeyReleased = false;
-  let journeyExitTarget = null;
-  let journeyHoldP = null;
-  let journeyLastScrollY = 0;
-  let lastReadScrollY = 0;
-  let scrollDirectionUp = false;
-  let journeyBypass = false;
-
-  const clearJourneyRelease = () => {
-    journeyReleased = false;
-    journeyExitTarget = null;
-    journeyExiting = false;
   };
 
-  const readScroll = () => {
-    if (journeyExiting) return;
-    const max = cineScrollMax();
-    scrollDirectionUp = scrollY < lastReadScrollY - 1;
-    let next;
-    if (scrollY <= max) {
-      next = Math.max(0, Math.min(1, scrollY / Math.max(max, 1)));
+  /* Stops a chapter owns — one per card it scrolls through */
+  const subCount = id =>
+    id === 'journeynode' ? journeyCtrl.STOP_COUNT :
+      id === 'pricingnode' ? pricingStack.count :
+        id === 'securitynode' ? securityStack.count :
+          id === 'edgenode' ? Math.max(1, edgeSlides.length) : 1;
+
+  const STOPS = [];
+  chapters.forEach(c => {
+    const { A, B } = plateauOf(c);
+    const k = subCount(c.el.id);
+    for (let j = 0; j < k; j++) STOPS.push({ p: A + (B - A) * ((j + 0.5) / k), ch: c, sub: j });
+  });
+  STOPS.sort((a, b) => a.p - b.p);
+  const LAST = Math.max(0, STOPS.length - 1);
+
+  let stopIdx = 0;
+  let edgeWant = 0;
+  let tailReleased = false;
+  const capturing = () => !tailReleased;
+
+  const nearestStop = at => {
+    let bi = 0, bd = Infinity;
+    for (let i = 0; i < STOPS.length; i++) {
+      const d = Math.abs(STOPS[i].p - at);
+      if (d < bd) { bd = d; bi = i; }
+    }
+    return bi;
+  };
+
+  /* The page's scroll position is an OUTPUT of p, never an input. Always
+     behavior:'auto' — a browser-animated write here would race the tween. */
+  let selfWriteAt = -1e9;
+  const writeScroll = () => {
+    const want = Math.round(p * scrollMax);
+    if (Math.abs(scrollY - want) > 1) {
+      selfWriteAt = performance.now();
+      scrollTo({ top: want, behavior: 'auto' });
+    }
+  };
+
+  const enterTail = () => {
+    if (tailReleased) return;
+    tailReleased = true;
+    tween = null;
+    p = pTail;
+    root.classList.add('tail-mode');
+  };
+
+  /* Cards are driven from the COMMITTED stop, not from live p, so a hand-off
+     starts the instant you flick instead of halfway through the flight. */
+  const paintStop = i => {
+    const s = STOPS[i];
+    if (!s) return;
+    const id = s.ch.el.id;
+    if (id === 'journeynode') journeyCtrl.setStep(s.sub, true);
+    else if (id === 'pricingnode') pricingStack.set(s.sub);
+    else if (id === 'securitynode') securityStack.set(s.sub);
+    else if (id === 'edgenode') edgeWant = s.sub;
+  };
+
+  /* ---- the flight ---- */
+  /* Pacing. A short hop inside a chapter (card to card) rides near TWEEN_MIN;
+     a full chapter-to-chapter flight lands near TWEEN_MAX. */
+  const TWEEN_MIN = 640, TWEEN_MAX = 1550, TWEEN_PER_P = 5400;
+  let tween = null;                 // { from, to, t0, dur, thenRelease }
+  /* set while absorbing a native fling on the way out of the tail — see leaveTail */
+  let recapturing = false, recaptureY = 0, recaptureQuiet = 0, recaptureUntil = 0;
+  let scrubUntil = 0, scrubTo = 0;  // user is dragging the scrollbar
+
+  const flyTo = (to, opts) => {
+    const o = opts || {};
+    scrubUntil = 0;
+    if (o.instant || reduced) {
+      tween = null;
+      p = clampP(to);
+      if (o.thenRelease) enterTail(); else writeScroll();
+      return;
+    }
+    const d = Math.abs(to - p);
+    tween = {
+      from: p,
+      to: clampP(to),
+      t0: performance.now(),
+      dur: Math.max(TWEEN_MIN, Math.min(TWEEN_MAX, TWEEN_MIN + d * TWEEN_PER_P)),
+      thenRelease: !!o.thenRelease,
+    };
+  };
+
+  /* An explicit jump — nav link, skip button, Home/End — always wins, which
+     means it has to take the page back from whatever currently owns it. */
+  const goToStop = (i, opts) => {
+    if (!STOPS.length) return;
+    recapturing = false;
+    if (tailReleased) {
+      tailReleased = false;
       root.classList.remove('tail-mode');
-    } else {
-      next = 1;
-      root.classList.add('tail-mode');
     }
-    const journeyCh = chapters.find(c => c.el.id === 'journeynode');
-    if (journeyReleased && journeyExitTarget != null) {
-      const exitScroll = journeyExitTarget * max;
-      /* Only unlock when the user intentionally scrolls back below the
-         pricing entry — not on tiny upward jitter while already in Pricing. */
-      if (scrollDirectionUp && next < journeyExitTarget - 0.01) {
-        clearJourneyRelease();
-      } else if (!scrollDirectionUp && next < journeyExitTarget) {
-        next = journeyExitTarget;
-        if (scrollY < exitScroll - 2) {
-          scrollTo({ top: exitScroll, behavior: 'auto' });
-        }
-      }
-    }
-    if (!journeyReleased && journeyCh && scrollDirectionUp && next < journeyCh.a - 0.008) {
-      clearJourneyRelease();
-      journeyHoldP = null;
-      journeyBypass = false;
-    }
-    if (journeyCh) {
-      const inJourney = next >= journeyCh.a - 0.004 && next <= journeyCh.b + 0.02;
-      if (scrollDirectionUp && inJourney) {
-        if (journeyCtrl.isCompleted() || journeyReleased || next > journeyCh.a + (journeyCh.b - journeyCh.a) * 0.28) {
-          journeyBypass = true;
-        }
-      } else if (!scrollDirectionUp && inJourney && next <= journeyCh.a + (journeyCh.b - journeyCh.a) * 0.12) {
-        journeyBypass = false;
-      } else if (!inJourney) {
-        journeyBypass = false;
-      }
-    }
-    target = next;
-    lastReadScrollY = scrollY;
+    stopIdx = i < 0 ? 0 : i > LAST ? LAST : i;
+    paintStop(stopIdx);
+    flyTo(STOPS[stopIdx].p, opts);
   };
-  addEventListener('scroll', readScroll, { passive: true }); readScroll();
+
+  /* ---- coming back out of the tail ----
+     The tail scrolls natively, so leaving it upward means a fling is usually
+     still in flight — and a fling's wheel events are non-cancelable, so
+     preventDefault cannot stop it. Writing scrollY into that is a fight the
+     engine cannot win: every frame it yanks the page back up while the
+     compositor pulls it down, which is the judder at this boundary.
+     So while the fling decays we drive the camera ONLY and never touch
+     scrollY. Nothing on screen is anchored to scroll position — the chapters
+     are fixed and driven by p — so the single correction once it settles is
+     invisible. Destination is always About: you came back from the tail, so
+     you arrive at the last chapter rather than wherever the fling ran out. */
+  const leaveTail = () => {
+    if (!tailReleased) return;
+    tailReleased = false;
+    root.classList.remove('tail-mode');
+    scrubUntil = 0;
+    stopIdx = LAST;
+    paintStop(LAST);
+    flyTo(STOPS[LAST].p);
+    recapturing = true;
+    recaptureY = scrollY;
+    recaptureQuiet = 0;
+    recaptureUntil = performance.now() + 2200;
+  };
 
   /* ---------- in-page links ----------
      Chapters are position:fixed, so a plain #hash has nothing to scroll to.
@@ -785,15 +807,15 @@
   if (CINE) {
     const jumpTo = id => {
       if (id === 'faqnode' || id === 'footer') {
-        const top = id === 'footer' ? $('#footer')?.offsetTop ?? cineScrollMax() + 2 : cineScrollMax() + 2;
+        const tailTop = pTail * scrollMax;
+        enterTail();
+        const top = id === 'footer' ? $('#footer')?.offsetTop ?? tailTop : tailTop;
         scrollTo({ top, behavior: 'smooth' });
         return true;
       }
-      const c = chapters.find(ch => ch.el.id === id);
-      if (!c) return false;
-      // land just past the fade-in so the panel is already solid on arrival
-      const at = c.a <= 0 ? 0 : Math.min(c.a + Math.min((c.b - c.a) * 0.32, 0.03) + 0.004, c.b);
-      scrollTo({ top: at * cineScrollMax(), behavior: 'auto' });
+      const i = STOPS.findIndex(s => s.ch.el.id === id);
+      if (i < 0) return false;
+      goToStop(i);          // takes the page back from the tail on its own
       return true;
     };
     addEventListener('click', e => {
@@ -808,274 +830,200 @@
   }
 
   if (!CINE) {
-    // flat fallback: reveal all chapters as normal stacked blocks
-    chapters.forEach(c => { c.el.style.opacity = 1; c.el.classList.add('live'); if (c.panel) c.panel.style.transform = 'none'; });
-    addEventListener('scroll', () => { readScroll(); if (depthBar) depthBar.style.width = (target * 100) + '%'; }, { passive: true });
-    updateChapters(0);
-    journeyCtrl.setProgress(1);
-    pricingProgress(1);
-    securityProgress(1);
+    // flat fallback: every chapter is a normal stacked block, no engine
+    chapters.forEach(c => {
+      c.el.style.opacity = 1;
+      c.el.classList.add('live');
+      c.el.style.pointerEvents = 'auto';
+      if (c.panel) { c.panel.style.transform = 'none'; c.panel.style.filter = 'none'; }
+    });
+    journeyCtrl.setStep(0, false);
+    pricingStack.set(0);
+    securityStack.set(0);
+    if (depthBar) {
+      addEventListener('scroll', () => {
+        const max = Math.max(document.body.scrollHeight - innerHeight, 1);
+        depthBar.style.width = clamp01(scrollY / max) * 100 + '%';
+      }, { passive: true });
+    }
     return;
   }
 
-  /* ---------- journey: one scroll impulse = one step ----------
-     Hold page scroll while the section is active; wheel nominates the next
-     beat. Animation waits until the panel is fully opaque (not mid-fade). */
-  const journeyChapter = chapters.find(c => c.el.id === 'journeynode');
+  /* ---------- input: one gesture = one stop ----------
+     Nothing here touches scrollY. Input only nominates a stop; the tween in
+     stepScroll() owns every pixel of movement, so there is exactly one thing
+     animating the page at any moment. */
+  let lockUntil = 0;
 
-  const journeyVisibleP = () => {
-    if (!journeyChapter) return 1;
-    const fadeIn = Math.min((journeyChapter.b - journeyChapter.a) * 0.32, 0.03);
-    return journeyChapter.a + fadeIn;
+  const releaseToTail = now => {
+    if (tailReleased) return;
+    flyTo(pTail, { thenRelease: true });
+    lockUntil = now + (tween ? tween.dur : 560);
   };
 
-  const journeyFullyVisible = () => {
-    if (!journeyChapter) return false;
-    return fadeWindow(p, journeyChapter.a, journeyChapter.b) >= 0.98;
+  /* Input that lands mid-flight is dropped, not queued. Queueing it looked
+     helpful but a single trackpad flick fires ~15 events on the way up to its
+     peak, so the queue always held one and every flick advanced two stops.
+     Dropping keeps the contract exact: one gesture moves you one stop, and a
+     sustained drag keeps its own events coming, so it still advances steadily
+     as soon as the lock clears. */
+  const impulse = dir => {
+    const now = performance.now();
+    /* Inertia left over from the tail is not a new instruction */
+    if (recapturing) return;
+    if (now < lockUntil) return;
+    if (dir > 0 && stopIdx >= LAST) { releaseToTail(now); return; }
+    if (dir < 0 && stopIdx <= 0) { goToStop(0); return; }
+    goToStop(stopIdx + dir);
+    lockUntil = now + (tween ? tween.dur * 0.68 : 260);
   };
 
-  const snapJourneyScroll = holdP => {
-    if (journeyExiting || journeyReleased) return;
-    const holdScroll = holdP * cineScrollMax();
-    if (Math.abs(scrollY - holdScroll) > 3) {
-      scrollTo({ top: holdScroll, behavior: 'auto' });
-      target = holdP;
-      p = holdP;
-      journeyLastScrollY = holdScroll;
-    }
-  };
-
-  const shouldHoldJourneyScroll = () => {
-    if (journeyBypass) return false;
-    if (!journeyChapter || !journeyCtrl.isArmed()) return false;
-    if (journeyReleased) return false;
-    const visP = journeyVisibleP();
-    if (scrollDirectionUp && p > visP + 0.012) return false;
-    return true;
-  };
-
-  const journeyExitP = () => {
-    if (!journeyChapter) return 1;
-    const pricingChapter = chapters.find(c => c.el.id === 'pricingnode');
-    if (pricingChapter) {
-      const fadeIn = Math.min((pricingChapter.b - pricingChapter.a) * 0.32, 0.03);
-      return Math.max(journeyChapter.b + 0.012, pricingChapter.a + fadeIn + 0.004);
-    }
-    return journeyChapter.b + 0.02;
-  };
-
-  const releaseJourneyForward = () => {
-    if (journeyReleased || journeyExiting) return;
-    journeyReleased = true;
-    journeyHoldP = null;
-    journeyExitTarget = journeyExitP();
-    journeyCtrl.releaseAtEnd();
-    beginJourneyExit();
-  };
-
-  const beginJourneyExit = () => {
-    const exitP = journeyExitTarget != null ? journeyExitTarget : journeyExitP();
-    if (reduced) {
-      target = exitP;
-      p = exitP;
-      const exitScroll = exitP * cineScrollMax();
-      scrollTo({ top: exitScroll, behavior: 'auto' });
-      journeyLastScrollY = exitScroll;
+  /* Trackpad inertia keeps firing wheel events for up to a second after the
+     fingers lift. Those decaying tails must not read as fresh flicks, or one
+     swipe would run through three chapters. Inertia decays monotonically, so
+     treat a run that has fallen well under the gesture's peak as coasting —
+     with hysteresis, since a real drag's magnitude wobbles and must recover. */
+  let wheelAt = 0, wheelPeak = 0, coasting = false;
+  addEventListener('wheel', e => {
+    if (!capturing()) return;
+    e.preventDefault();
+    const mag = Math.abs(e.deltaY);
+    if (mag < 1) return;
+    const now = performance.now();
+    if (now - wheelAt > 140) { wheelPeak = 0; coasting = false; }   // new gesture
+    wheelAt = now;
+    if (mag >= wheelPeak) wheelPeak = mag;
+    if (coasting) {
+      if (mag <= wheelPeak * 0.6) return;
+      coasting = false;
+    } else if (mag < wheelPeak * 0.45) {
+      coasting = true;
       return;
     }
-    journeyExiting = true;
-    target = exitP;
-  };
+    impulse(e.deltaY > 0 ? 1 : -1);
+  }, { passive: false });
 
-  const skipJourneyForward = () => {
-    if (!journeyChapter) return;
-    journeyBypass = false;
-    journeyCtrl.releaseAtEnd();
-    if (!journeyReleased && !journeyExiting) {
-      releaseJourneyForward();
+  let touchY = 0, touchLive = false, touchFired = false;
+  addEventListener('touchstart', e => {
+    if (!capturing() || !e.touches.length) return;
+    touchY = e.touches[0].clientY;
+    touchLive = true;
+    touchFired = false;
+  }, { passive: true });
+  addEventListener('touchmove', e => {
+    if (!capturing() || !touchLive || !e.touches.length) return;
+    e.preventDefault();
+    if (touchFired) return;
+    const dy = touchY - e.touches[0].clientY;
+    if (Math.abs(dy) > 24) { impulse(dy > 0 ? 1 : -1); touchFired = true; }
+  }, { passive: false });
+  addEventListener('touchend', () => { touchLive = false; }, { passive: true });
+
+  addEventListener('keydown', e => {
+    if (!capturing() || e.metaKey || e.ctrlKey || e.altKey) return;
+    const tag = e.target && e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    switch (e.key) {
+      case 'ArrowDown': case 'PageDown': case ' ': e.preventDefault(); impulse(1); break;
+      case 'ArrowUp': case 'PageUp': e.preventDefault(); impulse(-1); break;
+      case 'Home': e.preventDefault(); goToStop(0); break;
+      case 'End': e.preventDefault(); goToStop(LAST); break;
+      default: break;
+    }
+  });
+
+  /* Scroll events are only ever a report, never a command. Either the engine
+     wrote that position (ignore it) or something native did — scrollbar drag,
+     find-in-page, an anchor — in which case follow it live and snap to the
+     nearest stop once it settles. */
+  addEventListener('scroll', () => {
+    const y = scrollY;
+    const tailTop = pTail * scrollMax;
+    if (tailReleased) {
+      if (y < tailTop - 2) leaveTail();
       return;
     }
-    const exitP = journeyExitTarget != null ? journeyExitTarget : journeyExitP();
-    clearJourneyRelease();
-    journeyReleased = true;
-    journeyExitTarget = exitP;
-    journeyHoldP = null;
-    target = exitP;
-    p = exitP;
-    const top = exitP * cineScrollMax();
-    scrollTo({ top, behavior: reduced ? 'auto' : 'smooth' });
-    journeyLastScrollY = top;
-    lastReadScrollY = top;
-  };
-
-  const releaseJourneyBack = () => {
-    if (journeyExiting) return;
-    journeyCtrl.setArmed(false);
-    journeyCtrl.resetToStart();
-    clearJourneyRelease();
-    journeyHoldP = null;
-    /* Bypass so the tick loop does not re-arm + snap while leaving */
-    journeyBypass = true;
-    const bots = chapters.find(c => c.el.id === 'productnode');
-    if (!bots) return;
-    const at = Math.max(0, bots.b - 0.012);
-    if (reduced) {
-      target = at;
-      p = at;
-      const top = at * cineScrollMax();
-      scrollTo({ top, behavior: 'auto' });
-      journeyLastScrollY = top;
-      lastReadScrollY = top;
-      return;
-    }
-    /* Same camera-lerp exit as forward → Pricing */
-    journeyExitTarget = at;
-    journeyExiting = true;
-    target = at;
-  };
-
-  const skipJourneyBack = () => {
-    if (!journeyChapter) return;
-    releaseJourneyBack();
-  };
+    /* A fling out of the tail keeps firing these; stepScroll is absorbing it. */
+    if (recapturing) return;
+    /* Scroll events arrive a frame or two after the write that caused them, by
+       which time p has moved on — so position alone cannot tell our own writes
+       from the user's. Mid-flight the engine owns the page outright, and just
+       after a correction we allow a short settling window. */
+    if (tween) return;
+    if (y > tailTop - 2) { enterTail(); return; }
+    if (performance.now() - selfWriteAt < 120) return;
+    if (Math.abs(y - Math.round(p * scrollMax)) <= 2) return;
+    scrubTo = clamp01(y / scrollMax);
+    scrubUntil = performance.now() + 180;
+  }, { passive: true });
 
   const skipBackBtn = $('#journeySkipBack');
   const skipFwdBtn = $('#journeySkipForward');
-  if (skipBackBtn) skipBackBtn.addEventListener('click', skipJourneyBack);
-  if (skipFwdBtn) skipFwdBtn.addEventListener('click', skipJourneyForward);
-
-  addEventListener('wheel', e => {
-    if (!journeyChapter || reduced) return;
-    if (journeyBypass) return;
-    if (journeyExiting) {
-      e.preventDefault();
-      return;
-    }
-    if (journeyReleased) return;
-    const inRange = p >= journeyChapter.a - 0.002 && p <= journeyChapter.b + 0.002;
-    if (!inRange) return;
-
-    /* Approaching the section: hold only when scrolling forward.
-       Scrolling up must be free so we can leave back to Bots. */
-    if (!journeyFullyVisible()) {
-      if (e.deltaY < 0) {
-        journeyHoldP = null;
-        journeyCtrl.setArmed(false);
-        journeyBypass = true;
-        return;
-      }
-      e.preventDefault();
-      const visP = journeyVisibleP();
-      journeyHoldP = visP;
-      snapJourneyScroll(visP);
-      return;
-    }
-
-    if (!journeyCtrl.isArmed() && !journeyReleased) {
-      /* Don't arm while the user is clearly scrolling back out */
-      if (e.deltaY < 0 && journeyCtrl.getStep() <= 0) {
-        releaseJourneyBack();
-        e.preventDefault();
-        return;
-      }
-      journeyCtrl.setArmed(true);
-      journeyHoldP = journeyVisibleP();
-      if (e.deltaY > 0) snapJourneyScroll(journeyHoldP);
-    }
-
-    const holdActive = shouldHoldJourneyScroll();
-    const fastRewind = e.deltaY < 0 && journeyCtrl.getStep() > 0;
-    const result = journeyCtrl.handleWheel(e.deltaY, { fastRewind });
-    if (result.consumed) {
-      e.preventDefault();
-      if (journeyHoldP != null) snapJourneyScroll(journeyHoldP);
-      return;
-    }
-    if (result.atEnd && e.deltaY > 0) {
-      e.preventDefault();
-      releaseJourneyForward();
-      return;
-    }
-    if (result.atStart && e.deltaY < 0) {
-      e.preventDefault();
-      releaseJourneyBack();
-      return;
-    }
-    if (holdActive || journeyCtrl.isLocked() || journeyCtrl.isAnimating()) {
-      e.preventDefault();
-      if (journeyHoldP != null) snapJourneyScroll(journeyHoldP);
-    }
-  }, { passive: false });
-
-  addEventListener('scroll', () => {
-    if (!journeyChapter || reduced) return;
-    if (journeyBypass) {
-      journeyLastScrollY = scrollY;
-      return;
-    }
-    if (journeyExiting || journeyReleased) return;
-    /* Hold scroll only — wheel owns one-impulse-one-step */
-    if (journeyHoldP != null && shouldHoldJourneyScroll()) {
-      target = journeyHoldP;
-      snapJourneyScroll(journeyHoldP);
-    }
-    journeyLastScrollY = scrollY;
-  }, { passive: true });
-
-  /* ---- auto-glide: never park the user between chapters ----
-     If scrolling stops while a transition is mid-flight (panel fading or
-     blurred), glide automatically to the next chapter anchor — forward or
-     back depending on the last scroll direction. Feels automated: any
-     nudge past a section completes the whole move. */
-  const GLIDE_IDLE_MS = 320;
-  let lastUserInputAt = performance.now();
-  let autoGliding = false;
-  let glideTop = 0;
-  const noteUserInput = () => { lastUserInputAt = performance.now(); autoGliding = false; };
-  addEventListener('wheel', noteUserInput, { passive: true });
-  addEventListener('touchmove', noteUserInput, { passive: true });
-  addEventListener('pointerdown', noteUserInput, { passive: true });
-  addEventListener('keydown', noteUserInput);
-
-  // matches updateChapters: edge holds solid longer, others fade over f
-  const glideFadeSpan = c => c.el.id === 'edgenode' ? 0.01 : Math.min((c.b - c.a) * 0.32, 0.03);
-  const glideVis = c => {
-    if (c.el.id === 'edgenode') {
-      if (p < c.a || p > c.b) return 0;
-      if (p < c.a + 0.01) return (p - c.a) / 0.01;
-      if (p > c.b - 0.01) return (c.b - p) / 0.01;
-      return 1;
-    }
-    return fadeWindow(p, c.a, c.b);
+  const firstStopOf = id => STOPS.findIndex(s => s.ch.el.id === id);
+  const lastStopOf = id => {
+    let at = -1;
+    STOPS.forEach((s, i) => { if (s.ch.el.id === id) at = i; });
+    return at;
   };
-  const glideArrival = c => c.a <= 0 ? 0 : Math.min(c.a + glideFadeSpan(c) + 0.006, c.b);
-  const glideHold = c => c.b >= 1 ? 1 : Math.max(c.b - glideFadeSpan(c) - 0.006, c.a);
+  if (skipBackBtn) skipBackBtn.addEventListener('click', () => {
+    const i = lastStopOf('productnode');
+    if (i >= 0) goToStop(i);
+  });
+  if (skipFwdBtn) skipFwdBtn.addEventListener('click', () => {
+    const i = firstStopOf('pricingnode');
+    if (i >= 0) goToStop(i);
+  });
 
-  function maybeAutoGlide() {
-    if (autoGliding || root.classList.contains('tail-mode')) return;
-    if (performance.now() - lastUserInputAt < GLIDE_IDLE_MS) return;
-    if (journeyExiting || journeyReleased || journeyCtrl.isArmed()) return;
-    /* Don't auto-pull back into Journey after the user has left it */
-    if (journeyChapter && journeyCtrl.isCompleted() && p > journeyChapter.b - 0.002) return;
-    if (Math.abs(target - p) > 0.003) return;              // camera still flying
-    let vis = 0;
-    for (const c of chapters) { const v = glideVis(c); if (v > vis) vis = v; }
-    if (vis >= 0.95) return;                                // a chapter owns the screen
-    let at = null;
-    if (scrollDirectionUp) {
-      for (let i = chapters.length - 1; i >= 0; i--) {
-        if (glideHold(chapters[i]) < p - 0.001) { at = glideHold(chapters[i]); break; }
+  /* ---- per-frame integration, called once from tick() ---- */
+  function stepScroll(now, dt) {
+    if (recapturing) {
+      /* Camera returns to About on its own clock; scrollY is left to the
+         fling until it dies, then corrected once. */
+      if (tween) {
+        const q = Math.min(1, (now - tween.t0) / tween.dur);
+        p = tween.from + (tween.to - tween.from) * easeInOut(q);
+        if (q >= 1) { p = tween.to; tween = null; }
       }
-    } else {
-      for (const c of chapters) {
-        if (glideArrival(c) > p + 0.001) { at = glideArrival(c); break; }
+      const moving = Math.abs(scrollY - recaptureY) > 1.5;
+      recaptureY = scrollY;
+      recaptureQuiet = moving ? 0 : recaptureQuiet + 1;
+      if ((!tween && recaptureQuiet >= 3) || now > recaptureUntil) {
+        recapturing = false;
+        tween = null;
+        p = STOPS[LAST].p;
+        stopIdx = LAST;
+        writeScroll();
       }
+      return;
     }
-    if (at == null) return;
-    autoGliding = true;
-    glideTop = at * cineScrollMax();
-    scrollTo({ top: glideTop, behavior: 'smooth' });
+
+    if (tween) {
+      const q = Math.min(1, (now - tween.t0) / tween.dur);
+      p = tween.from + (tween.to - tween.from) * easeInOut(q);
+      if (q >= 1) {
+        p = tween.to;
+        const rel = tween.thenRelease;
+        tween = null;
+        if (rel) { enterTail(); return; }
+      }
+      writeScroll();
+      return;
+    }
+
+    if (scrubUntil) {
+      if (now < scrubUntil) { p = smoothTo(p, scrubTo, 0.06, dt); return; }
+      scrubUntil = 0;
+      goToStop(nearestStop(p));
+      return;
+    }
+
+    if (capturing()) writeScroll();
   }
+
+  /* Honour a restored scroll position, but land it on a real stop — unless the
+     browser restored us inside the tail, where native scrolling already rules. */
+  if (scrollY > pTail * scrollMax - 2) enterTail();
+  else goToStop(nearestStop(clamp01(scrollY / Math.max(scrollMax, 1))), { instant: true });
 
   /* =================================================================
      WORLD
@@ -1279,7 +1227,15 @@
   let roll = 0; const clock = new THREE.Clock();
   const look = new THREE.Vector3(), tan = new THREE.Vector3();
   const worldUp = new THREE.Vector3(0, 1, 0);
-  addEventListener('resize', () => { cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); readScroll(); });
+  addEventListener('resize', () => {
+    cam.aspect = innerWidth / innerHeight;
+    cam.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+    /* Runway height is in vh, so the scroll span moves with the viewport —
+       re-measure once here instead of on every scroll event. */
+    measureScroll();
+    if (capturing()) writeScroll();
+  });
 
   // nearest node (for gentle side-framing so its content owns the opposite half)
   function nearestNode(u) { let bi = 0, bd = 1e9; for (let i = 0; i < nodeU.length; i++) { const d = Math.abs(u - nodeU[i]); if (d < bd) { bd = d; bi = i; } } let lock = Math.max(0, 1 - bd / 0.04); lock = lock * lock * (3 - 2 * lock); return { i: bi, lock }; }
@@ -1298,32 +1254,25 @@
     return c && { a: c.a - padA, b: c.b + padB };
   }).filter(Boolean);
 
+  let framePrev = performance.now();
+
   function tick() {
     if (typeof window !== 'undefined' && window.__BYTEBOOM_STOP__) return;
     requestAnimationFrame(tick);
     if (!stage || !stage.isConnected) return;
     const t = clock.getElapsedTime();
-    adaptQuality(performance.now(), t);
-    p += (target - p) * 0.1; if (Math.abs(target - p) < 0.0004) p = target;
+    const now = performance.now();
+    const dt = Math.min((now - framePrev) / 1000, 0.05);
+    framePrev = now;
+    adaptQuality(now, t);
 
-    if (journeyExiting) {
-      const syncScroll = p * cineScrollMax();
-      if (Math.abs(scrollY - syncScroll) > 2) {
-        scrollTo({ top: syncScroll, behavior: 'auto' });
-      }
-      journeyLastScrollY = syncScroll;
-      if (Math.abs(p - target) < 0.0006) {
-        const exitP = journeyExitTarget != null ? journeyExitTarget : target;
-        journeyExiting = false;
-        p = exitP;
-        target = exitP;
-        const finalScroll = exitP * cineScrollMax();
-        scrollTo({ top: finalScroll, behavior: 'auto' });
-        journeyLastScrollY = finalScroll;
-      }
-    }
+    stepScroll(now, dt);
 
-    const u = routeU(p);
+    /* The corridor ends at p=1; anything past that is the tail hand-off, where
+       the camera simply holds its last pose behind the incoming FAQ. */
+    const pc = p > 1 ? 1 : p;
+    const tailT = tailProgress();
+    const u = routeU(pc);
 
     getPt(u, cam.position); cam.position.y += Math.sin(t * .8) * .05;
     getTan(u, tan); tan.normalize();
@@ -1358,15 +1307,7 @@
 
     m1.rotation.y = Math.sin(t * .03) * .05; m1.position.y = Math.sin(t * .4) * .4; m2.position.y = Math.cos(t * .3) * .5;
 
-    updateChapters(p);
-
-    /* Chapters stay planted. Mouse/bob used to shift every live chapter in
-       screen space, which read as a floating overlay on the world rather
-       than content living in the corridor (the crystal/ring does not get
-       that extra DOM sway — only camera motion). */
-    chapters.forEach(c => {
-      if (c.el.style.transform) c.el.style.transform = '';
-    });
+    updateChapters(p, tailT);
 
     /* Foreground dust still tracks camera sway so occlusion cues remain. */
     dctx.clearRect(0, 0, DW, DH);
@@ -1389,11 +1330,7 @@
     }
     dctx.globalAlpha = 1;
 
-    /* auto-glide bookkeeping: release when the glide lands, then re-check */
-    if (autoGliding && Math.abs(scrollY - glideTop) < 4) autoGliding = false;
-    maybeAutoGlide();
-
-    const clean = cleanWindows.some(w => p >= w.a && p <= w.b);
+    const clean = cleanWindows.some(w => pc >= w.a && pc <= w.b);
     nodeDecor.forEach(d => {
       const show = !d.hideAlways && !clean;
       d.g.visible = false;   // gate ring retired — only the crystal reads as the node marker
@@ -1401,74 +1338,9 @@
       d.pl.visible = show;
     });
 
-    const edgeChapter = chapters.find(c => c.el.id === 'edgenode');
-    if (edgeChapter) {
-      updateEdgeZoom(Math.max(0, Math.min(1, (p - edgeChapter.a) / Math.max(edgeChapter.b - edgeChapter.a, 1e-6))));
-    }
+    /* Edge keeps its own hand-off clock; the engine only says which card wins. */
+    updateEdgeZoom(edgeWant);
 
-    const journeyChapterTick = chapters.find(c => c.el.id === 'journeynode');
-    if (journeyChapterTick) {
-      const inRange = p >= journeyChapterTick.a && p <= journeyChapterTick.b;
-      const fullyVisible = fadeWindow(p, journeyChapterTick.a, journeyChapterTick.b) >= 0.98;
-      const visP = journeyVisibleP();
-      /* Only snap during approach into Journey — NOT when past it (Pricing+).
-         Old check used !fullyVisible which is also true after leaving, and
-         yanked scroll back to Journey from later sections. */
-      const approaching =
-        p >= journeyChapterTick.a - 0.002 &&
-        p <= visP + 0.045 &&
-        !scrollDirectionUp;
-
-      if (!journeyReleased && !journeyExiting && !journeyBypass && approaching && !fullyVisible && p > visP + 0.004) {
-        snapJourneyScroll(visP);
-        target = visP;
-      }
-
-      if (inRange && fullyVisible && !journeyReleased && !journeyExiting && !journeyBypass) {
-        if (!journeyCtrl.isArmed()) {
-          /* Only arm when arriving forward — never re-trap while leaving upward */
-          if (!scrollDirectionUp) {
-            journeyCtrl.setArmed(true);
-            journeyHoldP = visP;
-            snapJourneyScroll(journeyHoldP);
-          }
-        } else if (shouldHoldJourneyScroll() && journeyHoldP != null) {
-          snapJourneyScroll(journeyHoldP);
-          target = journeyHoldP;
-        }
-      } else if (journeyBypass && inRange) {
-        journeyCtrl.setArmed(false);
-        journeyHoldP = null;
-      } else if (p < journeyChapterTick.a - 0.008) {
-        journeyCtrl.setArmed(false);
-        journeyCtrl.resetToStart();
-        journeyHoldP = null;
-        clearJourneyRelease();
-        journeyBypass = false;
-      } else if (p > journeyChapterTick.b + 0.008) {
-        journeyHoldP = null;
-        journeyCtrl.setArmed(false);
-        /* Stay released once past Journey so later sections can't re-trap */
-        if (journeyCtrl.isCompleted() && !journeyReleased && !journeyExiting) {
-          journeyReleased = true;
-          journeyExitTarget = journeyExitTarget != null ? journeyExitTarget : journeyExitP();
-        }
-      }
-
-      journeyCtrl.tick();
-    }
-
-    const pricingChapter = chapters.find(c => c.el.id === 'pricingnode');
-    if (pricingChapter) {
-      const rawPricing = Math.max(0, Math.min(1, (p - pricingChapter.a) / Math.max(pricingChapter.b - pricingChapter.a, 1e-6)));
-      pricingProgress(rawPricing);
-    }
-
-    const securityChapter = chapters.find(c => c.el.id === 'securitynode');
-    if (securityChapter) {
-      const rawSecurity = Math.max(0, Math.min(1, (p - securityChapter.a) / Math.max(securityChapter.b - securityChapter.a, 1e-6)));
-      securityProgress(rawSecurity);
-    }
     renderer.render(scene, cam);
   }
   updateChapters(0); tick();

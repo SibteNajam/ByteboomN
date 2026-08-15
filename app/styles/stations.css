@@ -14,6 +14,16 @@ body {
   overflow-x: hidden;
 }
 
+/* The scroll engine tweens the camera itself and writes scrollY as the result.
+   styles.css sets scroll-behavior:smooth globally, which would make the browser
+   animate every one of those writes as well — two easings fighting over the
+   same pixels, which is what made the flight feel mushy and stall mid-chapter.
+   In cine mode the engine is the only thing allowed to animate scrolling. */
+html.cine {
+  scroll-behavior: auto;
+  overscroll-behavior-y: none;
+}
+
 #runway {
   height: 1700vh;
   position: relative;
@@ -28,8 +38,10 @@ body {
   isolation: isolate;
 }
 
+/* The tail lands with this section flush at the top of the viewport, so its
+   heading starts underneath the fixed nav unless the padding clears it. */
 .arrival-section {
-  padding: clamp(72px, 8vw, 108px) 0 clamp(28px, 4vw, 40px);
+  padding: calc(var(--jbar-h) + clamp(20px, 2.6vw, 38px)) 0 clamp(28px, 4vw, 40px);
   background: transparent;
 }
 
@@ -100,11 +112,12 @@ body {
   animation: hdrop 1.6s infinite;
 }
 
+/* The HUD retires in the tail, but #stage and #veil do NOT — the FAQ rides on
+   the same living corridor as every chapter before it, and the footer covers
+   it with its own gradient (z-index 23) where the world is meant to end. */
 html.cine.tail-mode #hint,
 html.cine.tail-mode #routemap,
 html.cine.tail-mode #depth,
-html.cine.tail-mode #stage,
-html.cine.tail-mode #veil,
 html.cine.tail-mode .scroll-tail-hint {
   opacity: 0;
   visibility: hidden;
@@ -266,6 +279,13 @@ html.flat .scroll-tail-hint {
 }
 
 /* brand + nav bar (minimal, floating) */
+/* Height of the fixed nav = padding + logo + padding. Anything that scrolls
+   up underneath it (the FAQ heading) has to clear this, so it is a variable
+   rather than a number copied into two places that then drift apart. */
+:root {
+  --jbar-h: 132px;
+}
+
 .jbar {
   position: fixed;
   top: 0;
@@ -376,6 +396,10 @@ html.flat .scroll-tail-hint {
 }
 
 @media (max-width: 640px) {
+  :root {
+    --jbar-h: 112px;
+  }
+
   .jbar {
     padding: 14px 18px;
   }
@@ -1375,11 +1399,20 @@ html.cine .trust-phone--front {
   gap: clamp(28px, 3.2vw, 40px);
   align-items: stretch;
   width: 100%;
-  max-width: 940px;
+  max-width: 1020px;
   margin-inline: auto;
   padding-top: 18px;
   padding-bottom: 12px;
   pointer-events: auto;
+}
+
+/* The row is bottom-aligned, so any card whose title wraps to a second line
+   gets taller and its top rides higher than its neighbours'. "Aggressive" and
+   "Conservative" sit on opposite sides of the wrap threshold, which is what
+   made the left and right cards disagree — and it would flip at other widths.
+   Reserving two lines everywhere makes the outer pair identical at any size. */
+.bcards__desktop .bot-card__title {
+  min-height: 2.24em;   /* 2 lines at the 1.12 line-height set below */
 }
 
 /* Depth stage that survives cine panel transforms.
@@ -1427,7 +1460,14 @@ html.cine .trust-phone--front {
   z-index: 1;
   width: 84%;
   transform: none;
-  margin-bottom: 22px;
+  /* Pinned from the top rather than bottom-aligned like the centre card. That
+     makes the outer pair's tops identical by construction — they no longer
+     depend on how tall each card's content happens to be — and holds them a
+     fixed step below the centre's top, so the pair reads as set back down the
+     corridor and stays nested inside the centre card's vertical span. */
+  align-self: start;
+  margin-top: 24px;
+  margin-bottom: 0;
   border-color: rgba(var(--bc-rgb), 0.28);
   background:
     radial-gradient(ellipse 65% 36% at 50% 14%, rgba(var(--bc-rgb), 0.035), transparent 70%),
@@ -1448,8 +1488,10 @@ html.cine .trust-phone--front {
   margin-left: -12px;
 }
 
+/* Shorter art keeps the pair strictly shorter than the centre card, so the
+   row's height is always governed by the centre and the nesting holds. */
 .bcards__desktop--depth .bot-card--depth-back .bot-card__art {
-  height: 104px;
+  height: 92px;
 }
 
 .bcards__desktop--depth .bot-card--depth-back .bot-card__body {
@@ -2091,10 +2133,13 @@ html.cine .trust-phone--front {
 .bbj--inline .journey-path {
   --jp-cols: 5;
   --jp-gap: clamp(8px, 1.1vw, 18px);
-  --jp-h: clamp(300px, 53vh, 540px);
+  /* 50vh not 53vh: the journey block was taller than the viewport, which is
+     what pinned the skip buttons to the bottom edge with nothing to give. */
+  --jp-h: clamp(288px, 50vh, 512px);
   --jp-w: calc(var(--jp-h) * 0.469);
   --jp-bubble-h: clamp(118px, 15vh, 148px);
-  --jp-fade: 0.55s;
+  /* paced to land just before the camera settles on the next journey beat */
+  --jp-fade: 0.62s;
   --jp-ghost: 0.08;
   position: relative;
   margin-top: clamp(2px, 0.6vh, 8px);
@@ -2548,7 +2593,13 @@ html.cine .bbj--inline .journey-path {
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  margin-top: clamp(8px, 1.4vh, 14px);
+  /* sit close under the legend rather than drifting away from the phones */
+  margin-top: clamp(4px, 0.9vh, 10px);
+  /* The panel is vertically centred, so bottom margin lifts these buttons off
+     the viewport edge by half of it — the other half of the lift comes from
+     the slightly shorter phone above, which moves them up without pushing the
+     heading into the nav. */
+  margin-bottom: clamp(52px, 7.5vh, 96px);
 }
 
 .journey-skip__btn {
@@ -2957,7 +3008,8 @@ html.cine .bbj--inline .journey-path {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 24px;
+  /* room for the "Save 27%" flag, which sits above the middle card's edge */
+  margin-bottom: clamp(32px, 4.6vh, 56px);
   text-align: center;
 }
 
@@ -3881,27 +3933,32 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
   display: none;
 }
 
-/* brighter than the shared .sec-lead default — small grey text on this
-   busy dark backdrop needs more contrast to stay inviting to read */
-.panel--about .sec-lead {
-  color: #aebdd3;
+/* No .sec-lead colour override here on purpose: every other chapter sits on
+   the same backdrop and uses the shared default, so an About-only grey was
+   the inconsistency rather than a fix for one. */
+
+/* Story — problem / idea / product. One vertical rhythm for the whole
+   section so the three blocks read as one composition. */
+.chapter--about .panel--about {
+  --about-gap: clamp(20px, 3vh, 34px);
 }
 
-/* Story — problem / idea / product, as a short numbered progression */
 .about-steps {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
-  margin: 8px 0 30px;
+  margin: var(--about-gap) 0;
 }
 
+/* Same surface language as .panel elsewhere on the page (165deg, same stops)
+   so these cards belong to the site rather than to this one section. */
 .about-step {
   position: relative;
   padding: 20px 22px 22px;
-  border-radius: 18px;
-  background: linear-gradient(165deg, rgba(20, 30, 48, .55), rgba(8, 12, 20, .55));
+  border-radius: var(--radius-lg);
+  background: linear-gradient(165deg, rgba(11, 18, 32, .72), rgba(6, 10, 18, .8));
   border: 1px solid var(--line);
-  transition: border-color .3s ease, transform .3s ease, background .3s ease;
+  transition: border-color .3s ease, transform .3s ease;
 }
 
 .about-step:hover {
@@ -3926,17 +3983,18 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
   height: 20px;
 }
 
+/* Identical treatment, hue is the only variable — the progression from dull
+   to decision to result is the one thing colour is saying here. */
 .about-step__icon--muted {
-  border-color: #2a3448;
+  border-color: var(--line-2);
   background: rgba(255, 255, 255, .03);
-  color: #8a96ac;
+  color: var(--muted-2);
 }
 
 .about-step__icon--cyan {
   border-color: rgba(23, 214, 238, .45);
   background: rgba(23, 214, 238, .08);
   color: var(--cyan);
-  box-shadow: 0 0 18px rgba(23, 214, 238, .15);
 }
 
 .about-step__icon--green {
@@ -3945,36 +4003,24 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
   color: #4ade80;
 }
 
-.about-step__num {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  font: 700 10.5px var(--mono);
-  letter-spacing: .04em;
-  color: var(--muted-2);
-  background: #0a0f1a;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 2px 6px;
-}
-
 .about-step h3 {
   font-size: 16px;
   font-weight: 700;
-  color: #f3f8ff;
+  color: var(--text);
   margin: 0 0 6px;
   letter-spacing: -0.01em;
 }
 
 .about-step p {
   font-size: 13px;
-  color: #a7b6cc;
+  color: var(--muted);
   line-height: 1.5;
   margin: 0;
 }
 
-/* inline emphasis — picks specific words out of the grey copy so the eye
-   has somewhere to land instead of skimming one flat block of text */
+/* Inline emphasis — picks specific words out of the grey copy so the eye has
+   somewhere to land. One accent, not one per phrase: six highlight colours
+   read as six unrelated marks, and none of them meant anything different. */
 .hl {
   font-weight: 700;
 }
@@ -3983,22 +4029,14 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
   color: var(--cyan);
 }
 
-.hl--green {
-  color: #4ade80;
-}
-
-.hl--violet {
-  color: var(--violet-2);
-}
-
-.hl--amber {
-  color: #facc15;
-}
-
-/* Principles — restated core promises, lighter-weight than the story cards */
+/* Principles — the quiet tier: smaller, flatter, one accent, so it clearly
+   sits below the three story cards instead of competing with them. */
+/* Padding does not collapse the way the cards' margin above it does, so this
+   is a fraction of the gap — the rule sits nearer the label it introduces
+   than the cards it closes off. */
 .about-principles {
-  padding-top: 24px;
-  border-top: 1px dashed var(--line);
+  padding-top: calc(var(--about-gap) * 0.7);
+  border-top: 1px solid var(--line);
 }
 
 .about-principles__label {
@@ -4008,13 +4046,13 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--muted-2);
-  margin-bottom: 18px;
+  margin-bottom: clamp(12px, 1.8vh, 18px);
 }
 
 .about-principles__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
+  gap: 18px;
   text-align: center;
 }
 
@@ -4024,64 +4062,43 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
   align-items: center;
 }
 
+/* These four are parallel statements, so they take one shared accent. Giving
+   each its own hue implied a distinction between them that does not exist. */
 .about-principle__icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  margin-bottom: 12px;
-  border: 1px solid;
-  transition: transform .3s ease, box-shadow .3s ease;
+  margin-bottom: 9px;
+  border: 1px solid rgba(23, 214, 238, .3);
+  background: rgba(23, 214, 238, .07);
+  color: var(--cyan);
+  transition: transform .3s ease, border-color .3s ease;
 }
 
 .about-principle:hover .about-principle__icon {
   transform: translateY(-2px);
-}
-
-/* one accent per item — same rhythm as the bot-card colour language —
-   so the row reads as four distinct points instead of one repeated icon */
-.about-principle__icon--cyan {
-  border-color: rgba(23, 214, 238, .32);
-  background: rgba(23, 214, 238, .07);
-  color: var(--cyan);
-}
-
-.about-principle__icon--violet {
-  border-color: rgba(154, 107, 255, .32);
-  background: rgba(154, 107, 255, .08);
-  color: var(--violet-2);
-}
-
-.about-principle__icon--amber {
-  border-color: rgba(250, 204, 21, .3);
-  background: rgba(250, 204, 21, .07);
-  color: #facc15;
-}
-
-.about-principle__icon--green {
-  border-color: rgba(74, 222, 128, .32);
-  background: rgba(74, 222, 128, .07);
-  color: #4ade80;
+  border-color: rgba(23, 214, 238, .5);
 }
 
 .about-principle__icon .i {
-  width: 18px;
-  height: 18px;
+  width: 15px;
+  height: 15px;
 }
 
 .about-principle h4 {
   font-size: 14px;
   font-weight: 700;
-  color: #f3f8ff;
+  color: var(--text);
   margin: 0 0 6px;
   letter-spacing: -0.005em;
 }
 
 .about-principle p {
   font-size: 12.5px;
-  color: #a7b6cc;
+  color: var(--muted);
   line-height: 1.55;
   max-width: 24ch;
   margin: 0;
@@ -5054,10 +5071,14 @@ html.flat .jbar {
     line-height: 1.5;
   }
 
+  /* cards stack here, so the shared rhythm tightens with them */
+  .chapter--about .panel--about {
+    --about-gap: clamp(12px, 2vh, 18px);
+  }
+
   .about-steps {
     grid-template-columns: 1fr;
     gap: 10px;
-    margin: 4px 0 18px;
   }
 
   .about-step {
@@ -5078,10 +5099,6 @@ html.flat .jbar {
   .about-step p {
     font-size: 12.5px;
     line-height: 1.45;
-  }
-
-  .about-principles {
-    padding-top: 14px;
   }
 
   .about-principles__label {
@@ -5333,18 +5350,17 @@ html.flat .jbar {
     max-width: 32ch;
   }
 
+  .chapter--about .panel--about {
+    --about-gap: 12px;
+  }
+
   .about-steps {
     gap: 8px;
-    margin-bottom: 14px;
   }
 
   .about-step {
     padding: 12px 14px 14px;
     border-radius: 14px;
-  }
-
-  .about-principles {
-    padding-top: 12px;
   }
 
   .about-principles__grid {
@@ -5496,7 +5512,7 @@ html.cine .scroll-tail .site-footer {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  padding-top: clamp(28px, 3.5vw, 36px);
+  padding-top: clamp(20px, 2.4vw, 26px);
   background:
     linear-gradient(180deg, #0b1220 0%, #070c14 55%, #060a12 100%);
   border-top: none;
