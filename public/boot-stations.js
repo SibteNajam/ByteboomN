@@ -58,7 +58,7 @@
 
     var script = document.createElement('script');
     script.id = STATIONS_ID;
-    script.src = asset('/stations.js?v=stop-engine');
+    script.src = asset('/stations.js?v=crypto-motes');
     script.async = false;
     document.body.appendChild(script);
     return true;

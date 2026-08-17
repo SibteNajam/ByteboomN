@@ -1146,9 +1146,159 @@
 
   /* Floor route line + dash dots removed — camera still follows the invisible path. */
 
-  /* motes */
-  function motes(count, color, size, op) { const geo = new THREE.BufferGeometry(); const a = new Float32Array(count * 3); for (let i = 0; i < count; i++) { a[i * 3] = (Math.random() - .5) * 160; a[i * 3 + 1] = Math.random() * 26 - 6; a[i * 3 + 2] = 12 - Math.random() * 240; } geo.setAttribute('position', new THREE.BufferAttribute(a, 3)); const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color, size, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(pts); return pts; }
-  const m1 = motes(1400, 0x9fd8ff, .13, .5), m2 = motes(650, VIOLET, .17, .26);
+  /* ---- motes: crypto marks ----
+     A bare PointsMaterial draws each point as a flat square, which is what the
+     background specks used to be. They now carry one of seven crypto glyphs
+     instead — BTC, ETH, SOL, XRP, BNB, ADA, DOGE — drawn as vector paths into
+     128px canvases (no webfont, so nothing to load and nothing to miss) and
+     baked to textures once, shared by every mote layer. Point sizes are
+     unchanged; a glyph covers less of its quad than a solid square did, so
+     opacity is raised to keep the field at its old brightness. */
+  const GLYPHS = [
+    /* BTC — the ₿: stem, two bowls, four ticks */
+    c => {
+      c.lineWidth = 12;
+      c.beginPath();
+      c.moveTo(42, 6); c.lineTo(42, 22);
+      c.moveTo(60, 6); c.lineTo(60, 22);
+      c.moveTo(42, 78); c.lineTo(42, 94);
+      c.moveTo(60, 78); c.lineTo(60, 94);
+      c.moveTo(34, 18); c.lineTo(34, 82);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(34, 18); c.lineTo(58, 18);
+      c.bezierCurveTo(76, 18, 76, 44, 58, 44);
+      c.lineTo(34, 44);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(34, 50); c.lineTo(62, 50);
+      c.bezierCurveTo(82, 50, 82, 82, 62, 82);
+      c.lineTo(34, 82);
+      c.stroke();
+    },
+    /* ETH — the faceted diamond; alpha splits read as the two shaded faces */
+    c => {
+      c.beginPath(); c.moveTo(50, 4); c.lineTo(18, 52); c.lineTo(50, 70); c.fill();
+      c.globalAlpha = .55;
+      c.beginPath(); c.moveTo(50, 4); c.lineTo(82, 52); c.lineTo(50, 70); c.fill();
+      c.globalAlpha = .92;
+      c.beginPath(); c.moveTo(18, 60); c.lineTo(50, 78); c.lineTo(50, 96); c.fill();
+      c.globalAlpha = .5;
+      c.beginPath(); c.moveTo(82, 60); c.lineTo(50, 78); c.lineTo(50, 96); c.fill();
+      c.globalAlpha = 1;
+    },
+    /* SOL — three skewed bars, middle one counter-slanted */
+    c => {
+      c.beginPath(); c.moveTo(24, 14); c.lineTo(92, 14); c.lineTo(76, 32); c.lineTo(8, 32); c.fill();
+      c.beginPath(); c.moveTo(8, 41); c.lineTo(76, 41); c.lineTo(92, 59); c.lineTo(24, 59); c.fill();
+      c.beginPath(); c.moveTo(24, 68); c.lineTo(92, 68); c.lineTo(76, 86); c.lineTo(8, 86); c.fill();
+    },
+    /* XRP — two curved sweeps meeting at the waist */
+    c => {
+      c.lineWidth = 12;
+      c.beginPath();
+      c.moveTo(12, 14); c.bezierCurveTo(30, 14, 34, 50, 50, 50); c.bezierCurveTo(66, 50, 70, 14, 88, 14);
+      c.moveTo(12, 86); c.bezierCurveTo(30, 86, 34, 50, 50, 50); c.bezierCurveTo(66, 50, 70, 86, 88, 86);
+      c.stroke();
+    },
+    /* BNB — four satellite diamonds around a larger centre */
+    c => {
+      const dia = (x, y, r) => { c.beginPath(); c.moveTo(x, y - r); c.lineTo(x + r, y); c.lineTo(x, y + r); c.lineTo(x - r, y); c.fill(); };
+      dia(50, 14, 13); dia(14, 50, 13); dia(86, 50, 13); dia(50, 86, 13); dia(50, 50, 18);
+    },
+    /* ADA — the Cardano dot constellation */
+    c => {
+      const dot = (x, y, r) => { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); };
+      dot(50, 50, 8);
+      c.globalAlpha = .9;
+      for (let i = 0; i < 6; i++) { const t = i / 6 * Math.PI * 2; dot(50 + Math.cos(t) * 24, 50 + Math.sin(t) * 24, 6); }
+      c.globalAlpha = .62;
+      for (let i = 0; i < 12; i++) { const t = i / 12 * Math.PI * 2 + .26; dot(50 + Math.cos(t) * 42, 50 + Math.sin(t) * 42, 4.2); }
+      c.globalAlpha = 1;
+    },
+    /* DOGE — the Ð: bowl plus crossed stem */
+    c => {
+      c.lineWidth = 12;
+      c.beginPath();
+      c.moveTo(38, 16); c.lineTo(38, 84);
+      c.moveTo(38, 16); c.lineTo(52, 16);
+      c.bezierCurveTo(84, 16, 84, 84, 52, 84);
+      c.lineTo(38, 84);
+      c.moveTo(15, 50); c.lineTo(50, 50);
+      c.stroke();
+    },
+  ];
+  const MAXANISO = renderer.capabilities.getMaxAnisotropy();
+  const SYMTEX = GLYPHS.map(draw => {
+    const S = 128, cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    const c = cv.getContext('2d');
+    c.scale(S / 100, S / 100);
+    c.fillStyle = '#fff'; c.strokeStyle = '#fff';
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    draw(c);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.anisotropy = Math.min(4, MAXANISO);
+    return tex;
+  });
+  /* Round star dot for the dense field. Solid core + soft falloff, so it keeps
+     most of a square's coverage (and therefore its brightness) while never
+     reading as a cube on the ones that pass close to the camera. */
+  const DOTTEX = (() => {
+    const S = 32, cv = document.createElement('canvas');
+    cv.width = cv.height = S;
+    const c = cv.getContext('2d');
+    const gr = c.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gr.addColorStop(0, '#fff'); gr.addColorStop(.55, '#fff');
+    gr.addColorStop(.78, 'rgba(255,255,255,.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = gr; c.fillRect(0, 0, S, S);
+    return new THREE.CanvasTexture(cv);
+  })();
+  /* A fixed-width box of points reads as a clump down the middle of the
+     screen: everything deep in Z projects toward the vanishing point, leaving
+     the left and right margins bare. `fan` widens the scatter in proportion to
+     depth so the field keeps filling the frame all the way out to the edges. */
+  function scatter(n, spreadX, fan) {
+    const a = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const z = 12 - Math.random() * 240;
+      const d = fan ? 1 + (12 - z) / 70 : 1;
+      a[i * 3] = (Math.random() - .5) * spreadX * d;
+      a[i * 3 + 1] = 7 + (Math.random() - .5) * 26 * (fan ? d * .85 : 1);
+      a[i * 3 + 2] = z;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(a, 3));
+    return geo;
+  }
+  /* Dense star field: world-sized, so it attenuates with distance like before. */
+  function motes(count, color, size, op) {
+    const pts = new THREE.Points(scatter(count, 150, true), new THREE.PointsMaterial({ color, size, map: DOTTEX, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false }));
+    scene.add(pts);
+    return pts;
+  }
+  const m1 = motes(820, 0x9fd8ff, .16, .85), m2 = motes(360, VIOLET, .2, .5);
+
+  /* Crypto marks: a separate, far sparser layer. These use
+     sizeAttenuation:false so `size` is a CSS-pixel size that does NOT shrink
+     with depth — a world-sized sprite out at z=-200 collapses to one pixel and
+     no glyph survives that. Fixed pixel size is what makes the symbols
+     readable everywhere; depth still reads through the two size tiers, the
+     opacity split and the depth test against scene geometry. */
+  function symbols(perGlyph, px, op, color) {
+    const grp = new THREE.Group();
+    SYMTEX.forEach(map => {
+      grp.add(new THREE.Points(scatter(perGlyph, 130, true), new THREE.PointsMaterial({ color, size: px, map, sizeAttenuation: false, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })));
+    });
+    scene.add(grp);
+    return grp;
+  }
+  /* Three tiers, same ~90 total: only a handful stay at the big readable size
+     as accents, the rest step down so the field reads as texture, not as a
+     wall of logos. */
+  const s1 = symbols(2, 24, .58, 0xcdeaff),
+        s2 = symbols(4, 15, .44, 0xa9d4ff),
+        s3 = symbols(7, 10, .32, 0x8fb6ff);
 
   /* ---- world-coupled parallax ----
      The same smoothed mouse numbers steer the camera AND translate the DOM
@@ -1184,7 +1334,7 @@
   };
   const DSPR = [dustSprite('165,225,255'), dustSprite('150,125,255'), dustSprite('220,245,255')];
   const DUST = [];
-  const dustCount = innerWidth < 720 ? 12 : 26;
+  const dustCount = innerWidth < 720 ? 6 : 13;
   for (let i = 0; i < dustCount; i++) {
     DUST.push({
       x: Math.random() * innerWidth, y: Math.random() * innerHeight,
@@ -1213,11 +1363,13 @@
       qTier--;
       if (qTier === 1) {
         renderer.setPixelRatio(Math.min(devicePixelRatio, 1.25));
-        DUST.length = Math.min(DUST.length, 14);
+        DUST.length = Math.min(DUST.length, 8);
+        s3.visible = false;
       } else {
         renderer.setPixelRatio(1);
         m2.visible = false;
-        DUST.length = Math.min(DUST.length, 8);
+        s2.visible = false; s3.visible = false;
+        DUST.length = Math.min(DUST.length, 5);
       }
       renderer.setSize(innerWidth, innerHeight);
     }
@@ -1306,6 +1458,7 @@
     nodeGroups.forEach((ng, i) => { const d = ng.userData; d.crys.rotation.y = t * .5 + i; d.crys.rotation.x = Math.sin(t * .6 + i) * .3; d.cage.rotation.z = t * .3; ng.position.y = d.baseY + Math.sin(t * 1.1 + i) * .18; });
 
     m1.rotation.y = Math.sin(t * .03) * .05; m1.position.y = Math.sin(t * .4) * .4; m2.position.y = Math.cos(t * .3) * .5;
+    s1.position.y = Math.sin(t * .28) * .7; s2.position.y = Math.cos(t * .22) * .9; s3.position.y = Math.sin(t * .19) * 1.1;
 
     updateChapters(p, tailT);
 
