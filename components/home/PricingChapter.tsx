@@ -23,10 +23,12 @@ export default function PricingChapter() {
               <div className="pcard-node pcard-node--tl"></div>
               <div className="pcard-node pcard-node--tr"></div>
               <div className="pcard-top">
+                {/* the tiers differ by how many exchanges you can connect, so
+                    the marks count connections instead of borrowing a padlock,
+                    a bolt and a medal from three different icon packs */}
                 <div className="pcard-icon">
-                  <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="11" width="18" height="10" rx="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <use href="#i-tier-1" />
                   </svg>
                 </div>
                 <div className="pcard-name">Recruit Basic</div>
@@ -65,11 +67,8 @@ export default function PricingChapter() {
               <div className="pcard-badge">Popular</div>
               <div className="pcard-top">
                 <div className="pcard-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      fill="currentColor"
-                      d="M19.89 2.54A1 1 0 0 0 19 2h-9c-.39 0-.75.23-.91.59l-5 11c-.14.31-.11.67.07.96s.5.46.84.46h5v6a1 1 0 0 0 1 1c.31 0 .62-.15.81-.41l8-11a1 1 0 0 0 .08-1.04a1 1 0 0 0-.89-.55h-3.06l3.87-5.42a1 1 0 0 0 .08-1.04Zm-6.7 6.88A.997.997 0 0 0 14 11h3.04L12 17.92V14c0-.55-.45-1-1-1-1H6.55l4.09-9h6.41l-3.87 5.42Z"
-                    />
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <use href="#i-tier-3" />
                   </svg>
                 </div>
                 <div className="pcard-name">Talent Pro</div>
@@ -109,11 +108,8 @@ export default function PricingChapter() {
               <div className="pcard-node pcard-node--tr"></div>
               <div className="pcard-top">
                 <div className="pcard-icon">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
-                    <path
-                      fill="currentColor"
-                      d="m9.925 13.277l.779-2.58l-2.05-1.505h2.562L12 6.585l.785 2.607h2.561l-2.056 1.504l.78 2.581L12 11.675zM7 21.462v-6.59q-.95-.935-1.475-2.19Q5 11.43 5 10q0-2.927 2.036-4.963T12 3t4.964 2.036T19 10q0 1.429-.525 2.683T17 14.87v6.59l-5-1.5zm9.25-7.212Q18 12.5 18 10t-1.75-4.25T12 4T7.75 5.75T6 10t1.75 4.25T12 16t4.25-1.75M8 20.044l4-1.121l4 1.121v-4.33q-.836.615-1.859.95Q13.12 17 12 17t-2.141-.335T8 15.714zm4-2.165"
-                    />
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <use href="#i-tier-max" />
                   </svg>
                 </div>
                 <div className="pcard-name">HR Master</div>

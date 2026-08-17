@@ -111,61 +111,61 @@ function CircuitWires() {
   );
 }
 
+/** Engine marks — one idea, three personalities.
+ *
+ *  A bolt, a pair of scales and a piggy bank are three unrelated stock
+ *  metaphors that happen to sit next to each other. These are the same
+ *  drawing three times: an equity trace crossing the plate, ending in the
+ *  same terminal node. Only the SHAPE of the trace changes, and the shape
+ *  is the product difference — that is what the card is asking you to
+ *  choose between.
+ *
+ *  96 box, but these render at 32px (.bot-card__chip svg), so the stroke
+ *  is heavy and the detail count stays low on purpose.
+ */
 function ChipIcon({ type }: { type: BotIcon }) {
+  const common = {
+    viewBox: "0 0 96 96",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 5,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": true,
+  } as const;
+
   if (type === "aggressive") {
+    /* hard angles, big amplitude, still climbing at the edge of the plate */
     return (
-      <svg viewBox="0 0 96 96" width="72" height="72" fill="none" aria-hidden="true">
-        <path
-          d="M52 10 28 52h16L40 86l28-48H52L56 10z"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinejoin="round"
-          fill="color-mix(in srgb, currentColor 12%, transparent)"
-        />
+      <svg {...common}>
+        <path d="M12 72 28 40l12 26 14-42 12 24 14-32" />
+        <circle cx="80" cy="16" r="6" fill="currentColor" stroke="none" />
       </svg>
     );
   }
 
   if (type === "conservative") {
+    /* a floor it is not allowed through, and a shallow climb above it */
     return (
-      <svg viewBox="0 0 96 96" width="72" height="72" fill="none" aria-hidden="true">
-        <path
-          d="M36 28c0-8 5.5-14 12-14s12 6 12 14c8 2 14 9 14 18 0 11-9 20-26 20S22 57 22 46c0-9 6-16 14-18z"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinejoin="round"
-        />
-        <path d="M42 46h12M48 40v12" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-        <circle cx="30" cy="68" r="5" stroke="currentColor" strokeWidth="2" />
-        <circle cx="44" cy="72" r="5" stroke="currentColor" strokeWidth="2" />
-        <circle cx="58" cy="68" r="5" stroke="currentColor" strokeWidth="2" />
-        <path d="M66 58c4 2 7 6 7 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <svg {...common}>
+        <path d="M12 60c14-3 20-8 34-10s20-9 34-13" />
+        <path d="M10 76h76" />
+        <g strokeWidth="3.5" opacity=".55">
+          <path d="M26 76v-9M48 76v-9M70 76v-9" />
+        </g>
+        <circle cx="80" cy="37" r="6" fill="currentColor" stroke="none" />
       </svg>
     );
   }
 
+  /* balanced — smooth swings of equal size either side of a held centre */
   return (
-    <svg
-      viewBox="0 0 96 96"
-      width="72"
-      height="72"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="48" cy="14" r="4" />
-      <path d="M48 18v58" />
-      <path d="M15 28h66" />
-      <path d="M15 28 4 54h22z" />
-      <path d="M81 28 70 54h22z" />
-      <path d="M4 54a11 11 0 0 0 22 0" />
-      <path d="M70 54a11 11 0 0 0 22 0" />
-      <path d="M34 76h28" />
-      <path d="M26 86h44" />
-      <path d="M34 86l3-10M62 86l-3-10" />
+    <svg {...common}>
+      <g strokeWidth="3.5" opacity=".5" strokeDasharray="5 7">
+        <path d="M10 48h76" />
+      </g>
+      <path d="M12 48c9-28 21-28 30 0s21 28 30 0h8" />
+      <circle cx="80" cy="48" r="6" fill="currentColor" stroke="none" />
     </svg>
   );
 }

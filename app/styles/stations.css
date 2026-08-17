@@ -3289,8 +3289,10 @@ html.cine .pcard--rec {
   background: rgba(255, 255, 255, 0.02);
 }
 
+/* the tier marks carry their own stroke and their one filled node, so the
+   card only sets the hue — setting `stroke` here would flatten the node */
 .pcard--basic .pcard-icon svg {
-  stroke: #7b869c;
+  color: #7b869c;
 }
 
 .pcard--pro .pcard-icon {
@@ -3303,7 +3305,6 @@ html.cine .pcard--rec {
   width: 23px;
   height: 23px;
   color: #22d3ee;
-  stroke: none;
 }
 
 .pcard--master .pcard-icon {
@@ -3315,7 +3316,6 @@ html.cine .pcard--rec {
   width: 23px;
   height: 23px;
   color: #c084fc;
-  stroke: none;
 }
 
 .pcard-name {

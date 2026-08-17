@@ -6,8 +6,7 @@ export default function AboutChapter() {
       <div className="panel panel--about">
 
         <div className="sec-header">
-          <h2>Discipline, <span className="grad">engineered</span> — not adrenaline, promised.</h2>
-          <p className="sec-lead">Built for calm decisions — so you are not glued to charts all night.</p>
+          <h2>Rules over <span className="grad">reaction</span>.</h2>
         </div>
 
         {/* Problem → idea → product. The icon tint carries the progression:
@@ -15,14 +14,14 @@ export default function AboutChapter() {
         <div className="about-steps">
           <div className="about-step">
             <div className="about-step__icon about-step__icon--muted"><svg className="i">
-              <use href="#i-chart" />
+              <use href="#i-market" />
             </svg></div>
             <h3>The problem</h3>
             <p>Markets move <b className="hl hl--cyan">24/7</b> — manual trading means fatigue and emotional calls.</p>
           </div>
           <div className="about-step">
             <div className="about-step__icon about-step__icon--cyan"><svg className="i">
-              <use href="#i-bolt" />
+              <use href="#i-signal" />
             </svg></div>
             <h3>The idea</h3>
             <p>Replace reaction with AI — act <b className="hl hl--cyan">only when signals align</b>.</p>
@@ -37,11 +36,11 @@ export default function AboutChapter() {
         </div>
 
         <div className="about-principles">
-          <span className="about-principles__label">What this means for you</span>
+          {/* <span className="about-principles__label">What this means for you</span> */}
           <div className="about-principles__grid">
             <div className="about-principle">
               <span className="about-principle__icon"><svg className="i">
-                <use href="#i-layers" />
+                <use href="#i-rules" />
               </svg></span>
               <h4>Same rules every time</h4>
               <p>No mood swings — <b className="hl hl--cyan">one clear playbook</b>.</p>
