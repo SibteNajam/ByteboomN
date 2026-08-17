@@ -90,7 +90,7 @@ export default function ScrollTail() {
               <img className="footer__logo" src="/images/mainlogo.png" alt="ByteBoom" width="280" height="86" decoding="async" />
             </a>
             <p className="footer__headline">ByteBoom — automation built for calm traders.</p>
-            <p className="footer__sub">Connect once, start the trading engine, and check in when you want — not every minute.</p>
+            <p className="footer__sub">Connect your exchange, start the trading engine, and check in when you want — not every minute.</p>
             <a className="footer__email" href="mailto:support@byteboom.ai">support@byteboom.ai</a>
             <div className="footer__social" aria-label="Social links">
               <a href="#" title="GitHub — coming soon" aria-label="GitHub"><svg className="i"><use href="#i-github" /></svg></a>

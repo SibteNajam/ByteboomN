@@ -152,10 +152,10 @@ export default function HeroChapter() {
               AI trading system · live
             </p>
             <h1 className="hero-title">
-              AI spot trading <span className="hero-title__grad">that runs while you live</span>
+              AI crypto trading <span className="hero-title__grad">that runs while you sleep</span>
             </h1>
             <p className="hero-lead">
-              Connect once — ByteBoom watches the market and places trades for you, day and night.
+              Connect your exchange — ByteBoom watches the market and places trades for you, day and night.
             </p>
             <div className="hero-actions">
               <a href="#productnode" className="btn btn--primary btn--lg" data-magnetic>
