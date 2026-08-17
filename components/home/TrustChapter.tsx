@@ -56,6 +56,15 @@ function PhoneMockup({
          space in the directory name, which url() cannot take raw */
       style={{ '--shot': `url("${encodeURI(src)}")` } as CSSProperties}
     >
+      {/* The render is front-on, so yawing it foreshortens the screen but can
+          never reveal a side — the thickness does not exist in the pixels.
+          These two layers ARE the thickness: the same silhouette (masked from
+          the shot's own alpha, so it traces the rounded rail exactly) shifted
+          along the axis the yaw exposes. Body first, then the polished
+          chamfer nearer the glass — that pair is what reads as metal. */}
+      <span className="trust-phone__body" aria-hidden="true" />
+      <span className="trust-phone__chamfer" aria-hidden="true" />
+
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         className="trust-phone__shot"
