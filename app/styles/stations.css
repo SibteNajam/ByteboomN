@@ -115,7 +115,6 @@ html.cine {
 /* The HUD retires in the tail, but #stage and #veil do NOT — the FAQ rides on
    the same living corridor as every chapter before it, and the footer covers
    it with its own gradient (z-index 23) where the world is meant to end. */
-html.cine.tail-mode #hint,
 html.cine.tail-mode #routemap,
 html.cine.tail-mode #depth,
 html.cine.tail-mode .scroll-tail-hint {
@@ -167,45 +166,6 @@ html.flat .scroll-tail-hint {
   z-index: 30;
   background: linear-gradient(90deg, #14e0d0, #22a8ff, #7d5cff);
   box-shadow: 0 0 14px rgba(34, 168, 255, .9);
-}
-
-#hint {
-  position: fixed;
-  bottom: 22px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-  color: var(--muted-2);
-  font: 600 9px var(--mono);
-  letter-spacing: .3em;
-  text-transform: uppercase;
-  transition: opacity .5s;
-  pointer-events: none;
-}
-
-#hint .wheel {
-  width: 22px;
-  height: 36px;
-  border: 1.5px solid var(--muted-2);
-  border-radius: 12px;
-  position: relative;
-}
-
-#hint .wheel::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 7px;
-  width: 3px;
-  height: 7px;
-  margin-left: -1.5px;
-  border-radius: 2px;
-  background: var(--cyan);
-  animation: hdrop 1.6s infinite;
 }
 
 @keyframes hdrop {
@@ -672,14 +632,117 @@ html.cine #securitynode .panel--security {
   animation-delay: -4.4s;
 }
 
+.hero-iso__cube--d {
+  animation-delay: -6s;
+  animation-duration: 8s;
+}
+
 .hero-iso__pad--a {
   animation-delay: -1s;
   animation-duration: 8.5s;
 }
 
-.hero-iso__pad--b {
-  animation-delay: -5s;
-  animation-duration: 8.5s;
+/* ---- the block being assembled ----
+   The only motion added to this illustration, because it is the only thing in
+   it that is meant to be happening right now: the outline marches, the fill
+   breathes up and down, and the ring around the top pings once per cycle. */
+.hero-iso__form {
+  stroke-dasharray: 5 5;
+  animation: formMarch 2.4s linear infinite;
+}
+
+.hero-iso__form-fill {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: formFill 3.6s ease-in-out infinite;
+}
+
+.hero-iso__form-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: formPing 3.6s ease-out infinite;
+}
+
+.hero-iso__core {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: coreBeat 3.2s ease-in-out infinite;
+}
+
+/* the written slot fades up rather than pulsing — it is a record, not a signal */
+.hero-iso__slot {
+  animation: slotWrite 4.4s ease-in-out infinite;
+}
+
+@keyframes slotWrite {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  45% {
+    opacity: 1;
+  }
+}
+
+.hero-iso__flow circle {
+  animation: bbPulse 2.2s infinite;
+}
+
+.hero-iso__flow circle:nth-child(2) {
+  animation-delay: -0.7s;
+}
+
+.hero-iso__flow circle:nth-child(3) {
+  animation-delay: -1.4s;
+}
+
+@keyframes formMarch {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+@keyframes formFill {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+    opacity: 0.75;
+  }
+
+  55% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes formPing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  35% {
+    opacity: 0.75;
+  }
+
+  100% {
+    transform: scale(1.18);
+    opacity: 0;
+  }
+}
+
+@keyframes coreBeat {
+  0%,
+  100% {
+    transform: scale(0.86);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
 }
 
 /* transform (not translate) so the browser can composite SVG groups on
@@ -718,72 +781,6 @@ html.cine #securitynode .panel--security {
   }
 }
 
-/* status strip — glass rail, echoes the route */
-.hero-strip {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-top: clamp(20px, 3.4vh, 40px);
-  padding: 12px 20px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: rgba(10, 17, 32, 0.5);
-  backdrop-filter: blur(12px);
-}
-
-.hero-strip__label,
-.hero-strip__meta {
-  font: 600 10px var(--mono);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted-2);
-  white-space: nowrap;
-}
-
-.hero-strip__label {
-  color: var(--cyan);
-}
-
-.hero-strip__rail {
-  position: relative;
-  flex: 1;
-  height: 3px;
-  border-radius: 3px;
-  background: rgba(126, 168, 216, 0.14);
-  overflow: hidden;
-}
-
-.hero-strip__rail::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--grad);
-  opacity: 0.35;
-}
-
-.hero-strip__rider {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 44px;
-  height: 3px;
-  transform: translateY(-50%);
-  border-radius: 3px;
-  background: var(--grad);
-  box-shadow: 0 0 12px rgba(34, 168, 255, 0.9);
-  animation: railRide 4.5s cubic-bezier(0.4, 0, 0.4, 1) infinite;
-}
-
-@keyframes railRide {
-  0% {
-    left: -10%;
-  }
-
-  100% {
-    left: 105%;
-  }
-}
-
 @media (max-width: 900px) {
   #top.chapter--hero {
     padding-bottom: 6vh;
@@ -807,10 +804,6 @@ html.cine #securitynode .panel--security {
     max-width: 380px;
     margin: 0 auto;
   }
-
-  .hero-strip__meta {
-    display: none;
-  }
 }
 
 @media (max-width: 640px) {
@@ -833,7 +826,12 @@ html.cine #securitynode .panel--security {
   .hero-iso__pad,
   .hero-iso__nodes circle,
   .hero-iso__wires path,
-  .hero-strip__rider,
+  .hero-iso__flow circle,
+  .hero-iso__form,
+  .hero-iso__form-fill,
+  .hero-iso__form-ring,
+  .hero-iso__core,
+  .hero-iso__slot,
   .kicker__dot {
     animation: none !important;
   }
@@ -5019,7 +5017,6 @@ html.cine .sec-stack .sec-item.is-active .sec-item__figure img {
 /* ===== FLAT FALLBACK (no webgl / reduced motion): stacked, readable ===== */
 html.flat #stage,
 html.flat #veil,
-html.flat #hint,
 html.flat #routemap,
 html.flat #depth {
   display: none;
@@ -5586,7 +5583,6 @@ html.flat .jbar {
 
   #stage,
   #veil,
-  #hint,
   #routemap {
     display: none !important;
   }

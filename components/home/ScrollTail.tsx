@@ -3,10 +3,7 @@
 export default function ScrollTail() {
   return (
     <>
-<div id="hint">
-    <div className="wheel"></div><span>scroll to travel</span>
-  </div>
-  <div id="runway"></div>
+<div id="runway"></div>
 
   
   <div id="scroll-tail" className="scroll-tail">

@@ -23,7 +23,7 @@
 
   /* ---------- chapters ---------- */
   const chapters = $$('.chapter').map(el => ({ el, a: +el.dataset.a, b: +el.dataset.b, dir: el.dataset.dir || 'up', exit: el.dataset.exit || '', panel: $('.panel', el) }));
-  const depthBar = $('#depth'), hint = $('#hint'), runwayEl = $('#runway'), scrollTailHint = $('#scrollTailHint');
+  const depthBar = $('#depth'), runwayEl = $('#runway'), scrollTailHint = $('#scrollTailHint');
   const navLinks = $$('.jnav a'); let navAt = '';
   const routeMap = $('#routemap');
   const litPath = $('#routemap #litpath'), rider = $('#routemap #rider'), rmNodes = $$('#routemap .node');
@@ -106,8 +106,6 @@
        hanging over the FAQ waiting for the tail-mode class to catch up. */
     if (depthBar) { depthBar.style.width = (p * 100) + '%'; depthBar.style.opacity = live; }
     if (routeMap) routeMap.style.opacity = live;
-    // Hero's own stop sits at ~0.017, so the hint has to survive past it
-    if (hint) hint.style.opacity = p > 0.05 ? 0 : 1;
     if (scrollTailHint) {
       const showTailHint = !flat && p > 0.88 && live > 0.99 && !root.classList.contains('tail-mode');
       scrollTailHint.classList.toggle('is-on', showTailHint);
