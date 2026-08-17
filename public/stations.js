@@ -1254,17 +1254,22 @@
     c.fillStyle = gr; c.fillRect(0, 0, S, S);
     return new THREE.CanvasTexture(cv);
   })();
-  /* A fixed-width box of points reads as a clump down the middle of the
-     screen: everything deep in Z projects toward the vanishing point, leaving
-     the left and right margins bare. `fan` widens the scatter in proportion to
-     depth so the field keeps filling the frame all the way out to the edges. */
-  function scatter(n, spreadX, fan) {
+  /* A fixed-size box of points reads as a clump down the middle of the screen:
+     everything deep in Z projects toward the vanishing point, leaving the
+     margins bare and the corners empty.
+     `fx`/`fy` open the scatter up per unit of depth so the volume roughly
+     tracks the camera frustum instead of being a box. At this fov (62°) and a
+     wide viewport the frustum grows about 1.1 units per unit of depth
+     horizontally and 0.6 vertically, so an fx near 2.2 / fy near 1.2 (full
+     extents, hence double) fills the frame edge to edge — including the top
+     and bottom corners, which a narrow vertical fan leaves empty. */
+  function scatter(n, fx, fy) {
     const a = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
       const z = 12 - Math.random() * 240;
-      const d = fan ? 1 + (12 - z) / 70 : 1;
-      a[i * 3] = (Math.random() - .5) * spreadX * d;
-      a[i * 3 + 1] = 7 + (Math.random() - .5) * 26 * (fan ? d * .85 : 1);
+      const d = 14 - z;
+      a[i * 3] = (Math.random() - .5) * (24 + d * fx);
+      a[i * 3 + 1] = 7 + (Math.random() - .5) * (20 + d * fy);
       a[i * 3 + 2] = z;
     }
     const geo = new THREE.BufferGeometry();
@@ -1273,32 +1278,99 @@
   }
   /* Dense star field: world-sized, so it attenuates with distance like before. */
   function motes(count, color, size, op) {
-    const pts = new THREE.Points(scatter(count, 150, true), new THREE.PointsMaterial({ color, size, map: DOTTEX, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false }));
+    const pts = new THREE.Points(scatter(count, 1.8, 1.0), new THREE.PointsMaterial({ color, size, map: DOTTEX, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false }));
     scene.add(pts);
     return pts;
   }
   const m1 = motes(820, 0x9fd8ff, .16, .85), m2 = motes(360, VIOLET, .2, .5);
 
-  /* Crypto marks: a separate, far sparser layer. These use
-     sizeAttenuation:false so `size` is a CSS-pixel size that does NOT shrink
-     with depth — a world-sized sprite out at z=-200 collapses to one pixel and
-     no glyph survives that. Fixed pixel size is what makes the symbols
-     readable everywhere; depth still reads through the two size tiers, the
-     opacity split and the depth test against scene geometry. */
-  function symbols(perGlyph, px, op, color) {
+  /* ---- crypto marks: a field that tiles around the camera ----
+     Any fixed volume of points fails here. The route runs from z:+12 out to
+     z:-262 and turns four 90° corners, so on the +x legs the camera is looking
+     sideways out of the box entirely: density drops off as you scroll and dies
+     past the last leg. Corners of the frame are the same problem seen from the
+     other end — a box that is not the shape of the frustum leaves them bare.
+
+     So the symbols are scattered uniformly through one cube of half-extent
+     SYMB, and the vertex shader repeats that cube infinitely around whichever
+     point the camera has reached:
+
+         p = home + 2·SYMB · round((camera − home) / 2·SYMB)
+
+     A point holds still in world space (so it parallaxes normally) until the
+     camera passes the halfway mark, then jumps one cube over. Uniform density
+     in a cube around the camera is uniform density per unit of solid angle,
+     which is exactly "same quantity everywhere, edges and corners included,
+     no clumping" — and it holds for every leg of the route, at any heading.
+
+     The jump is hidden by the distance fade: uFar (78) is inside SYMB (80), so
+     a point is already invisible by the time it wraps. Fixed pixel size — a
+     world-sized sprite 200 units out collapses to one pixel and no glyph
+     survives that — with depth still reading through the three size tiers, the
+     opacity split, the fade and the depth test against scene geometry. */
+  const SYMB = 80;
+  const FIELDS = [];
+  const SYM_VERT = `
+    uniform vec3 uCam, uDrift;
+    uniform float uB, uSize, uPR, uNear, uFade, uFar;
+    varying float vA;
+    void main() {
+      vec3 home = position + uDrift;
+      vec3 p = home + 2.0 * uB * floor((uCam - home) / (2.0 * uB) + 0.5);
+      vec4 mv = viewMatrix * vec4(p, 1.0);
+      gl_Position = projectionMatrix * mv;
+      gl_PointSize = uSize * uPR;
+      float d = length(mv.xyz);
+      vA = smoothstep(uFar, uFade, d) * smoothstep(uNear * 0.25, uNear, d);
+    }`;
+  const SYM_FRAG = `
+    uniform sampler2D uMap;
+    uniform vec3 uColor;
+    uniform float uOpacity;
+    varying float vA;
+    void main() {
+      float m = texture2D(uMap, vec2(gl_PointCoord.x, 1.0 - gl_PointCoord.y)).a;
+      float a = m * uOpacity * vA;
+      if (a < 0.003) discard;
+      gl_FragColor = vec4(uColor, a);
+    }`;
+  function symbols(perGlyph, px, op, color, driftSpeed) {
     const grp = new THREE.Group();
     SYMTEX.forEach(map => {
-      grp.add(new THREE.Points(scatter(perGlyph, 130, true), new THREE.PointsMaterial({ color, size: px, map, sizeAttenuation: false, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })));
+      const a = new Float32Array(perGlyph * 3);
+      for (let i = 0; i < perGlyph * 3; i++) a[i] = (Math.random() - .5) * 2 * SYMB;
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(a, 3));
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uMap: { value: map }, uColor: { value: new THREE.Color(color) },
+          uOpacity: { value: op }, uSize: { value: px },
+          uPR: { value: renderer.getPixelRatio() },
+          uCam: { value: new THREE.Vector3() }, uDrift: { value: new THREE.Vector3() },
+          uB: { value: SYMB }, uNear: { value: 7 }, uFade: { value: 62 }, uFar: { value: 78 },
+        },
+        vertexShader: SYM_VERT, fragmentShader: SYM_FRAG,
+        transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+      });
+      const pts = new THREE.Points(geo, mat);
+      /* the shader moves points away from their buffer positions, so three's
+         bounding-sphere cull would throw the whole layer away at the corners */
+      pts.frustumCulled = false;
+      grp.add(pts);
+      FIELDS.push({ mat, ds: driftSpeed });
     });
     scene.add(grp);
     return grp;
   }
-  /* Three tiers, same ~90 total: only a handful stay at the big readable size
-     as accents, the rest step down so the field reads as texture, not as a
-     wall of logos. */
-  const s1 = symbols(2, 24, .58, 0xcdeaff),
-        s2 = symbols(4, 15, .44, 0xa9d4ff),
-        s3 = symbols(7, 10, .32, 0x8fb6ff);
+  /* Three tiers: only a handful stay at the big readable size as accents, the
+     rest step down so the field reads as texture, not as a wall of logos.
+     ~203 total (29 per glyph). Counts read high next to a forward-cone scatter
+     because these fill a whole cube — only about a fourteenth of it falls
+     inside the frustum and the fade radius — so this lands near 15 symbols on
+     screen, and unlike a fixed volume it stays there for the entire scroll. */
+  const s1 = symbols(4, 24, .58, 0xcdeaff, .28),
+        s2 = symbols(9, 15, .44, 0xa9d4ff, .22),
+        s3 = symbols(16, 10, .32, 0x8fb6ff, .19);
 
   /* ---- world-coupled parallax ----
      The same smoothed mouse numbers steer the camera AND translate the DOM
@@ -1458,7 +1530,16 @@
     nodeGroups.forEach((ng, i) => { const d = ng.userData; d.crys.rotation.y = t * .5 + i; d.crys.rotation.x = Math.sin(t * .6 + i) * .3; d.cage.rotation.z = t * .3; ng.position.y = d.baseY + Math.sin(t * 1.1 + i) * .18; });
 
     m1.rotation.y = Math.sin(t * .03) * .05; m1.position.y = Math.sin(t * .4) * .4; m2.position.y = Math.cos(t * .3) * .5;
-    s1.position.y = Math.sin(t * .28) * .7; s2.position.y = Math.cos(t * .22) * .9; s3.position.y = Math.sin(t * .19) * 1.1;
+    /* Symbol layers wrap around the camera in the shader, so they are driven
+       by uniforms rather than by moving the group — a group offset would shift
+       the tiling lattice with it and defeat the point. Drift rides on uDrift
+       for the same reason. Camera position is read AFTER the sway above so the
+       wrap tracks exactly where the view ended up this frame. */
+    for (const f of FIELDS) {
+      f.mat.uniforms.uCam.value.copy(cam.position);
+      f.mat.uniforms.uDrift.value.set(Math.sin(t * f.ds * .7) * 1.4, Math.sin(t * f.ds) * 1.1, 0);
+      f.mat.uniforms.uPR.value = renderer.getPixelRatio();
+    }
 
     updateChapters(p, tailT);
 

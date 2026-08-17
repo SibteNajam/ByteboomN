@@ -121,7 +121,6 @@ export default function TrustChapter() {
           </div>
 
           <div className="trust-stage">
-            <span className="trust-stage__aura" aria-hidden="true" />
             <span className="trust-stage__field" aria-hidden="true" />
 
             <div className="trust-phones">
