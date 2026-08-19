@@ -1,29 +1,27 @@
 'use client';
 
-const SECURITY_ITEMS = [
+/** Security — the same split-row language as Custody: copy ranged left, the
+    visual on the right.
+
+    Custody (trustnode) already answers "what can the engine do with my
+    money". This section answers the other half — what happens to the
+    credentials themselves — so the two never restate each other. Every claim
+    below is the one already documented on /privacy; keep them in step. */
+const SECURITY_POINTS = [
   {
-    id: '0',
-    featured: true,
-    image: '/images/funsecurity/sec1.png',
-    alt: 'Private account connection',
-    title: 'Private by Default',
-    body: 'Your link stays between you and ByteBoom — never shared.',
+    icon: 'i-lock',
+    tone: 'cyan',
+    title: 'Locked when stored. Protected while they travel.',
   },
   {
-    id: '1',
-    featured: false,
-    image: '/images/funsecurity/sec2.png',
-    alt: 'You choose when access is on',
-    title: 'Access On Your Schedule',
-    body: 'Turn the connection on when you need it, off when you don’t.',
+    icon: 'i-shield',
+    tone: 'violet',
+    title: 'A key that can take money out is never accepted',
   },
   {
-    id: '2',
-    featured: false,
-    image: '/images/funsecurity/sec3.png',
-    alt: 'Protected connection details',
-    title: 'Details Stay Protected',
-    body: 'Login details are stored carefully — only you authorize access.',
+    icon: 'i-key',
+    tone: 'green',
+    title: 'We check what a key can do before it ever goes live',
   },
 ];
 
@@ -38,32 +36,42 @@ export default function SecurityChapter() {
       data-dir="center"
     >
       <div className="panel panel--security">
-        <div className="sec-header">
-          <h2>Built to keep your link safe.</h2>
-          <p className="sec-lead">
-            Private connection. You’re in control. Easy to shut off.
-          </p>
-        </div>
+        <div className="sec-split" id="security-inline">
+          <div className="sec-copy">
+            <header className="sec-copy__head">
+              <h2>Your keys are locked before we save them.</h2>
+              <p className="sec-lead">
+                They reach us on a private connection. We check what they can do,
+                then lock them so nobody can read them.
+              </p>
+            </header>
 
-        <div className="security-stage" id="security-inline">
-          <div className="sec-stack">
-            {SECURITY_ITEMS.map((item) => (
-              <article
-                key={item.id}
-                className={`sec-item${item.featured ? ' sec-item--featured' : ''}`}
-                data-sec={item.id}
-              >
-                <div className="sec-item__visual">
-                  <span className="sec-item__orb" aria-hidden="true" />
-                  <div className="sec-item__figure">
-                    <img src={item.image} alt={item.alt} decoding="async" />
-                  </div>
-                  <span className="sec-item__plinth" aria-hidden="true" />
-                </div>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
-              </article>
-            ))}
+            <ul className="sec-points">
+              {SECURITY_POINTS.map((point) => (
+                <li className="sec-point" data-tone={point.tone} key={point.title}>
+                  <span className="sec-point__ico" aria-hidden="true">
+                    <svg width="18" height="18">
+                      <use href={`#${point.icon}`} />
+                    </svg>
+                  </span>
+                  <h3 className="sec-point__text">{point.title}</h3>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="sec-stage">
+            <figure className="sec-shot">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/sec4.2.png"
+                alt="A hand unlocking a phone with a fingerprint while exchange API keys, user data and a secure connection stay protected"
+                width={1536}
+                height={1024}
+                loading="lazy"
+                decoding="async"
+              />
+            </figure>
           </div>
         </div>
       </div>

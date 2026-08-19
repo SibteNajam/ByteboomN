@@ -617,7 +617,6 @@
     return api;
   }
   const pricingStack = initStack($('#pricing-inline'), '.pcard');
-  const securityStack = initStack($('#security-inline'), '.sec-item');
 
   /* ===================================================================
      SCROLL ENGINE — one impulse, one stop
@@ -673,8 +672,7 @@
   const subCount = id =>
     id === 'journeynode' ? journeyCtrl.STOP_COUNT :
       id === 'pricingnode' ? pricingStack.count :
-        id === 'securitynode' ? securityStack.count :
-          id === 'edgenode' ? Math.max(1, edgeSlides.length) : 1;
+        id === 'edgenode' ? Math.max(1, edgeSlides.length) : 1;
 
   const STOPS = [];
   chapters.forEach(c => {
@@ -726,7 +724,6 @@
     const id = s.ch.el.id;
     if (id === 'journeynode') journeyCtrl.setStep(s.sub, true);
     else if (id === 'pricingnode') pricingStack.set(s.sub);
-    else if (id === 'securitynode') securityStack.set(s.sub);
     else if (id === 'edgenode') edgeWant = s.sub;
   };
 
@@ -837,7 +834,6 @@
     });
     journeyCtrl.setStep(0, false);
     pricingStack.set(0);
-    securityStack.set(0);
     if (depthBar) {
       addEventListener('scroll', () => {
         const max = Math.max(document.body.scrollHeight - innerHeight, 1);
