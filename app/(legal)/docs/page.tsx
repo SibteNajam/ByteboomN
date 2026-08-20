@@ -42,8 +42,8 @@ export default function DocsPage() {
           <section className="legal-section" id="api-keys">
             <h2>Binance API keys</h2>
             <p>
-              ByteBoom requires read + trade permissions. Keys are encrypted at rest using{' '}
-              <span className="hl">AES-256</span>.
+              ByteBoom only needs permission to see your account and place trades — never to take
+              money out. Your access is locked before we save it, so nobody can read it.
             </p>
           </section>
           <div className="legal-callout">

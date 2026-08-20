@@ -2069,6 +2069,11 @@ html.cine .trust-phone--front {
   backdrop-filter: none;
 }
 
+html.cine #journeynode .panel--journey {
+  transform-style: flat;
+  backface-visibility: visible;
+}
+
 #journeynode .panel--journey::before {
   display: none;
 }
@@ -2177,16 +2182,18 @@ html.cine .trust-phone--front {
   --jp-bubble-h: clamp(118px, 15vh, 148px);
   /* paced to land just before the camera settles on the next journey beat */
   --jp-fade: 0.62s;
-  --jp-ghost: 0.08;
+  --jp-ghost: 0.16;
   position: relative;
   margin-top: clamp(2px, 0.6vh, 8px);
   padding-bottom: 0;
-  perspective: 1200px;
-  transform-style: preserve-3d;
+  /* Flat, not 3D: perspective + preserve-3d uploads the screenshots as GPU
+     textures, which look soft once a large monitor stretches them. */
+  perspective: none;
+  transform-style: flat;
 }
 
 html.cine .bbj--inline .journey-path {
-  transform-style: preserve-3d;
+  transform-style: flat;
 }
 
 .bbj--inline .jp-rail {
@@ -2196,7 +2203,7 @@ html.cine .bbj--inline .journey-path {
   gap: var(--jp-gap);
   align-items: end;
   padding-bottom: clamp(4px, 0.8vh, 10px);
-  transform-style: preserve-3d;
+  transform-style: flat;
 }
 
 .bbj--inline .jp-slot {
@@ -2206,7 +2213,7 @@ html.cine .bbj--inline .journey-path {
   justify-items: center;
   align-items: end;
   gap: clamp(6px, 1vh, 12px);
-  transform-style: preserve-3d;
+  transform-style: flat;
   transition: transform var(--jp-fade, 1s) ease-out;
 }
 
@@ -2214,10 +2221,15 @@ html.cine .bbj--inline .journey-path {
   width: min(100%, var(--jp-w));
 }
 
-.bbj--inline .jp-stage {
+.bbj--inline .jp-slot .jp-stage {
   position: relative;
+  width: min(100%, calc(var(--jp-w) * 0.97));
   aspect-ratio: 9 / 19.2;
-  transform-style: preserve-3d;
+  transform-style: flat;
+}
+
+.bbj--inline .jp-slot.is-live .jp-stage {
+  width: min(100%, var(--jp-w));
 }
 
 /* Cloud speech — box matches cloud SVG aspect; padding keeps copy inside */
@@ -2385,13 +2397,11 @@ html.cine .bbj--inline .journey-path {
 .bbj--inline .jp-phone {
   position: absolute;
   inset: 0;
-  opacity: var(--jp-ghost, 0.08);
+  opacity: var(--jp-ghost, 0.16);
   visibility: visible;
-  transform: scale(0.97);
+  transform: none;
   transform-origin: center center;
-  transition:
-    opacity var(--jp-fade, 0.55s) ease,
-    transform var(--jp-fade, 0.55s) ease;
+  transition: opacity var(--jp-fade, 0.55s) ease;
   z-index: 4;
 }
 
@@ -2410,6 +2420,8 @@ html.cine .bbj--inline .journey-path {
   border-radius: 21px;
   overflow: hidden;
   background: #05070c;
+  transform: none;
+  filter: none;
 }
 
 .bbj--inline .phone-notch,
@@ -2442,8 +2454,9 @@ html.cine .bbj--inline .journey-path {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: top center;
+  image-rendering: auto;
   z-index: 1;
   opacity: 0;
   visibility: hidden;
@@ -2451,6 +2464,8 @@ html.cine .bbj--inline .journey-path {
     opacity var(--jp-fade, 0.55s) ease,
     visibility 0s linear var(--jp-fade, 0.55s);
   pointer-events: none;
+  transform: none;
+  filter: none;
 }
 
 .bbj--inline .jp-shot.is-on {
@@ -2515,12 +2530,15 @@ html.cine .bbj--inline .journey-path {
 
 .bbj--inline .jp-slot.is-live .jp-phone {
   opacity: 1;
-  transform: scale(1.04);
-  transform-origin: center center;
-  transition:
-    opacity var(--jp-fade, 0.55s) ease,
-    transform var(--jp-fade, 0.55s) ease;
-  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.35));
+  transform: none;
+  filter: none;
+  transition: opacity var(--jp-fade, 0.55s) ease;
+}
+
+.bbj--inline .jp-slot.is-live .phone-rim {
+  box-shadow:
+    0 24px 44px -18px rgba(0, 0, 0, .66),
+    0 14px 24px rgba(0, 0, 0, 0.28);
 }
 
 .bbj--inline .jp-slot.is-live .jp-speech {
@@ -2560,11 +2578,8 @@ html.cine .bbj--inline .journey-path {
   }
 
   .bbj--inline .jp-phone {
-    transform: scale(0.97);
+    transform: none;
   }
-
-  /* the live phone still scales up — that step, like newapp's, is the
-     cue for which dock is active, not decoration */
 
   .bbj--inline .jp-speech__scan::after {
     animation: none;

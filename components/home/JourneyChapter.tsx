@@ -94,15 +94,15 @@ export default function JourneyChapter() {
                             <img
                               className="jp-shot is-on"
                               alt=""
-                              width={390}
-                              height={844}
+                              width={720}
+                              height={1600}
                               decoding="async"
                             />
                             <img
                               className="jp-shot"
                               alt=""
-                              width={390}
-                              height={844}
+                              width={720}
+                              height={1600}
                               decoding="async"
                             />
                             <div className="jp-mock-fallback" hidden>

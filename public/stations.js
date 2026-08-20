@@ -455,8 +455,8 @@
         const second = document.createElement('img');
         second.className = 'jp-shot';
         second.alt = '';
-        second.width = template ? Number(template.getAttribute('width')) || 390 : 390;
-        second.height = template ? Number(template.getAttribute('height')) || 844 : 844;
+        second.width = template ? Number(template.getAttribute('width')) || 720 : 720;
+        second.height = template ? Number(template.getAttribute('height')) || 1600 : 1600;
         second.decoding = 'async';
         if (template) screen.insertBefore(second, template.nextSibling);
         else screen.prepend(second);

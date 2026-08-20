@@ -11,17 +11,17 @@ const SECURITY_POINTS = [
   {
     icon: 'i-lock',
     tone: 'cyan',
-    title: 'Locked when stored. Protected while they travel.',
+    title: 'Locked while we keep it. Protected on the way.',
   },
   {
     icon: 'i-shield',
     tone: 'violet',
-    title: 'A key that can take money out is never accepted',
+    title: 'Access that can take money out is never accepted',
   },
   {
     icon: 'i-key',
     tone: 'green',
-    title: 'We check what a key can do before it ever goes live',
+    title: 'We check what it can do before anything turns on',
   },
 ];
 
@@ -39,10 +39,10 @@ export default function SecurityChapter() {
         <div className="sec-split" id="security-inline">
           <div className="sec-copy">
             <header className="sec-copy__head">
-              <h2>Your keys are locked before we save them.</h2>
+              <h2>Your access is locked before we save it.</h2>
               <p className="sec-lead">
-                They reach us on a private connection. We check what they can do,
-                then lock them so nobody can read them.
+                It comes to us on a private connection. We check what it can do,
+                then lock it so nobody can read it.
               </p>
             </header>
 
@@ -65,7 +65,7 @@ export default function SecurityChapter() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/images/sec4.2.png"
-                alt="A hand unlocking a phone with a fingerprint while exchange API keys, user data and a secure connection stay protected"
+                alt="A hand unlocking a phone while user data and a secure connection stay protected"
                 width={1536}
                 height={1024}
                 loading="lazy"
